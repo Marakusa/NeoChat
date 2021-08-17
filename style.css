@@ -7,7 +7,7 @@ body {
     background-color: rgb(28, 28, 28);
     color: white;
     width: 100%;
-    height: 160px;
+    height: 64px;
     position: fixed;
     top: 0;
     right: 0;
@@ -17,22 +17,22 @@ body {
     z-index: 2;
 }
 .headerTextLeft {
-    padding: 50px;
+    padding: 18px 5px;
     margin: auto 0;
     float: left;
-    font-size: 52px;
+    font-size: 22px;
     font-weight: bold;
 }
 .headerBack {
     float: left;
-    margin: 22px;
-    padding: 16px;
-    font-size: 78px;
-    width: 82px;
-    height: 82px;
+    margin: 8px;
+    padding: 12px;
+    font-size: 40px;
+    width: 24px;
+    height: 24px;
     display: block;
     text-align: center;
-    line-height: 1.1;
+    line-height: 0.6;
     cursor: pointer;
     transition: 0.2s;
     border-radius: 15%;
@@ -54,25 +54,25 @@ body {
     box-shadow: black 0px 0px 7px 0px;
     user-select: none;
     z-index: 2;
-    height: calc(100% - 160px);
-    width: calc(100% - 300px);
-    font-size: 52px;
+    height: calc(100% - 64px);
+    width: calc(100% - 80px);
+    font-size: 22px;
     display: block;
     overflow-y: auto;
     padding: 0;
     bottom: 0;
     right: 0;
     left: 0;
-    top: 160px;
+    top: 64px;
     transition: 0.2s;
 }
 .headerSideListButton {
     background-color: rgba(0, 0, 0, 0);
     margin: 0;
     width: 100%;
-    height: 130px;
+    height: 40px;
     display: block;
-    font-size: 43px;
+    font-size: 16px;
     font-weight: normal;
     user-select: none;
     cursor: pointer;
@@ -80,7 +80,7 @@ body {
     transition: 0.2s;
 }
 .headerSideListButton p {
-    margin: 40px;
+    margin: 10px;
 }
 .headerSideListButton:hover {
     background-color: rgb(68, 68, 68);
@@ -175,8 +175,8 @@ body {
     border-radius: 50%;
 }
 .buttonRound:active {
-    margin: 32px;
-    padding: 6px;
+    margin: 16px;
+    padding: 4px;
     transition: 0.2s;
     background-color: rgba(255, 255, 255, 0.815);
     border-radius: 50%;
@@ -203,9 +203,9 @@ body {
 }
 
 .usersScroll {
-    height: calc(100% - 160px);
+    height: calc(100% - 64px);
     width: 100%;
-    font-size: 52px;
+    font-size: 22px;
     color: white;
     display: block;
     position: absolute;
@@ -214,7 +214,7 @@ body {
     bottom: 0;
     right: 0;
     left: 0;
-    top: 160px;
+    top: 64px;
 }
 .users {
     width: 100%;
@@ -222,9 +222,9 @@ body {
 .listUser {
     margin: 0;
     width: 100%;
-    height: 170px;
+    height: 70px;
     display: block;
-    font-size: 43px;
+    font-size: 20px;
     font-weight: normal;
     user-select: none;
     cursor: pointer;
@@ -242,13 +242,13 @@ body {
     transition: 0.2s;
 }
 .listUserName {
-    margin: 25px 30px;
+    margin: 8px 12px;
 }
 .listUserLatestMessage {
-    margin: 20px 30px;
-    font-size: 30px;
-    width: 600px;
-    height: 38px;
+    margin: 5px 12px;
+    font-size: 12px;
+    width: 75%;
+    height: 24px;
     line-break: anywhere;
     overflow: hidden;
     text-overflow: ellipsis;
