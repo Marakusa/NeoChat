@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ChatApp</title>
+        <link rel="stylesheet" href="style.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <div class="header">
+            <a onclick="openSideMenu();" class="headerBack buttonRound">≡</a>
+            <p class="headerTextLeft">ChatApp</p>
+        </div>
+        <div id="sideMenu" class="headerSideList" style="margin-left: -100%;">
+            <div class="headerSideListButton">
+                <p class="headerSideListButtonText">Profile</p>
+            </div>
+            <div class="headerSideListButton">
+                <p class="headerSideListButtonText">Friends</p>
+            </div>
+            <div class="headerSideListButton">
+                <p class="headerSideListButtonText">Search</p>
+            </div>
+            <div class="headerSideListButton">
+                <p class="headerSideListButtonText">Settings</p>
+            </div>
+            <div class="headerSideListButton">
+                <p class="headerSideListButtonText">Log Out</p>
+            </div>
+        </div>
+        <div onclick="closeSideMenu();" id="headerSideListBackground" class="headerSideListBackground" style="transition: 0.2s;display: none;background-color: rgba(0, 0, 0, 0);"></div>
+        <div id="usersScroll" class="usersScroll">
+            <div id="users" class="users">
+                <div class="listUser">
+                    <p class="listUserName">Username</p>
+                    <p class="listUserLatestMessage">Latest message shows up here and it can go on until the limit exceeds and it becomes hidden</p>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script>
+        var menuOpen = false;
+
+        function openSideMenu() {
+            var sideMenu = document.getElementById("sideMenu");
+
+            if (menuOpen == false)
+            {
+                sideMenu.style.marginLeft = "0";
+                document.getElementById("headerSideListBackground").style.display = "block";
+                setTimeout(() => {
+                    document.getElementById("headerSideListBackground").style.backgroundColor = "#000000b3";
+                }, 10);
+                menuOpen = true;
+            }
+            else
+            {
+                sideMenu.style.marginLeft = "-100%";
+                document.getElementById("headerSideListBackground").style.backgroundColor = "#00000000";
+                menuOpen = false;
+                setTimeout(() => {
+                    document.getElementById("headerSideListBackground").style.display = "none";
+                }, 200);
+            }
+        }
+        function closeSideMenu() {
+            var sideMenu = document.getElementById("sideMenu");
+
+            sideMenu.style.marginLeft = "-100%";
+            document.getElementById("headerSideListBackground").style.backgroundColor = "#00000000";
+            menuOpen = false;
+            setTimeout(() => {
+                document.getElementById("headerSideListBackground").style.display = "none";
+            }, 200);
+        }
+    </script>
+</html>

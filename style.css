@@ -1,0 +1,256 @@
+body {
+    background-color: rgb(20, 20, 20);
+    font-family: 'Quicksand', sans-serif;
+}
+
+.header {
+    background-color: rgb(28, 28, 28);
+    color: white;
+    width: 100%;
+    height: 160px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    box-shadow: black 0px 0px 7px 0px;
+    user-select: none;
+    z-index: 2;
+}
+.headerTextLeft {
+    padding: 50px;
+    margin: auto 0;
+    float: left;
+    font-size: 52px;
+    font-weight: bold;
+}
+.headerBack {
+    float: left;
+    margin: 22px;
+    padding: 16px;
+    font-size: 78px;
+    width: 82px;
+    height: 82px;
+    display: block;
+    text-align: center;
+    line-height: 1.1;
+    cursor: pointer;
+    transition: 0.2s;
+    border-radius: 15%;
+}
+
+.headerSideListBackground {
+    z-index: 1;
+    background-color: black;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    left: 0;
+    position: fixed;
+}
+.headerSideList {
+    background-color: rgb(28, 28, 28);
+    color: white;
+    position: fixed;
+    box-shadow: black 0px 0px 7px 0px;
+    user-select: none;
+    z-index: 2;
+    height: calc(100% - 160px);
+    width: calc(100% - 300px);
+    font-size: 52px;
+    display: block;
+    overflow-y: auto;
+    padding: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    top: 160px;
+    transition: 0.2s;
+}
+.headerSideListButton {
+    background-color: rgba(0, 0, 0, 0);
+    margin: 0;
+    width: 100%;
+    height: 130px;
+    display: block;
+    font-size: 43px;
+    font-weight: normal;
+    user-select: none;
+    cursor: pointer;
+    float: left;
+    transition: 0.2s;
+}
+.headerSideListButton p {
+    margin: 40px;
+}
+.headerSideListButton:hover {
+    background-color: rgb(68, 68, 68);
+    transition: 0.2s;
+}
+.headerSideListButton:active {
+    background-color: rgb(153, 153, 153);
+    transition: 0.2s;
+}
+
+.footer {
+    background-color: rgb(28, 28, 28);
+    color: white;
+    width: 100%;
+    height: 200px;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    box-shadow: black 0px 0px 7px 0px;
+    user-select: none;
+    z-index: 2;
+}
+.footerSend {
+    float: right;
+    margin: 22px;
+    padding: 16px;
+    font-size: 100px;
+    width: 122px;
+    height: 122px;
+    display: block;
+    text-align: center;
+    line-height: 1.25;
+    cursor: pointer;
+    transition: 0.2s;
+    border-radius: 50%;
+    background-color: #e3cc66;
+    color: black;
+    box-shadow: black 0 0 7px 0px;
+}
+
+.chatLog {
+    height: calc(100% - 160px - 200px + 40px);
+    width: 100%;
+    font-size: 52px;
+    color: black;
+    display: block;
+    position: absolute;
+    overflow-y: auto;
+    padding: 20px;
+    bottom: 200px;
+    right: 0;
+    left: 0;
+    top: 160px;
+}
+.chatLogHistory {
+    width: 100%;
+    display: table-cell;
+}
+.bubble {
+    margin-bottom: 10px;
+    height: auto;
+    display: table-row;
+    max-width: 440px;
+    width: max-content;
+    padding: 25.5px;
+    border-radius: 50px;
+    font-size: 43px;
+    font-weight: 500;
+    user-select: none;
+}
+.bubbleLeft {
+    background-color: rgb(252, 105, 191);
+    float: left;
+    margin-right: 100%;
+}
+.bubbleRight {
+    background-color: #e3cc66;
+    float: right;
+    margin-left: 100%;
+}
+.bubbleSent {
+    color: #838383;
+    float: right;
+    font-size: 36px;
+    margin: 0;
+}
+
+.buttonRound:hover {
+    transition: 0.2s;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+.buttonRound:active {
+    margin: 32px;
+    padding: 6px;
+    transition: 0.2s;
+    background-color: rgba(255, 255, 255, 0.815);
+    border-radius: 50%;
+}
+
+.inputArea {
+    margin: 30px 200px 30px 30px;
+    width: calc(100% - 350px);
+    height: 56px;
+    resize: none;
+    font-size: 50px;
+    font-family: 'Quicksand';
+    background-color: #141414;
+    color: white;
+    border-radius: 69px;
+    padding: 40px 60px;
+    position: absolute;
+    overflow-y: hidden;
+}
+.inputArea:focus {
+    outline: none !important;
+    border:1px solid rgb(255, 255, 255);
+    box-shadow: 0 0 10px #e3cc66;
+}
+
+.usersScroll {
+    height: calc(100% - 160px);
+    width: 100%;
+    font-size: 52px;
+    color: white;
+    display: block;
+    position: absolute;
+    overflow-y: auto;
+    padding: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    top: 160px;
+}
+.users {
+    width: 100%;
+}
+.listUser {
+    margin: 0;
+    width: 100%;
+    height: 170px;
+    display: block;
+    font-size: 43px;
+    font-weight: normal;
+    user-select: none;
+    cursor: pointer;
+    float: left;
+    transition: 0.2s;
+    border-bottom: solid;
+    border-width: 1px;
+}
+.listUser:hover {
+    background-color: rgb(68, 68, 68);
+    transition: 0.2s;
+}
+.listUser:active {
+    background-color: rgb(153, 153, 153);
+    transition: 0.2s;
+}
+.listUserName {
+    margin: 25px 30px;
+}
+.listUserLatestMessage {
+    margin: 20px 30px;
+    font-size: 30px;
+    width: 600px;
+    height: 38px;
+    line-break: anywhere;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

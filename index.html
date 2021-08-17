@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ChatApp</title>
+        <link rel="stylesheet" href="style.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <div class="header">
+            <a class="headerBack buttonRound">🡰</a>
+            <p class="headerTextLeft">Username</p>
+        </div>
+        <div id="chatScroll" class="chatLog">
+            <div id="chat" class="chatLogHistory">
+                <div class="bubble bubbleLeft">Hello.</div>
+                <div class="bubble bubbleRight">Hi!</div>
+                <div class="bubble bubbleRight">Another test it is very long message here!!</div>
+                <div class="bubble bubbleLeft">Test</div>
+                <div class="bubble bubbleLeft">Test here too a longer message than usually...</div>
+                <div class="bubble bubbleLeft">Another test</div>
+                <p id="sendStatus" class="bubbleSent" style="display: none;">Sent</p>
+            </div>
+        </div>
+        <div class="footer">
+            <textarea id="messageField" class="inputArea" placeholder="Enter a message..."></textarea>
+            <a onclick="sendMessage();" class="footerSend buttonRound">⮞</a>
+        </div>
+    </body>
+    <script>
+        $(function() {
+            $("#messageField").keypress(function (e) {
+                if(e.which == 13 && e.shiftKey == false) {
+                    sendMessage();
+                    $("#chatbox").append($(this).val() + "<br/>");
+                    $(this).val("");
+                    e.preventDefault();
+                }
+            });
+        });
+
+        var chatScroll = document.getElementById("chatScroll");
+        chatScroll.scrollTop = chatScroll.scrollHeight;
+
+        setInterval(() => {
+            receiveMessage();
+        }, 10000);
+
+        function receiveMessage()
+        {
+            var sendStatus = document.getElementById("sendStatus");
+            sendStatus.innerText = "Seen";
+
+            message = "test text message<br>and another line for example and css testing";
+
+            var chatScroll = document.getElementById("chatScroll");
+            var scroll = false;
+            if (chatScroll.scrollTop == (chatScroll.scrollHeight - chatScroll.clientHeight)) {
+                scroll = true;
+            }
+
+            id = Math.floor((Math.random() * 999999) + 1);
+            document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleLeft\" style=\"margin-left: -500px;\">" + message + "</div>";
+            
+            setTimeout(() => {  
+                var chatBubble = document.getElementById("chatBubble" + id);
+                chatBubble.style.transition = "0.2s";
+                chatBubble.style.marginLeft = "0";
+            }, 10);
+            
+            if (scroll) {
+                chatScroll.scrollTop = chatScroll.scrollHeight;
+            }
+        }
+
+        function sendMessage()
+        {
+            var messageField = document.getElementById("messageField");
+
+            let message = messageField.value;
+
+            if (message.trim() != "")
+            {
+                document.getElementById("sendStatus").style.display = "none";
+
+                message = message.replaceAll("\n", "<br>");
+
+                messageField.value = "";
+
+                var chatScroll = document.getElementById("chatScroll");
+                var scroll = false;
+                if (chatScroll.scrollTop == (chatScroll.scrollHeight - chatScroll.clientHeight)) {
+                    scroll = true;
+                }
+
+                id = Math.floor((Math.random() * 999999) + 1);
+                document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleRight\" style=\"margin-right: -500px;\">" + message + "</div>";
+                
+                setTimeout(() => {  
+                    var chatBubble = document.getElementById("chatBubble" + id);
+                    chatBubble.style.transition = "0.2s";
+                    chatBubble.style.marginRight = "0";
+                }, 10);
+
+                if (scroll)
+                {
+                    chatScroll.scrollTop = chatScroll.scrollHeight;
+                }
+
+                setTimeout(() => {  
+                    var sendStatus = document.getElementById("sendStatus");
+                    sendStatus.style.display = "block";
+                    sendStatus.parentNode.appendChild(sendStatus);
+
+                    if (scroll)
+                    {
+                        chatScroll.scrollTop = chatScroll.scrollHeight;
+                    }
+                }, 500);
+            }
+        }
+    </script>
+</html>
