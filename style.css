@@ -55,7 +55,7 @@ body {
     user-select: none;
     z-index: 2;
     height: calc(100% - 64px);
-    width: calc(100% - 80px);
+    width: 240px;
     font-size: 22px;
     display: block;
     overflow-y: auto;
