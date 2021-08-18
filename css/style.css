@@ -26,13 +26,13 @@ body {
 .headerBack {
     float: left;
     margin: 8px;
-    padding: 12px;
-    font-size: 40px;
-    width: 24px;
-    height: 24px;
+    padding: 10px;
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
     display: block;
     text-align: center;
-    line-height: 0.6;
+    line-height: 1.0;
     cursor: pointer;
     transition: 0.2s;
     border-radius: 15%;
@@ -64,7 +64,7 @@ body {
     right: 0;
     left: 0;
     top: 64px;
-    transition: 0.2s;
+    transition: 0.4s;
 }
 .headerSideListButton {
     background-color: rgba(0, 0, 0, 0);
@@ -95,7 +95,7 @@ body {
     background-color: rgb(28, 28, 28);
     color: white;
     width: 100%;
-    height: 200px;
+    height: 60px;
     position: fixed;
     bottom: 0;
     right: 0;
@@ -106,11 +106,11 @@ body {
 }
 .footerSend {
     float: right;
-    margin: 22px;
-    padding: 16px;
-    font-size: 100px;
-    width: 122px;
-    height: 122px;
+    margin: 8px;
+    padding: 5px;
+    font-size: 30px;
+    width: 34px;
+    height: 34px;
     display: block;
     text-align: center;
     line-height: 1.25;
@@ -123,32 +123,34 @@ body {
 }
 
 .chatLog {
-    height: calc(100% - 160px - 200px + 40px);
-    width: 100%;
-    font-size: 52px;
+    height: calc(100% - 64px - 60px - 10px);
+    width: calc(100% - 10px);
+    font-size: 24px;
     color: black;
     display: block;
     position: absolute;
+    overflow-x: hidden;
     overflow-y: auto;
-    padding: 20px;
-    bottom: 200px;
+    padding: 5px;
+    bottom: 0;
     right: 0;
     left: 0;
-    top: 160px;
+    top: 64px;
 }
 .chatLogHistory {
     width: 100%;
-    display: table-cell;
+    height: auto;
+    display: flow-root;
 }
 .bubble {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     height: auto;
-    display: table-row;
-    max-width: 440px;
+    display: block;
+    max-width: 130px;
     width: max-content;
-    padding: 25.5px;
-    border-radius: 50px;
-    font-size: 43px;
+    padding: 10px;
+    border-radius: 22px;
+    font-size: 20px;
     font-weight: 500;
     user-select: none;
 }
@@ -165,8 +167,9 @@ body {
 .bubbleSent {
     color: #838383;
     float: right;
-    font-size: 36px;
+    font-size: 16px;
     margin: 0;
+    margin-right: 5px;
 }
 
 .buttonRound:hover {
@@ -175,7 +178,7 @@ body {
     border-radius: 50%;
 }
 .buttonRound:active {
-    margin: 16px;
+    margin: 14px;
     padding: 4px;
     transition: 0.2s;
     background-color: rgba(255, 255, 255, 0.815);
@@ -183,16 +186,16 @@ body {
 }
 
 .inputArea {
-    margin: 30px 200px 30px 30px;
-    width: calc(100% - 350px);
-    height: 56px;
+    margin: 10px 60px 10px 10px;
+    width: calc(100% - 45px - 60px);
+    height: 22px;
     resize: none;
-    font-size: 50px;
+    font-size: 18px;
     font-family: 'Quicksand';
     background-color: #141414;
     color: white;
-    border-radius: 69px;
-    padding: 40px 60px;
+    border-radius: 20px;
+    padding: 8px 16px 8px;
     position: absolute;
     overflow-y: hidden;
 }

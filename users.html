@@ -31,7 +31,7 @@
                 <p class="headerSideListButtonText">Log Out</p>
             </div>
         </div>
-        <div onclick="closeSideMenu();" id="headerSideListBackground" class="headerSideListBackground" style="transition: 0.2s;display: none;background-color: rgba(0, 0, 0, 0);"></div>
+        <div onclick="closeSideMenu();" id="headerSideListBackground" class="headerSideListBackground" style="transition: 0.4s;display: none;background-color: rgba(0, 0, 0, 0);"></div>
         <div id="usersScroll" class="usersScroll">
             <div id="users" class="users">
                 <div class="listUser">
@@ -58,7 +58,7 @@
             }
             else
             {
-                sideMenu.style.marginLeft = "-100%";
+                sideMenu.style.marginLeft = "-300px";
                 document.getElementById("headerSideListBackground").style.backgroundColor = "#00000000";
                 menuOpen = false;
                 setTimeout(() => {
@@ -69,7 +69,7 @@
         function closeSideMenu() {
             var sideMenu = document.getElementById("sideMenu");
 
-            sideMenu.style.marginLeft = "-100%";
+            sideMenu.style.marginLeft = "-300px";
             document.getElementById("headerSideListBackground").style.backgroundColor = "#00000000";
             menuOpen = false;
             setTimeout(() => {

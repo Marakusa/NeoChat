@@ -31,6 +31,9 @@
         </div>
     </body>
     <script>
+        var dateString = "<p id=\"timestamp\" name=\"timestamp\" class=\"bubbleSent\" style=\"display: block;\">_</p>";
+        var dateSplit = true;
+
         $(function() {
             $("#messageField").keypress(function (e) {
                 if(e.which == 13 && e.shiftKey == false) {
@@ -43,11 +46,14 @@
         });
 
         var chatScroll = document.getElementById("chatScroll");
-        chatScroll.scrollTop = chatScroll.scrollHeight;
+
+        setTimeout(() => {  
+            chatScroll.scrollTop = chatScroll.scrollHeight - chatScroll.clientHeight;
+        }, 10);
 
         setInterval(() => {
             receiveMessage();
-        }, 10000);
+        }, 5000);
 
         function receiveMessage()
         {
@@ -63,17 +69,15 @@
             }
 
             id = Math.floor((Math.random() * 999999) + 1);
-            document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleLeft\" style=\"margin-left: -500px;\">" + message + "</div>";
+            document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleLeft\">" + message + "</div>";
             
+            dateSplit = true;
+
             setTimeout(() => {  
-                var chatBubble = document.getElementById("chatBubble" + id);
-                chatBubble.style.transition = "0.2s";
-                chatBubble.style.marginLeft = "0";
-            }, 10);
-            
-            if (scroll) {
-                chatScroll.scrollTop = chatScroll.scrollHeight;
-            }
+                if (scroll) {
+                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                }
+            }, 100);
         }
 
         function sendMessage()
@@ -97,30 +101,64 @@
                 }
 
                 id = Math.floor((Math.random() * 999999) + 1);
-                document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleRight\" style=\"margin-right: -500px;\">" + message + "</div>";
+                document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleRight\">" + message + "</div>";
                 
-                setTimeout(() => {  
-                    var chatBubble = document.getElementById("chatBubble" + id);
-                    chatBubble.style.transition = "0.2s";
-                    chatBubble.style.marginRight = "0";
-                }, 10);
-
                 if (scroll)
                 {
                     chatScroll.scrollTop = chatScroll.scrollHeight;
                 }
 
-                setTimeout(() => {  
-                    var sendStatus = document.getElementById("sendStatus");
-                    sendStatus.style.display = "block";
-                    sendStatus.parentNode.appendChild(sendStatus);
+                var sendStatus = document.getElementById("sendStatus");
+                sendStatus.style.display = "block";
+                sendStatus.parentNode.appendChild(sendStatus);
 
-                    if (scroll)
-                    {
-                        chatScroll.scrollTop = chatScroll.scrollHeight;
-                    }
-                }, 500);
+                if (scroll) {
+                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                }
+                
+                if (dateSplit == false)
+                {
+                    document.getElementsByName("timestamp").forEach(element => {
+                        if (element.id != "")
+                        {
+                            element.style.display = "none";
+                            element.id = "";
+                        }
+                    });
+                }
+                else
+                {
+                    document.getElementsByName("timestamp").forEach(element => {
+                        if (element.id != "")
+                        {
+                            element.id = "";
+                        }
+                    });
+                }
+
+                dateSplit = false;
+
+                // DATE TIMESTAMP
+                const today = new Date();
+                var date = formatDate(today, 't');
+                document.getElementById("chat").innerHTML += dateString.replace("_", date);
+                
+                if (scroll) {
+                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                }
             }
+        }
+
+        function formatDate(date, format) {
+            const map = {
+                mm: date.getMonth() + 1,
+                dd: date.getDate(),
+                yy: date.getFullYear().toString().slice(-2),
+                yyyy: date.getFullYear(),
+                t: date.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+            }
+
+            return format.replace(/mm|dd|yy|yyyy|t/gi, matched => map[matched])
         }
     </script>
 </html>
