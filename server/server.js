@@ -1,11 +1,12 @@
 var http = require('http');
 var fs = require('fs');
 var path = require('path');
+var qs = require('qs');
 
 // Server
 var server = http.createServer(function (req, resp) {
-    console.log("." + req.url);
-    console.log("." + req.method);
+    console.log("." + req.url + ": " + req.method);
+
     if (req.method == "GET")
     {
         fs.readFile("." + req.url, 'utf-8', function (error, pgResp) {
@@ -26,36 +27,22 @@ var server = http.createServer(function (req, resp) {
     {
         if (req.url == "/sendmessage")
         {
-            var body = '';
-    
-            console.log(resp);
+            var body = "";
 
-            req.on('data', function (data) {
-                body += data;
-    
-                console.log(data);
-
-                // Too much POST data, kill the connection!
-                // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
-                if (body.length > 1e6)
-                    req.destroy();
+            req.on('data', function (chunk) {
+                body += chunk;
             });
-    
+
             req.on('end', function () {
                 var post = qs.parse(body);
-                // use post['blah'], etc.
-            
-                console.log(post['message']);
-                console.log(post['user']);
+
+                console.log(post['user'] + ": " + post['message']);
+        
+                resp.writeHead(200, { 
+                    'Content-Type': getMIMEType(path.extname(".json"))
+                });
+                resp.write("{user: " + post['user'] + ", message: \"" + post['message'] + "\"}");
             });
-    
-            var user = req.body.user;
-            var message = req.body.message;
-            
-            resp.writeHead(200, { 
-                'Content-Type': getMIMEType(path.extname(".txt"))
-            });
-            resp.write(user + "," + message);
         }
     }
 });
@@ -71,7 +58,6 @@ function getMIMEType(ext) {
     }
     else {
         var result = (array.filter(option => option.startsWith(ext + "\t")))[0].split("\t")[1].trim();
-        console.log("Content-Type: " + result);
         return result;
     }
 }

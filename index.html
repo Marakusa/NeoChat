@@ -81,77 +81,78 @@
             var messageField = document.getElementById("messageField");
 
             $.post({
+                type: "POST",
                 url: "http://localhost/sendmessage",
                 data: {user: 1, message: messageField.value},
                 success: function (data) {
-                    console.log("Success");
+                    alert("Success");
+
+                    let message = messageField.value;
+
+                    if (message.trim() != "")
+                    {
+                        document.getElementById("sendStatus").style.display = "none";
+
+                        message = message.replaceAll("\n", "<br>");
+
+                        messageField.value = "";
+
+                        var chatScroll = document.getElementById("chatScroll");
+                        var scroll = false;
+                        if (chatScroll.scrollTop == (chatScroll.scrollHeight - chatScroll.clientHeight)) {
+                            scroll = true;
+                        }
+
+                        id = Math.floor((Math.random() * 999999) + 1);
+                        document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleRight\">" + message + "</div>";
+                        
+                        if (scroll)
+                        {
+                            chatScroll.scrollTop = chatScroll.scrollHeight;
+                        }
+
+                        var sendStatus = document.getElementById("sendStatus");
+                        sendStatus.style.display = "block";
+                        sendStatus.parentNode.appendChild(sendStatus);
+
+                        if (scroll) {
+                            chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                        }
+                        
+                        if (dateSplit == false)
+                        {
+                            document.getElementsByName("timestamp").forEach(element => {
+                                if (element.id != "")
+                                {
+                                    element.style.display = "none";
+                                    element.id = "";
+                                }
+                            });
+                        }
+                        else
+                        {
+                            document.getElementsByName("timestamp").forEach(element => {
+                                if (element.id != "")
+                                {
+                                    element.id = "";
+                                }
+                            });
+                        }
+
+                        dateSplit = false;
+
+                        // DATE TIMESTAMP
+                        const today = new Date();
+                        var date = formatDate(today, 't');
+                        document.getElementById("chat").innerHTML += dateString.replace("_", date);
+                        
+                        if (scroll) {
+                            chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                        }
+                    }
                 },
                 dataType: "json"
             });
-
-            let message = messageField.value;
-
-            if (message.trim() != "")
-            {
-                document.getElementById("sendStatus").style.display = "none";
-
-                message = message.replaceAll("\n", "<br>");
-
-                messageField.value = "";
-
-                var chatScroll = document.getElementById("chatScroll");
-                var scroll = false;
-                if (chatScroll.scrollTop == (chatScroll.scrollHeight - chatScroll.clientHeight)) {
-                    scroll = true;
-                }
-
-                id = Math.floor((Math.random() * 999999) + 1);
-                document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleRight\">" + message + "</div>";
-                
-                if (scroll)
-                {
-                    chatScroll.scrollTop = chatScroll.scrollHeight;
-                }
-
-                var sendStatus = document.getElementById("sendStatus");
-                sendStatus.style.display = "block";
-                sendStatus.parentNode.appendChild(sendStatus);
-
-                if (scroll) {
-                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
-                }
-                
-                if (dateSplit == false)
-                {
-                    document.getElementsByName("timestamp").forEach(element => {
-                        if (element.id != "")
-                        {
-                            element.style.display = "none";
-                            element.id = "";
-                        }
-                    });
-                }
-                else
-                {
-                    document.getElementsByName("timestamp").forEach(element => {
-                        if (element.id != "")
-                        {
-                            element.id = "";
-                        }
-                    });
-                }
-
-                dateSplit = false;
-
-                // DATE TIMESTAMP
-                const today = new Date();
-                var date = formatDate(today, 't');
-                document.getElementById("chat").innerHTML += dateString.replace("_", date);
-                
-                if (scroll) {
-                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
-                }
-            }
         }
 
         function formatDate(date, format) {
