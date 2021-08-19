@@ -316,3 +316,58 @@ body {
     background-color: #00000011;
     border-radius: 5px;
 }
+
+.inputForm {
+    width: 70%;
+    margin: 0 auto;
+    position: unset;
+    display: block;
+    border: solid;
+    border-width: 1px;
+    border-color: #ffe264;
+    color: #ffe264;
+}
+.logo {
+    background-position: left;
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 70%;
+    height: 100px;
+    margin: 0 auto;
+}
+.logoText {
+    font-size: 50px;
+    margin: auto 0;
+    left: 170px;
+    top: 18px;
+    display: block;
+    position: absolute;
+}
+.loginContent {
+    color: white;
+    width: 100%;
+    height: auto;
+    position: fixed;
+    top: 100px;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    user-select: none;
+    z-index: 2;
+    max-width: 320px;
+    margin: 0 auto;
+}
+.loginOption {
+    width: 70%;
+    margin: 10px auto;
+    display: block;
+    color: #ffe264;
+    text-align: center;
+    font-size: 15px;
+}
+.loginOption:active {
+    text-shadow: 0 0 8px #fff0af;
+}
+input[type="submit"] {
+    cursor: pointer;
+}

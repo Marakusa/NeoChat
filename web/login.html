@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Neo</title>
+        <link rel="shortcut icon" href="img/AppIcon.svg">
+        <link rel="stylesheet" href="css/style.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <div class="loginContent">
+            <div class="logo" style="background-image: url(img/AppIcon.svg);">
+                <span class="logoText">Neo</span>
+            </div>
+            <form id="loginform" style="position: absolute;width: 100%;transition: 0.5s;">
+                <input type="text" maxlength="20" name="usernameField" class="inputArea inputForm" placeholder="Username" style="margin-top: 30px;" />
+                <input type="password" maxlength="50" name="passwordField" class="inputArea inputForm" placeholder="Password" style="margin-top: 5px;" />
+                <input type="submit" name="submitLogIn" class="inputArea inputForm" value="Log In" style="margin-top: 15px;height: 40px;width: calc(70% + 34px);" />
+                <a href="passwordreset.html" class="loginOption">Forgot your password?</a>
+                <a href="register.html" class="loginOption">Don't have an account?</a>
+            </form>
+            <div id="loggingin" style="position: absolute;width: 100%;transition: 0.5s;filter: opacity(0);display: none;text-align: center;">
+                <p style="margin: 0 auto;margin-top: 30px;width: calc(70% + 34px);font-size: 22px;border: solid;border-width: 1px;border-color: #ffe264;padding: 30px 0;border-radius: 10px;">
+                    Logging in...
+                </p>
+            </div>
+        </div>
+    </body>
+
+    <script>
+        var submitting = false;
+        var done = false;
+        var timeout = false;
+
+        $(document).ready(function () {
+            $("form").submit(function (event) {
+                if (submitting == false)
+                {
+                    timeout = false;
+                    done = false;
+                    submitting = true;
+                    
+                    document.getElementById("loggingin").style.display = "block";
+                    document.getElementById("loggingin").style.filter = "opacity(1)";
+                    document.getElementById("loginform").style.filter = "opacity(0)";
+
+                    setTimeout(function () {
+                        document.getElementById("loginform").style.display = "none";
+                    }, 500);
+
+                    var formData = {
+                        username: $("#usernameField").val(),
+                        password: $("#passwordField").val(),
+                    };
+
+                    setTimeout(function () {
+                        if (done == false)
+                        {
+                            timeout = true;
+                            console.log("Timed out.");
+                            done = true;
+
+                            document.getElementById("loginform").style.display = "block";
+                            document.getElementById("loginform").style.filter = "opacity(1)";
+                            document.getElementById("loggingin").style.filter = "opacity(0)";
+                        
+                            setTimeout(function () {
+                                document.getElementById("loggingin").style.display = "none";
+                            }, 500);
+                        }
+                    }, 10000);
+
+                    $.ajax({
+                        type: "POST",
+                        url: "login.html",
+                        data: formData,
+                        dataType: "json",
+                        encode: true,
+                        timeout: 10000,
+                    }).done(function (data) {
+                        console.log(data);
+                        done = true;
+                    });
+
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
+</html>
