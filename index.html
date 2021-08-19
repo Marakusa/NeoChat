@@ -11,7 +11,7 @@
     </head>
     <body>
         <div class="header">
-            <a class="headerBack buttonRound">🡰</a>
+            <a class="headerBack buttonRound"><div style="background-image: url(img/BackArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
             <p class="headerTextLeft">Username</p>
         </div>
         <div id="chatScroll" class="chatLog">
@@ -27,7 +27,7 @@
         </div>
         <div class="footer">
             <textarea id="messageField" class="inputArea" placeholder="Enter a message..."></textarea>
-            <a onclick="sendMessage();" class="footerSend buttonRound">⮞</a>
+            <a onclick="sendMessage();" class="footerSend buttonRound"><div style="background-image: url(img/SendArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
         </div>
     </body>
     <script>
@@ -83,6 +83,15 @@
         function sendMessage()
         {
             var messageField = document.getElementById("messageField");
+            
+            $.post({
+                url: "http://localhost/sendmessage",
+                data: {user: 1, message: messageField.value},
+                success: function (data) {
+                    console.log("Success");
+                },
+                dataType: "json"
+            });
 
             let message = messageField.value;
 
