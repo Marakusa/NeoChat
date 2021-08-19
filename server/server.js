@@ -24,20 +24,41 @@ var server = http.createServer(function (req, resp) {
     }
     else if (req.method == "POST")
     {
-        if (req.url == "./sendmessage")
+        if (req.url == "/sendmessage")
         {
+            var body = '';
+    
+            console.log(resp);
+
+            req.on('data', function (data) {
+                body += data;
+    
+                console.log(data);
+
+                // Too much POST data, kill the connection!
+                // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
+                if (body.length > 1e6)
+                    req.destroy();
+            });
+    
+            req.on('end', function () {
+                var post = qs.parse(body);
+                // use post['blah'], etc.
             
+                console.log(post['message']);
+                console.log(post['user']);
+            });
+    
+            var user = req.body.user;
+            var message = req.body.message;
+            
+            resp.writeHead(200, { 
+                'Content-Type': getMIMEType(path.extname(".txt"))
+            });
+            resp.write(user + "," + message);
         }
     }
 });
-
-// POST message
-//server.post("/sendmessage", function(request, response) {
-//    var user, message;
-//    user = request.body.user;
-//    message = request.body.message;
-//    return response.json({}, 200);
-//});
 
 server.listen(80);
 

@@ -51,10 +51,6 @@
             chatScroll.scrollTop = chatScroll.scrollHeight - chatScroll.clientHeight;
         }, 10);
 
-        setInterval(() => {
-            receiveMessage();
-        }, 5000);
-
         function receiveMessage()
         {
             var sendStatus = document.getElementById("sendStatus");
@@ -83,7 +79,7 @@
         function sendMessage()
         {
             var messageField = document.getElementById("messageField");
-            
+
             $.post({
                 url: "http://localhost/sendmessage",
                 data: {user: 1, message: messageField.value},
