@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Neo</title>
+        <link rel="shortcut icon" href="img/AppIcon.svg">
+        <link rel="stylesheet" href="css/style.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <div class="header">
+            <a class="headerBack buttonRound"><div style="background-image: url(img/BackArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
+            <p class="headerTextLeft">Username</p>
+        </div>
+        <div id="chatScroll" class="chatLog">
+            <div id="chat" class="chatLogHistory">
+                <div class="bubble bubbleLeft">Hello.</div>
+                <div class="bubble bubbleRight">Hi!</div>
+                <div class="bubble bubbleRight">Another test it is very long message here!!</div>
+                <div class="bubble bubbleLeft">Test</div>
+                <div class="bubble bubbleLeft">Test here too a longer message than usually...</div>
+                <div class="bubble bubbleLeft">Another test</div>
+                <p id="sendStatus" class="bubbleSent" style="display: none;">Sent</p>
+            </div>
+        </div>
+
+        <div id="emojiList" class="emojiList">
+            <h2>Emoji</h2>
+            <div class="emojiListGrid">
+                <div id="emojiListContent" class="emojiListContent">
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <a onclick="emojiOpen();" class="footerLeftButton">
+                <div style="background-image: url(img/Emojis.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div>
+            </a>
+            <textarea id="messageField" class="inputArea" placeholder="Message" maxlength="500"></textarea>
+            <a onclick="sendMessage();" class="footerSend buttonRound"><div style="background-image: url(img/SendArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
+        </div>
+    </body>
+
+    <script>
+        document.getElementById("emojiList").style.display = "none";
+
+        var chatHeightEmoji = "calc(100% - 64px - 60px - 10px - 250px)";
+        var footerBottomEmoji = "250px";
+
+        var emojicontent = document.getElementById("emojiListContent");
+        var emoji = `<div onclick="emoji('_');" id="_" class="emoji">EMOJIICON</div>`;
+
+        function emojiclick(emojitag) {
+            document.getElementById("messageField").value += document.getElementById(emojitag).innerText;
+            document.getElementById("messageField").focus();
+        }
+
+        function emojiOpen() {
+            var emojis = document.getElementById("emojiList");
+            
+            if (emojis.style.display == "none") {
+                emojis.style.display = "";
+            }
+            else {
+                emojis.style.display = "none";
+            }
+
+            $.ajax({
+                url: "/emojis.txt",
+                async: true,
+                success: function (data){
+                    emojicontent.innerHTML = data;
+                }
+            });
+            /*$.ajax({
+                url: "/full-emoji-list.json",
+                async: true,
+                success: function (data){
+                    Object.keys(data).forEach(function(k){
+                        Object.keys(data[k]["emojis"]).forEach(function(e){
+                            setTimeout(function () {
+                                emojicontent.innerHTML += emoji.replaceAll(/_/g, data[k]["emojis"][e]["shortname"]).replace("EMOJIICON", data[k]["emojis"][e]["char"]);
+                            }, 10);
+                        });
+                    });
+                }
+            });*/
+        }
+        
+        var dateString = "<p id=\"timestamp\" name=\"timestamp\" class=\"bubbleSent\" style=\"display: block;\">_</p>";
+        var dateSplit = true;
+
+        $(function() {
+            $("#messageField").keypress(function (e) {
+                if(e.which == 13 && e.shiftKey == false) {
+                    sendMessage();
+                    $("#chatbox").append($(this).val() + "<br/>");
+                    $(this).val("");
+                    e.preventDefault();
+                }
+            });
+        });
+
+        var chatScroll = document.getElementById("chatScroll");
+
+        setTimeout(() => {  
+            chatScroll.scrollTop = chatScroll.scrollHeight - chatScroll.clientHeight;
+        }, 10);
+
+        function receiveMessage()
+        {
+            var sendStatus = document.getElementById("sendStatus");
+            sendStatus.innerText = "Seen";
+
+            message = "test text message<br>and another line for example and css testing";
+
+            var chatScroll = document.getElementById("chatScroll");
+            var scroll = false;
+            if (chatScroll.scrollTop == (chatScroll.scrollHeight - chatScroll.clientHeight)) {
+                scroll = true;
+            }
+
+            id = Math.floor((Math.random() * 999999) + 1);
+            document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleLeft\">" + message + "</div>";
+            
+            dateSplit = true;
+
+            setTimeout(() => {  
+                if (scroll) {
+                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                }
+            }, 100);
+        }
+        
+        function sendMessage()
+        {
+            document.getElementById("emojiList").style.display = "none";
+            
+            var msg = document.getElementById("messageField").value;
+
+            messageField.value = "";
+
+            $.ajax({
+                dataType: "json",
+                type: "POST",
+                url: "http://localhost/sendmessage",
+                data: {user: 1, message: msg},
+                error: function (error, response, data) {
+                    console.error(error);
+                    console.error(response);
+                    console.error(data);
+                },
+                success: function (data) {
+                    console.log(data);
+                    console.log("Success");
+                    messageSentConfirm(data["message"]);
+                }
+            });
+        }
+
+        function messageSentConfirm(message) {
+            if (message.trim() != "")
+            {
+                document.getElementById("sendStatus").style.display = "none";
+
+                var chatScroll = document.getElementById("chatScroll");
+                var scroll = false;
+                if (chatScroll.scrollTop == (chatScroll.scrollHeight - chatScroll.clientHeight)) {
+                    scroll = true;
+                }
+
+                id = Math.floor((Math.random() * 999999) + 1);
+                document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleRight\">" + message + "</div>";
+                
+                if (scroll)
+                {
+                    chatScroll.scrollTop = chatScroll.scrollHeight;
+                }
+
+                var sendStatus = document.getElementById("sendStatus");
+                sendStatus.style.display = "block";
+                sendStatus.parentNode.appendChild(sendStatus);
+
+                if (scroll) {
+                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                }
+                
+                if (dateSplit == false)
+                {
+                    document.getElementsByName("timestamp").forEach(element => {
+                        if (element.id != "")
+                        {
+                            element.style.display = "none";
+                            element.id = "";
+                        }
+                    });
+                }
+                else
+                {
+                    document.getElementsByName("timestamp").forEach(element => {
+                        if (element.id != "")
+                        {
+                            element.id = "";
+                        }
+                    });
+                }
+
+                dateSplit = false;
+
+                // DATE TIMESTAMP
+                const today = new Date();
+                var date = formatDate(today, 't');
+                document.getElementById("chat").innerHTML += dateString.replace("_", date);
+                
+                if (scroll) {
+                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                }
+            }
+        }
+
+        function formatDate(date, format) {
+            const map = {
+                mm: date.getMonth() + 1,
+                dd: date.getDate(),
+                yy: date.getFullYear().toString().slice(-2),
+                yyyy: date.getFullYear(),
+                t: date.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+            }
+
+            return format.replace(/mm|dd|yy|yyyy|t/gi, matched => map[matched])
+        }
+    </script>
+</html>

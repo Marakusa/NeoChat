@@ -2,52 +2,79 @@ var http = require('http');
 var fs = require('fs');
 var path = require('path');
 var qs = require('qs');
+var entities = require('html-entities');
+
+var port = 80;
+var webFolder = "./web";
+
+var theyBubble = `<div class="bubble bubbleLeft">_</div>`;
+var meBubble = `<div class="bubble bubbleRight">_</div>`;
 
 // Server
-var server = http.createServer(function (req, resp) {
-    console.log("." + req.url + ": " + req.method);
+var server = http.createServer(function (req, res) {
+    var url = req.url;
+
+    if (url == "/") {
+        url = "/index.html";
+    }
+
+    var headers = {
+        "Access-Control-Allow-Origin": "http://localhost",
+        "Access-Control-Allow-Methods": "POST, GET",
+        "Access-Control-Max-Age": 2592000,
+        "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
+    };
+    
+    console.log(webFolder + url + ": " + req.method);
 
     if (req.method == "GET")
     {
-        fs.readFile("." + req.url, 'utf-8', function (error, pgResp) {
+        fs.readFile(webFolder + url, "utf-8", function (error, pgres) {
             if (error) {
-                resp.writeHead(404);
-                resp.write("Contents you are looking are Not Found\n" + req.url);
+                res.writeHead(404);
+                res.write("Contents you are looking are Not Found\n" + url);
             } else {
-                resp.writeHead(200, { 
-                    'Content-Type': getMIMEType(path.extname(req.url))
-                });
-                resp.write(pgResp);
+                res.writeHead(200, headers);
+                res.write(pgres);
             }
             
-            resp.end();
+            res.end();
         });
     }
     else if (req.method == "POST")
     {
-        if (req.url == "/sendmessage")
+        if (url == "/sendmessage")
         {
             var body = "";
 
             req.on('data', function (chunk) {
                 body += chunk;
-            });
 
-            req.on('end', function () {
-                var post = qs.parse(body);
+                const post = qs.parse(body);
 
-                console.log(post['user'] + ": " + post['message']);
-        
-                resp.writeHead(200, { 
-                    'Content-Type': getMIMEType(path.extname(".json"))
-                });
-                resp.write("{user: " + post['user'] + ", message: \"" + post['message'] + "\"}");
+                if (post['message'].length <= 500 && post['message'].trim() != "")
+                {
+                    const post_user = post['user'];
+                    const post_message = entities.encode(post['message']).replace(/\n/g, "<br>");
+
+                    console.log("\"" + post_user + "\": \"" + post_message + "\"");
+
+                    res.writeHead(200, {
+                        "Access-Control-Allow-Origin": "http://localhost",
+                        "Access-Control-Allow-Methods": "POST, GET",
+                        "Access-Control-Max-Age": 2592000,
+                        "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
+                    });
+                    res.write("{\"user\": " + post_user + ", \"message\": \"" + post_message + "\"}");
+                    res.end();
+                }
             });
         }
     }
 });
 
-server.listen(80);
+server.listen(port);
+console.log("Server started at http://localhost:" + port);
 
 // Get MIME type
 function getMIMEType(ext) {
