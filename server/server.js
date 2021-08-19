@@ -10,6 +10,28 @@ var webFolder = "./web";
 var theyBubble = `<div class="bubble bubbleLeft">_</div>`;
 var meBubble = `<div class="bubble bubbleRight">_</div>`;
 
+// Load emojis
+var emojis = new Array();
+
+fs.readFile("./web/full-emoji-list.json", "utf-8", function (emoji_error, emoji_pgres) {
+    if (emoji_error) {
+        console.log("Contents you are looking are Not Found\n" + url);
+    }
+    else {
+        var data = JSON.parse(emoji_pgres);
+
+        Object.keys(data).forEach(function(k){
+            Object.keys(data[k]["emojis"]).forEach(function(e){
+                emojis.push(data[k]["emojis"][e]);
+            });
+        });
+    }
+});
+
+function findEmoji(emoji) {
+    return emojis.find(f => f["shortname"] == emoji)["char"];
+}
+
 // Server
 var server = http.createServer(function (req, res) {
     var url = req.url;
@@ -35,10 +57,48 @@ var server = http.createServer(function (req, res) {
                 res.write("Contents you are looking are Not Found\n" + url);
             } else {
                 res.writeHead(200, headers);
-                res.write(pgres);
-            }
+
+                if (url == "/index.html") {
+                    fs.readFile("./server/chats/test.chh", "utf-8", function (chat_error, chat_pgres) {
+                        if (chat_error) {
+                            res.write(pgres);
+                            res.end();
+                        }
+                        else {
+                            var msghistory = "";
+        
+                            chat_pgres.split("\n").forEach(element => {
+                                var m_user = element.split("&")[0];
+                                var m_message = element.split("&")[1];
+
+                                if (m_user == "1") {
+                                    msghistory += meBubble.replace("_", m_message);
+                                }
+                                else {
+                                    msghistory += theyBubble.replace("_", m_message);
+                                }
+                            });
+    
+                            var emojiarray = new Array(msghistory.match(/:[^:\s]*(?:::[^:\s])*:/g));
+
+                            if (emojiarray[0] != null)
+                            {
+                                for (i = 0; i < emojiarray[0].length; i++) {
+                                    msghistory = msghistory.replace(emojiarray[0][i], findEmoji(emojiarray[0][i]));
+                                }
+                            }
+
+                            res.write(pgres.replace("MESSAGEHISTORYSTARTSHERE", msghistory));
+                            res.end();
+                        }
+                    });
+                }
+                else {
+                    res.write(pgres);
             
-            res.end();
+                    res.end();
+                }
+            }
         });
     }
     else if (req.method == "POST")
@@ -55,7 +115,16 @@ var server = http.createServer(function (req, res) {
                 if (post['message'].length <= 500 && post['message'].trim() != "")
                 {
                     const post_user = post['user'];
-                    const post_message = entities.encode(post['message']).replace(/\n/g, "<br>");
+                    var post_message = entities.encode(post['message']).replace(/\n/g, "<br>");
+
+                    var emojiarray = new Array(post_message.match(/:[^:\s]*(?:::[^:\s])*:/g));
+
+                    if (emojiarray[0] != null)
+                    {
+                        for (i = 0; i < emojiarray[0].length; i++) {
+                            post_message = post_message.replace(emojiarray[0][i], findEmoji(emojiarray[0][i]));
+                        }
+                    }
 
                     console.log("\"" + post_user + "\": \"" + post_message + "\"");
 
