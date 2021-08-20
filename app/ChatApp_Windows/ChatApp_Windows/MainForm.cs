@@ -15,6 +15,13 @@ namespace ChatApp_Windows
         public MainForm()
         {
             InitializeComponent();
+
+            browser.Load("http://192.168.10.39:24024/");
+        }
+
+        private void browser_MouseDown(object sender, MouseEventArgs e)
+        {
+            Console.WriteLine(e.Location);
         }
     }
 }
