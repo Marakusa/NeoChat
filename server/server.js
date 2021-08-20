@@ -40,7 +40,7 @@ function hash(stringtohash) {
 }
 
 // Server
-function serverFunction(req, res) {
+function requestListener(req, res) {
     var url = req.url;
 
     if (url == "/") {
@@ -570,7 +570,7 @@ module.exports = class AppServer {
         emojis.loadEmojis();
 
         // Start server
-        server = http.createServer(serverFunction);
+        server = http.createServer(requestListener);
         server.listen(port);
 
         if (server.listening == true) {
