@@ -148,7 +148,7 @@
                     $.ajax({
                         dataType: "json",
                         type: "POST",
-                        url: "http://localhost/login",
+                        url: "login",
                         data: {username: l_username, password: l_password},
                         timeout: 10000,
                         error: function (error, response, data) {
@@ -169,15 +169,14 @@
                             error = false;
                             submitting = false;
                             
-                            if (data["registerstatus"] == "1") {
+                            console.log(data["registerstatus"] + ": " + data["message"]);
+                            if (data["registerstatus"] === "0") {
                                 setTimeout(function () {
-                                    console.log(data["message"]);
                                     window.location.href = "index.html";
                                 }, 1000);
                             }
                             else {
                                 setTimeout(function () {
-                                    console.log(data["registerstatus"] + ": " + data["message"]);
                                     showpanel(0);
                                     
                                     loginError.style.display = "block";
@@ -203,7 +202,7 @@
                     $.ajax({
                         dataType: "json",
                         type: "POST",
-                        url: "http://localhost/register",
+                        url: "register",
                         data: {username: new_username, email: new_email, password: new_password, password2: new_password2},
                         timeout: 10000,
                         error: function (error, response, data) {
@@ -224,7 +223,7 @@
                             error = false;
                             submitting = false;
                             
-                            if (data["registerstatus"] == "1") {
+                            if (data["registerstatus"] == "0") {
                                 setTimeout(function () {
                                     console.log(data["message"]);
                                     window.location.href = "index.html";

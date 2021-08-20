@@ -140,7 +140,7 @@
             $.ajax({
                 dataType: "json",
                 type: "POST",
-                url: "http://localhost/sendmessage",
+                url: "sendmessage",
                 data: {user: 1, message: msg},
                 error: function (error, response, data) {
                     console.error(error);
