@@ -1,9 +1,9 @@
 {
   "name": "learn-cors",
   "version": "1.0.0",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "serve": "node server.js"
+    "serve": "server.js"
   },
   "keywords": [],
   "author": "",

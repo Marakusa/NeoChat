@@ -1,0 +1,6 @@
+{
+    "port": 24024,
+    "web-folder": "./web",
+    "rethinkdb": "127.0.0.1",
+    "rethinkdb-port": 28015
+}

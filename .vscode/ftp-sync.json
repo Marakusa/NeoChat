@@ -1,0 +1,27 @@
+{
+    "remotePath": "/media/markus/LisäTera/chatapp",
+    "host": "192.168.10.39",
+    "username": "markus",
+    "password": "M37r00nK0v4!",
+    "port": 22,
+    "secure": true,
+    "protocol": "sftp",
+    "uploadOnSave": true,
+    "passive": false,
+    "debug": false,
+    "privateKeyPath": null,
+    "passphrase": null,
+    "agent": null,
+    "allow": [],
+    "ignore": [
+        "\\.vscode",
+        "\\.git",
+        "\\.DS_Store"
+    ],
+    "generatedFiles": {
+        "extensionsToInclude": [
+            ".php, .js, .css, .html, .chh, .json, .dat, .svg, .png, .jpeg, .jpg"
+        ],
+        "path": ""
+    }
+}
