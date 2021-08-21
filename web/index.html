@@ -35,7 +35,9 @@
         <div onclick="closeSideMenu();" id="headerSideListBackground" class="headerSideListBackground" style="transition: 0.4s;display: none;background-color: rgba(0, 0, 0, 0);"></div>
 
         <div id="chatScroll" class="chatLog">
-            <div id="chat" class="chatLogHistory"><div id="chat" class="chatLogHistory"><p class="messageHistoryTitle">Message history with @TITLEUSERNAME begins here.</p><hr>MESSAGEHISTORYSTARTSHERE<div id="chatUsersList">USERSLIST</div><p id="sendStatus" class="bubbleSent" style="display: none;">Sent</p>
+            <div id="chat" class="chatLogHistory"><div id="chat" class="chatLogHistory">
+                <h2 id="welcomeText" style="color: white;text-align: center;display: none;">Welcome @YOURUSERNAME</h2>
+                <p class="messageHistoryTitle">Message history with @TITLEUSERNAME begins here.</p><hr>MESSAGEHISTORYSTARTSHERE<div id="chatUsersList">USERSLIST</div><p id="sendStatus" class="bubbleSent" style="display: none;">Sent</p>
             </div>
         </div>
 
@@ -122,6 +124,12 @@
                 }
             };
         })(window);
+        
+        const userListButton = `<a href="@USERNAME" id="userUID" class="users">
+            <div class="listUser">
+                <p id="listUserNameUID" class="listUserName">USERNAME</p>
+            </div>
+        </a>`;
 
         var xhr = null;
         var interval = null;
@@ -140,8 +148,21 @@
                     alert("Connection to the server lost.\nRefresh the page to reconnect.");
                 },
                 success: function (data) {
-                    console.log(data);
-                    document.getElementById("chatUsersList").innerHTML = data;
+                    var array = data;
+
+                    for (var i = 0; i < count(array); i++) {
+                        var elem = document.getElementById("user" + i);
+                        
+                        if (typeof elem !== null && elem !== 'undefined') {
+                            if (document.getElementById("listUserName" + i).innerText != array[i][0]) {
+                                elem.outerHTML = userListButton.replace(/USERNAME/g, array[i][0].toLowerCase()).replace(/UID/g, i);
+                            }
+                        }
+                        else {
+                            console.log(userListButton.replace(/USERNAME/g, array[i][0]).replace(/UID/g, i));
+                            document.getElementById("chatUsersList").innerHTML += userListButton.replace(/USERNAME/g, array[i][0].toLowerCase()).replace(/UID/g, i);
+                        }
+                    }
 
                     setTimeout(function () {
                         refreshusers();
@@ -176,8 +197,19 @@
             });
         }
 
+        function count(obj) {
+            var count=0;
+            for(var prop in obj) {
+                if (obj.hasOwnProperty(prop)) {
+                    ++count;
+                }
+            }
+            return count;
+        }
+
         if ((document.documentURI).endsWith("@me", document.documentURI.length)) {
             document.getElementsByClassName("footer")[0].style.display = "none";
+            document.getElementById("welcomeText").style.display = "block";
             refreshusers();
         }
         else {

@@ -12,10 +12,9 @@ var webFolder;
 var dbAddress;
 var dbPort;
 
-const userListButton = `<a href="@USERNAME" id="users" class="users">
+const userListButton = `<a href="@USERNAME" id="userUID" class="users">
     <div class="listUser">
-        <p class="listUserName">USERNAME</p>
-        <p class="listUserLatestMessage">LATESTMSG</p>
+        <p id="listUserNameUID" class="listUserName">USERNAME</p>
     </div>
 </a>`;
 const headerBackButton = `<a href="@me" class="headerBack buttonRound"><div style="background-image: url(img/BackArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>`;
@@ -76,7 +75,7 @@ function hash(stringtohash) {
 
 var url = "";
 
-var user = "";
+var ownusername = "";
 var userId = 0;
 
 var chatUser = "@me";
@@ -152,7 +151,7 @@ function requestListener(req, res) {
                 url = "/l.html";
             }
 
-            user = "";
+            ownusername = "";
             userId = 0;
         
             chatUser = "@me";
@@ -226,11 +225,11 @@ function requestListener(req, res) {
 
                         if (result.length == 0) {
                             userId = 0;
-                            user = "";
+                            ownusername = "";
                         }
                         else {
                             userId = result[0]['id'];
-                            user = result[0]['username'];
+                            ownusername = result[0]['username'];
                         }
                         
                         if (url.startsWith("/channel/@")) {
@@ -246,7 +245,7 @@ function requestListener(req, res) {
                                 throw "\u001b[31m" + err.message + "\n\n===========================\nDatabase connection failed!\n===========================\u001b[37m";
                             }
 
-                            r.db('chatapp').table('users').filter(r.row('username').match("(?i)^" + url.slice(("/channel/@").length).toLowerCase() + "$")).run(conn, function(err, dbres) {
+                            r.db('chatapp').table('users').filter(r.row('username').match("(?i)^" + (url.slice(("/channel/@").length)).toLowerCase() + "$")).run(conn, function(err, dbres) {
                                 if(err) {
                                     res.writeHead(500, err.message);
                                     res.end();
@@ -457,19 +456,22 @@ function serverRequestedMethod(req, res, token, url, chatUserId, own_userId, atm
                                                                     }
 
                                                                     var doneIndex = 0;
+                                                                    var doneIndexI = 0;
                                                                     
                                                                     aresult.forEach(user => {
                                                                         doneIndex++;
 
                                                                         if (user['id'].toString() != own_userId) {
                                                                             if (user['username'] != undefined) {
-                                                                                msghistory += userListButton.replace(/USERNAME/g, user['username']).replace(/LATESTMSG/g, "");
+                                                                                msghistory += userListButton.replace(/USERNAME/g, user['username'].toLowerCase()).replace(/UID/g, doneIndexI);
+                                                                                doneIndexI++;
                                                                             }
                                                                         }
                                                                         
                                                                         if (aresult.length == doneIndex) {
                                                                             res.write(pgres
                                                                                 .replace(/TITLEUSERNAME/g, "ChatApp")
+                                                                                .replace(/YOURUSERNAME/g, ownusername)
                                                                                 .replace(/HEADERLEFTBUTTON/g, headerMenuButton)
                                                                                 .replace("MESSAGEHISTORYSTARTSHERE", "")
                                                                                 .replace("USERSLIST", msghistory)
@@ -484,6 +486,7 @@ function serverRequestedMethod(req, res, token, url, chatUserId, own_userId, atm
                                                         else {
                                                             res.write(pgres
                                                                 .replace(/TITLEUSERNAME/g, chatUser)
+                                                                .replace(/YOURUSERNAME/g, ownusername)
                                                                 .replace(/HEADERLEFTBUTTON/g, headerBackButton)
                                                                 .replace("MESSAGEHISTORYSTARTSHERE", msghistory)
                                                                 .replace("USERSLIST", "")
@@ -636,18 +639,20 @@ function serverRequestedMethod(req, res, token, url, chatUserId, own_userId, atm
                                         return;
                                     }
 
-                                    var doneIndex = 0;
+                                    var userListIndex = 0;
+                                    var userListIndexI = 0;
                                     
                                     aresult.forEach(user => {
-                                        doneIndex++;
-
                                         if (user['id'].toString() != own_userId) {
                                             if (user['username'] != undefined) {
-                                                usersjson[user['username']] = "0";
+                                                usersjson[userListIndexI] = new Array(user['username'], "0");
+                                                userListIndexI = userListIndexI + 1;
                                             }
                                         }
-                                                
-                                        if (aresult.length == doneIndex) {
+
+                                        userListIndex = userListIndex + 1;
+
+                                        if (aresult.length == userListIndex) {
                                             res.writeHead(200, {
                                                 "Access-Control-Allow-Origin": "http://localhost",
                                                 "Access-Control-Allow-Methods": "POST, GET",
@@ -655,7 +660,7 @@ function serverRequestedMethod(req, res, token, url, chatUserId, own_userId, atm
                                                 "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
                                             });
                                             console.log(usersjson);
-                                            res.write(usersjson);
+                                            res.write(JSON.stringify(usersjson));
                                             res.end();
                                             return;
                                         }
