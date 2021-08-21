@@ -35,13 +35,11 @@ namespace ChatApp_Windows
             // browser
             // 
             this.browser.ActivateBrowserOnCreation = false;
-            this.browser.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
 // TODO: Code generation for '' failed because of Exception 'Invalid Primitive Type: System.IntPtr. Consider using CodeObjectCreateExpression.'.
-            this.browser.Location = new System.Drawing.Point(5, 5);
+            this.browser.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.browser.Location = new System.Drawing.Point(0, 0);
             this.browser.Name = "browser";
-            this.browser.Size = new System.Drawing.Size(790, 490);
+            this.browser.Size = new System.Drawing.Size(784, 511);
             this.browser.TabIndex = 0;
             this.browser.MouseDown += new System.Windows.Forms.MouseEventHandler(this.browser_MouseDown);
             // 
@@ -50,11 +48,11 @@ namespace ChatApp_Windows
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(26)))), ((int)(((byte)(32)))));
-            this.ClientSize = new System.Drawing.Size(800, 500);
+            this.ClientSize = new System.Drawing.Size(784, 511);
             this.Controls.Add(this.browser);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.MinimumSize = new System.Drawing.Size(320, 500);
+            this.MinimumSize = new System.Drawing.Size(500, 500);
             this.Name = "MainForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ChatApp";
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.browser_MouseDown);
             this.ResumeLayout(false);

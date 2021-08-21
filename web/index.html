@@ -2,8 +2,8 @@
 <html>
     <head>
         <title>NeoChat</title>
-        <link rel="shortcut icon" href="img/AppIcon.svg">
-        <link rel="stylesheet" href="css/style.css">
+        <link rel="shortcut icon" href="/img/AppIcon.svg">
+        <link rel="stylesheet" href="/css/style.css">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -13,10 +13,10 @@
     <body>
         <div class="header">
             <a class="headerBack buttonRound"><div style="background-image: url(img/BackArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
-            <p class="headerTextLeft">Username</p>
+            <p class="headerTextLeft">TITLEUSERNAME</p>
         </div>
         <div id="chatScroll" class="chatLog">
-            <div id="chat" class="chatLogHistory">MESSAGEHISTORYSTARTSHERE<p id="sendStatus" class="bubbleSent" style="display: none;">Sent</p>
+            <div id="chat" class="chatLogHistory"><div id="chat" class="chatLogHistory"><p class="messageHistoryTitle">Message history with @TITLEUSERNAME begins here.</p><hr>MESSAGEHISTORYSTARTSHERE<p id="sendStatus" class="bubbleSent" style="display: none;">Sent</p>
             </div>
         </div>
 
@@ -39,6 +39,35 @@
     </body>
 
     <script>
+        (function(window){
+            window.htmlentities = {
+                /**
+                 * Converts a string to its html characters completely.
+                 *
+                 * @param {String} str String with unescaped HTML characters
+                 **/
+                encode : function(str) {
+                    var buf = [];
+                    
+                    for (var i=str.length-1;i>=0;i--) {
+                        buf.unshift(['&#', str[i].charCodeAt(), ';'].join(''));
+                    }
+                    
+                    return buf.join('');
+                },
+                /**
+                 * Converts an html characterSet into its original character.
+                 *
+                 * @param {String} str htmlSet entities
+                 **/
+                decode : function(str) {
+                    return str.replace(/&#(\d+);/g, function(match, dec) {
+                        return String.fromCharCode(dec);
+                    });
+                }
+            };
+        })(window);
+
         document.getElementById("emojiList").style.display = "none";
 
         var chatHeightEmoji = "calc(100% - 64px - 60px - 10px - 250px)";
@@ -46,6 +75,27 @@
 
         var emojicontent = document.getElementById("emojiListContent");
         var emoji = `<div onclick="emoji('_');" id="_" class="emoji">EMOJIICON</div>`;
+
+        setInterval(function () {
+            $.ajax({
+                dataType: "json",
+                type: "POST",
+                url: "",
+                data: {action: "requestmessages"},
+                error: function (error, response, data) {
+                    console.error(error);
+                    console.error(response);
+                    console.error(data);
+                },
+                success: function (data) {
+                    if (data["messages"] !== undefined && data["messages"] !== null && data["messages"] !== "") {
+                        console.log(data);
+                        console.log("Success");
+                        receiveMessage((data["messages"]).replace(/&QUO;/g, '"'));
+                    }
+                }
+            });
+        }, 1000);
 
         function emojiclick(emojitag) {
             document.getElementById("messageField").value += document.getElementById(emojitag).innerText;
@@ -104,12 +154,12 @@
             chatScroll.scrollTop = chatScroll.scrollHeight - chatScroll.clientHeight;
         }, 10);
 
-        function receiveMessage()
+        function receiveMessage(htmlCode)
         {
             var sendStatus = document.getElementById("sendStatus");
             sendStatus.innerText = "Seen";
 
-            message = "test text message<br>and another line for example and css testing";
+            message = "";
 
             var chatScroll = document.getElementById("chatScroll");
             var scroll = false;
@@ -118,7 +168,7 @@
             }
 
             id = Math.floor((Math.random() * 999999) + 1);
-            document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleLeft\">" + message + "</div>";
+            document.getElementById("chat").innerHTML += htmlCode;
             
             dateSplit = true;
 
@@ -140,8 +190,8 @@
             $.ajax({
                 dataType: "json",
                 type: "POST",
-                url: "sendmessage",
-                data: {user: 1, message: msg},
+                url: "",
+                data: {action: "sendmessage", message: msg},
                 error: function (error, response, data) {
                     console.error(error);
                     console.error(response);
@@ -156,62 +206,59 @@
         }
 
         function messageSentConfirm(message) {
-            if (message.trim() != "")
+            document.getElementById("sendStatus").style.display = "none";
+
+            var chatScroll = document.getElementById("chatScroll");
+            var scroll = false;
+            if (chatScroll.scrollTop == (chatScroll.scrollHeight - chatScroll.clientHeight)) {
+                scroll = true;
+            }
+
+            id = Math.floor((Math.random() * 999999) + 1);
+            document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleRight\">" + message + "</div>";
+            
+            if (scroll)
             {
-                document.getElementById("sendStatus").style.display = "none";
+                chatScroll.scrollTop = chatScroll.scrollHeight;
+            }
 
-                var chatScroll = document.getElementById("chatScroll");
-                var scroll = false;
-                if (chatScroll.scrollTop == (chatScroll.scrollHeight - chatScroll.clientHeight)) {
-                    scroll = true;
-                }
+            var sendStatus = document.getElementById("sendStatus");
+            sendStatus.style.display = "block";
+            sendStatus.parentNode.appendChild(sendStatus);
 
-                id = Math.floor((Math.random() * 999999) + 1);
-                document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleRight\">" + message + "</div>";
-                
-                if (scroll)
-                {
-                    chatScroll.scrollTop = chatScroll.scrollHeight;
-                }
+            if (scroll) {
+                chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+            }
+            
+            if (dateSplit == false)
+            {
+                document.getElementsByName("timestamp").forEach(element => {
+                    if (element.id != "")
+                    {
+                        element.style.display = "none";
+                        element.id = "";
+                    }
+                });
+            }
+            else
+            {
+                document.getElementsByName("timestamp").forEach(element => {
+                    if (element.id != "")
+                    {
+                        element.id = "";
+                    }
+                });
+            }
 
-                var sendStatus = document.getElementById("sendStatus");
-                sendStatus.style.display = "block";
-                sendStatus.parentNode.appendChild(sendStatus);
+            dateSplit = false;
 
-                if (scroll) {
-                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
-                }
-                
-                if (dateSplit == false)
-                {
-                    document.getElementsByName("timestamp").forEach(element => {
-                        if (element.id != "")
-                        {
-                            element.style.display = "none";
-                            element.id = "";
-                        }
-                    });
-                }
-                else
-                {
-                    document.getElementsByName("timestamp").forEach(element => {
-                        if (element.id != "")
-                        {
-                            element.id = "";
-                        }
-                    });
-                }
-
-                dateSplit = false;
-
-                // DATE TIMESTAMP
-                const today = new Date();
-                var date = formatDate(today, 't');
-                document.getElementById("chat").innerHTML += dateString.replace("_", date);
-                
-                if (scroll) {
-                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
-                }
+            // DATE TIMESTAMP
+            const today = new Date();
+            var date = formatDate(today, 't');
+            document.getElementById("chat").innerHTML += dateString.replace("_", date);
+            
+            if (scroll) {
+                chatScroll.scrollTop = chatScroll.scrollHeight + 10;
             }
         }
 

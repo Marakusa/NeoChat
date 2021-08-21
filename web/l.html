@@ -11,13 +11,27 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body>
-        <div class="windowtopbar">
-            <p class="windowcontrol-title">NeoChat</p>
-            <div class="windowcontrolbutton windowcontrol-exit"></div>
-            <div class="windowcontrolbutton windowcontrol-maximize"></div>
-            <div class="windowcontrolbutton windowcontrol-minimize"></div>
-        </div>
-        <div class="loginBackground" style="background-image: url(img/MainBackground.svg);"></div>
+        <div id="leftline" style="
+            width: 5px;
+            height: 50px;
+            background-color: #ffe264;
+            top: 10px;
+            position: absolute;
+            transition: all 5s cubic-bezier(0.3, 0.08, 0.71, 0.97) 0s;
+            transform: translateY(0px);
+        "></div>
+        <div id="rightline" style="
+            width: 5px;
+            height: 50px;
+            background-color: #ffe264;
+            top: 10px;
+            right: 10px;
+            float: right;
+            position: absolute;
+            transition: all 5s cubic-bezier(0.3, 0.08, 0.71, 0.97) 0s;
+            transform: translateY(0px);
+        "></div>
+        <div id="loginBackground" class="loginBackground" style="background-image: url(img/MainBackground.svg);transition: 5s;filter: opacity(0);"></div>
         <div class="loginContent">
             <div class="logo" style="background-image: url(img/AppIcon.svg);">
                 <span class="logoText">NeoChat</span>
@@ -46,6 +60,31 @@
             </div>
         </div>
     </body>
+    
+    <script>
+        var bg = document.getElementById('loginBackground');
+        var leftline = document.getElementById('leftline');
+        var rightline = document.getElementById('rightline');
+        rightline.style.transform = `translateY(${(window.innerHeight - 50 - 20)}px)`;
+        
+        setTimeout(function () {
+            bg.style.filter = "opacity(1)";
+            leftline.style.transform = `translateY(${(window.innerHeight - 50 - 20)}px)`;
+            rightline.style.transform = `translateY(0px)`;
+        }, 10);
+        setInterval(function () {
+            if (bg.style.filter == "opacity(0.5)") {
+                bg.style.filter = "opacity(1)";
+                leftline.style.transform = `translateY(${(window.innerHeight - 50 - 20)}px)`;
+                rightline.style.transform = `translateY(0px)`;
+            }
+            else {
+                bg.style.filter = "opacity(0.5)";
+                leftline.style.transform = `translateY(0px)`;
+                rightline.style.transform = `translateY(${(window.innerHeight - 50 - 20)}px)`;
+            }
+        }, 5000);
+    </script>
 
     <script>
         var panel = 0;
@@ -175,9 +214,10 @@
                             error = false;
                             submitting = false;
                             
-                            console.log(data["registerstatus"] + ": " + data["message"]);
-                            if (data["registerstatus"] === "0") {
+                            console.log(data["loginstatus"] + ": " + data["message"]);
+                            if (data["loginstatus"] == "0") {
                                 setTimeout(function () {
+                                    document.cookie = "token=" + data["token"] + "; path=/";
                                     window.location.href = "index.html";
                                 }, 1000);
                             }
@@ -232,6 +272,7 @@
                             if (data["registerstatus"] == "0") {
                                 setTimeout(function () {
                                     console.log(data["message"]);
+                                    document.cookie = "token=" + data["token"] + "; path=/";
                                     window.location.href = "index.html";
                                 }, 1000);
                             }
