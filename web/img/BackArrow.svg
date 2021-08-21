@@ -13,9 +13,27 @@
    version="1.1"
    id="SVGRoot"
    sodipodi:docname="BackArrow.svg"
-   inkscape:version="1.0.2-2 (e86c870879, 2021-01-15)">
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
   <defs
-     id="defs833" />
+     id="defs833">
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect836"
+       is_visible="true"
+       lpeversion="1"
+       satellites_param="F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1"
+       unit="px"
+       method="auto"
+       mode="F"
+       radius="9"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="false"
+       hide_knots="false" />
+  </defs>
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -23,16 +41,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.8"
-     inkscape:cx="37.573593"
-     inkscape:cy="74.545377"
+     inkscape:zoom="5.6"
+     inkscape:cx="61.771967"
+     inkscape:cy="61.356099"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g859"
      inkscape:document-rotation="0"
      showgrid="true"
      inkscape:window-width="1920"
      inkscape:window-height="1027"
-     inkscape:window-x="-8"
+     inkscape:window-x="1352"
      inkscape:window-y="-8"
      inkscape:window-maximized="1">
     <inkscape:grid
@@ -54,16 +72,16 @@
      inkscape:label="Taso 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:119.392px;line-height:1.25;font-family:sans-serif;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.24367;"
-       x="2.8757274"
-       y="107.13969"
-       id="text1412"><tspan
-         sodipodi:role="line"
-         id="tspan1410"
-         x="2.8757274"
-         y="107.13969"
-         style="fill:#ffffff;stroke-width:1.24367;">🡰</tspan></text>
+    <g
+       aria-label="🡰"
+       id="text1412"
+       style="font-style:normal;font-weight:normal;font-size:119.392px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.24367" />
+    <g
+       id="g859">
+      <path
+         id="rect838"
+         style="opacity:1;fill:#ffffff;fill-opacity:0.985915;stroke-width:0.81905"
+         d="m 86.405686,10.428077 c -4.010655,-4.0106549 -10.468243,-4.0106549 -14.478898,0 L 25.594315,56.76055 c -4.010655,4.010655 -4.010655,10.468243 0,14.478898 l 46.332473,46.332472 c 4.010655,4.01066 10.468243,4.01066 14.478898,0 4.010654,-4.01066 4.010654,-10.46824 0,-14.47889 L 47.312661,63.999999 86.405686,24.906975 c 4.010654,-4.010655 4.010654,-10.468243 0,-14.478898 z" />
+    </g>
   </g>
 </svg>

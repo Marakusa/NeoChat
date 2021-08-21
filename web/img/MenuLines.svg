@@ -30,11 +30,11 @@
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
      showgrid="true"
-     inkscape:window-width="1250"
-     inkscape:window-height="768"
-     inkscape:window-x="1542"
-     inkscape:window-y="0"
-     inkscape:window-maximized="0">
+     inkscape:window-width="1920"
+     inkscape:window-height="1027"
+     inkscape:window-x="1352"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1">
     <inkscape:grid
        type="xygrid"
        id="grid1972" />
@@ -47,7 +47,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -64,17 +64,16 @@
          sodipodi:role="line"
          id="tspan1979"
          x="20"
-         y="20"></tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:48px;line-height:1.25;font-family:sans-serif;fill:#ffffff;fill-opacity:1;stroke:none;"
-       x="4.6310296"
-       y="47.405457"
-       id="text1985"><tspan
-         sodipodi:role="line"
-         id="tspan1983"
-         x="4.6310296"
-         y="47.405457"
-         style="font-size:64px;fill:#ffffff;">≡</tspan></text>
+         y="20" /></text>
+    <g
+       aria-label="≡"
+       id="text1985"
+       style="font-style:normal;font-weight:normal;font-size:48px;line-height:1.25;font-family:sans-serif;fill:#ffffff;fill-opacity:1;stroke:none"
+       transform="translate(-6.81853,-3.030457)">
+      <path
+         d="m 49.34978,16.405457 h -37.0625 v -5 h 37.0625 z m 0,13.125 h -37.0625 v -5 h 37.0625 z m 0,13.125 h -37.0625 v -5 h 37.0625 z"
+         style="font-size:64px;fill:#ffffff"
+         id="path835" />
+    </g>
   </g>
 </svg>

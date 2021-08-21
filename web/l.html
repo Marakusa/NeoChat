@@ -177,6 +177,8 @@
             }
         }
 
+        var redirecting = false;
+
         $(document).ready(function () {
             $("form").submit(function (event) {
                 if (submitting == false && panel == 0) {
@@ -214,14 +216,16 @@
                             error = false;
                             submitting = false;
                             
-                            console.log(data["loginstatus"] + ": " + data["message"]);
-                            if (data["loginstatus"] == "0") {
+                            if (data["loginstatus"] == "0" && redirecting == false) {
+                                console.log(data["loginstatus"] + ": " + data["message"]);
+                                redirecting = true;
+                                document.cookie = "token=" + data["token"] + "; path=/";
                                 setTimeout(function () {
-                                    document.cookie = "token=" + data["token"] + "; path=/";
-                                    window.location.href = "index.html";
+                                    window.location.href = "/channel/@me";
                                 }, 1000);
                             }
                             else {
+                                console.log(data["loginstatus"] + ": " + data["message"]);
                                 setTimeout(function () {
                                     showpanel(0);
                                     
@@ -273,7 +277,7 @@
                                 setTimeout(function () {
                                     console.log(data["message"]);
                                     document.cookie = "token=" + data["token"] + "; path=/";
-                                    window.location.href = "index.html";
+                                    window.location.href = "/";
                                 }, 1000);
                             }
                             else {

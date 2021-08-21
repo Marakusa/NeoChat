@@ -12,15 +12,34 @@
     </head>
     <body>
         <div class="header">
-            <a class="headerBack buttonRound"><div style="background-image: url(img/BackArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
+            HEADERLEFTBUTTON
             <p class="headerTextLeft">TITLEUSERNAME</p>
         </div>
+        <div id="sideMenu" class="headerSideList" style="margin-left: -100%;">
+            <div class="headerSideListButton">
+                <p class="headerSideListButtonText">Profile</p>
+            </div>
+            <div class="headerSideListButton">
+                <p class="headerSideListButtonText">Friends</p>
+            </div>
+            <div class="headerSideListButton">
+                <p class="headerSideListButtonText">Search</p>
+            </div>
+            <div class="headerSideListButton">
+                <p class="headerSideListButtonText">Settings</p>
+            </div>
+            <div class="headerSideListButton">
+                <p class="headerSideListButtonText">Log Out</p>
+            </div>
+        </div>
+        <div onclick="closeSideMenu();" id="headerSideListBackground" class="headerSideListBackground" style="transition: 0.4s;display: none;background-color: rgba(0, 0, 0, 0);"></div>
+
         <div id="chatScroll" class="chatLog">
-            <div id="chat" class="chatLogHistory"><div id="chat" class="chatLogHistory"><p class="messageHistoryTitle">Message history with @TITLEUSERNAME begins here.</p><hr>MESSAGEHISTORYSTARTSHERE<p id="sendStatus" class="bubbleSent" style="display: none;">Sent</p>
+            <div id="chat" class="chatLogHistory"><div id="chat" class="chatLogHistory"><p class="messageHistoryTitle">Message history with @TITLEUSERNAME begins here.</p><hr>MESSAGEHISTORYSTARTSHERE<div id="chatUsersList">USERSLIST</div><p id="sendStatus" class="bubbleSent" style="display: none;">Sent</p>
             </div>
         </div>
 
-        <div id="emojiList" class="emojiList">
+        <div id="emojiList" class="emojiList" style="display: none;">
             <h2>Emoji</h2>
             <div class="emojiListGrid">
                 <div id="emojiListContent" class="emojiListContent">
@@ -38,6 +57,42 @@
         </div>
     </body>
 
+    <script>
+        var menuOpen = false;
+
+        function openSideMenu() {
+            var sideMenu = document.getElementById("sideMenu");
+
+            if (menuOpen == false)
+            {
+                sideMenu.style.marginLeft = "0";
+                document.getElementById("headerSideListBackground").style.display = "block";
+                setTimeout(() => {
+                    document.getElementById("headerSideListBackground").style.backgroundColor = "#000000b3";
+                }, 10);
+                menuOpen = true;
+            }
+            else
+            {
+                sideMenu.style.marginLeft = "-300px";
+                document.getElementById("headerSideListBackground").style.backgroundColor = "#00000000";
+                menuOpen = false;
+                setTimeout(() => {
+                    document.getElementById("headerSideListBackground").style.display = "none";
+                }, 200);
+            }
+        }
+        function closeSideMenu() {
+            var sideMenu = document.getElementById("sideMenu");
+
+            sideMenu.style.marginLeft = "-300px";
+            document.getElementById("headerSideListBackground").style.backgroundColor = "#00000000";
+            menuOpen = false;
+            setTimeout(() => {
+                document.getElementById("headerSideListBackground").style.display = "none";
+            }, 200);
+        }
+    </script>
     <script>
         (function(window){
             window.htmlentities = {
@@ -68,16 +123,34 @@
             };
         })(window);
 
-        document.getElementById("emojiList").style.display = "none";
+        var xhr = null;
+        var interval = null;
 
-        var chatHeightEmoji = "calc(100% - 64px - 60px - 10px - 250px)";
-        var footerBottomEmoji = "250px";
+        function refreshusers() {
+            xhr = $.ajax({
+                dataType: "json",
+                type: "POST",
+                url: "",
+                data: {action: "refreshusers"},
+                error: function (error, response, data) {
+                    console.error(error);
+                    console.error(response);
+                    console.error(data);
 
-        var emojicontent = document.getElementById("emojiListContent");
-        var emoji = `<div onclick="emoji('_');" id="_" class="emoji">EMOJIICON</div>`;
+                    alert("Connection to the server lost.\nRefresh the page to reconnect.");
+                },
+                success: function (data) {
+                    console.log(data);
+                    document.getElementById("chatUsersList").innerHTML = data;
 
-        setInterval(function () {
-            $.ajax({
+                    setTimeout(function () {
+                        refreshusers();
+                    }, 500);
+                }
+            });
+        }
+        function requestmessages() {
+            xhr = $.ajax({
                 dataType: "json",
                 type: "POST",
                 url: "",
@@ -86,16 +159,47 @@
                     console.error(error);
                     console.error(response);
                     console.error(data);
+
+                    alert("Connection to the server lost.\nRefresh the page to reconnect.");
                 },
                 success: function (data) {
                     if (data["messages"] !== undefined && data["messages"] !== null && data["messages"] !== "") {
                         console.log(data);
                         console.log("Success");
                         receiveMessage((data["messages"]).replace(/&QUO;/g, '"'));
+
+                        setTimeout(function () {
+                            requestmessages();
+                        }, 500);
                     }
                 }
             });
-        }, 1000);
+        }
+
+        if ((document.documentURI).endsWith("@me", document.documentURI.length)) {
+            document.getElementsByClassName("footer")[0].style.display = "none";
+            refreshusers();
+        }
+        else {
+            requestmessages();
+        }
+
+        document.getElementById("emojiList").style.display = "none";
+
+        var chatHeightEmoji = "calc(100% - 64px - 60px - 10px - 250px)";
+        var footerBottomEmoji = "250px";
+
+        var emojicontent = document.getElementById("emojiListContent");
+        var emoji = `<div onclick="emoji('_');" id="_" class="emoji">EMOJIICON</div>`;
+
+        window.onbeforeunload = onUnload;
+
+        function onUnload() {
+            if(xhr) {
+                xhr.abort();
+            }
+            interval = null;
+        };
 
         function emojiclick(emojitag) {
             document.getElementById("messageField").value += document.getElementById(emojitag).innerText;
