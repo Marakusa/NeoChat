@@ -82,36 +82,52 @@ var chatUser = "@me";
 
 var pending = {};
 
+var conn = null;
+
 function checkIfTokenValid(validatetoken, callbackFunction) {
     if (validatetoken == "") {
         callbackFunction(null, false);
     }
     else {
-        r.connect({ host: dbAddress, port: dbPort }, function(err, conn) {
+        r.db('chatapp').table('users').filter(r.row('token').match(validatetoken)).run(conn, function(err, dbres) {
             if(err) {
-                callbackFunction(null, false);
+                callbackFunction(err, false);
             }
-        
-            r.db('chatapp').table('users').filter(r.row('token').match(validatetoken)).run(conn, function(err, dbres) {
-                if(err) {
+            
+            dbres.toArray(function(err, result) {
+                if (err) {
+                    callbackFunction(err, false);
+                }
+
+                if (result.length == 0 || result[0] == undefined || result[0]['id'] == undefined || result[0]['id'] == null || result[0]['id'] == 0) {
                     callbackFunction(null, false);
                 }
-                
-                dbres.toArray(function(err, result) {
-                    if (err) {
-                        callbackFunction(null, false);
-                    }
-
-                    if (result.length == 0 || result[0] == undefined || result[0]['id'] == undefined || result[0]['id'] == null || result[0]['id'] == 0) {
-                        callbackFunction(null, false);
-                    }
-                    else {
-                        callbackFunction(null, true);
-                    }
-                });
+                else {
+                    callbackFunction(null, true);
+                }
             });
         });
     }
+}
+function getUserData(usertoken, callbackFunction) {
+    r.db('chatapp').table('users').filter(r.row('token').match(usertoken)).run(conn, function(err, dbres) {
+        if(err) {
+            callbackFunction(err, null);
+        }
+        
+        dbres.toArray(function(err, result) {
+            if (err) {
+                callbackFunction(err, null);
+            }
+
+            if (result.length == 0 || result[0] == undefined || result[0]['id'] == undefined || result[0]['id'] == null || result[0]['id'] == 0) {
+                callbackFunction("User not found", null);
+            }
+            else {
+                callbackFunction(null, result[0]);
+            }
+        });
+    });
 }
 
 function requestListener(req, res) {
@@ -127,189 +143,83 @@ function requestListener(req, res) {
         token = "";
     }
 
-    // Try to check if tokein is valid
     checkIfTokenValid(token.toString(), function(validateError, validtoken) {
         if(validateError) {
-            res.writeHead(500, validateError.message);
+            res.writeHead(500, { "message": validateError.message });
             res.end();
-            return;
         }
-
-        r.connect({ host: dbAddress, port: dbPort }, function(err, conn) {
-            if(err) {
-                res.writeHead(500, err.message);
-                res.end();
-                return;
-            }
-
-            if (validtoken == false) {
-                token = "";
-            }
-            
+        else {
             url = req.url;
         
-            if ((url == "/l.html" || url == "/l")) {
-                res.writeHead(301,
-                    {Location: '/signin'}
-                );
-                res.end();
-                return;
-            }
-
-            if (url == "/signin") {
-                url = "/l.html";
-            }
-
-            ownusername = "";
-            userId = 0;
-        
-            chatUser = "@me";
-            var chatUserId = "";
-            
-            if (url.startsWith("/channel/") && path.extname(url) != "") {
-                url = url.slice(("/channel").length);
-            }
-
-            var isposturl = getPost(url);
-
-            if (isposturl == false && req.url == "/index.html") {
-                res.writeHead(301,
-                    {Location: '/'}
-                );
-                res.end();
-                return;
-            }
-
-            if (isposturl == false && (url == "/")) {
-                if (validtoken == false) {
-                    url = "/l.html";
-                }
-                else if (url.startsWith("/channel/@") == false) {
+            // If token is invalid return login page
+            if (validtoken == false && (path.extname(url) == "" || path.extname(url) == ".html") && req.method == "GET") {
+                if (url !== "/signin") {
+                    // Return to right url
                     res.writeHead(301,
-                        {Location: '/channel/@me'}
+                        {Location: '/signin'}
                     );
                     res.end();
-                    return;
-                }
-            }
-
-            if (isposturl == false && (url == "/l.html" || ((url.startsWith("/channel/@") == false || url == "/channel/@") && path.extname(url) == ""))) {
-                if (validtoken == true) {
-                    res.writeHead(301,
-                        {Location: '/channel/@me'}
-                    );
-                    res.end();
-                    return;
                 }
                 else {
+                    // Return login page
                     url = "/l.html";
+                    serverRequestedMethod(req, res, "", url, 0, 0, false);
                 }
             }
-            
-            // Check if logged in
-            if (validtoken == false && req.method == "GET" && url !== "/l.html" && path.extname(url) == "") {
-                res.writeHead(301,
-                    {Location: '../signin'}
-                );
-                res.end();
-                return;
-            }
-        
-            if (validtoken) {
-                //console.log(token);
-                // Get client user id
-                r.db('chatapp').table('users').filter(r.row('token').match(token)).orderBy('id').run(conn, function(err, dbres) {
-                    if(err) {
-                        res.writeHead(500, err.message);
-                        res.end();
-                        return;
-                    }
-                    
-                    dbres.toArray(function(err, result) {
-                        if (err) {
-                            res.writeHead(500, err.message);
+            else {
+                if ((path.extname(url) == "" || path.extname(url) == ".html") && req.method == "GET") {
+                    // Get user data
+                    getUserData(token.toString(), function(userdataError, userdata) {
+                        if (userdataError) {
+                            res.writeHead(500, { "message": "Failed to request user data: " + userdataError });
                             res.end();
-                            return;
-                        }
-
-                        if (result.length == 0) {
-                            userId = 0;
-                            ownusername = "";
                         }
                         else {
-                            userId = result[0]['id'];
-                            ownusername = result[0]['username'];
-                        }
-                        
-                        if (url.startsWith("/channel/@")) {
-                            if(err) {
+                            console.log("User data request success: " + userdata['username']);
+                
+                            if (userdata['username'] == "Mara" || userdata['username'] == "Makapapu") {
                                 res.writeHead(200, {
                                     "Access-Control-Allow-Origin": "http://localhost",
                                     "Access-Control-Allow-Methods": "POST, GET",
                                     "Access-Control-Max-Age": 2592000,
                                     "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
                                 });
-                                res.write(`{"registerstatus": 1, "message": "Database connection failed"}`);
+                                res.write("ChatApp is currently under maintenance but you will get an access after a while...");
                                 res.end();
-                                throw "\u001b[31m" + err.message + "\n\n===========================\nDatabase connection failed!\n===========================\u001b[37m";
                             }
-
-                            r.db('chatapp').table('users').filter(r.row('username').match("(?i)^" + (url.slice(("/channel/@").length)).toLowerCase() + "$")).run(conn, function(err, dbres) {
-                                if(err) {
-                                    res.writeHead(500, err.message);
-                                    res.end();
-                                    return;
-                                }
-                                
-                                dbres.toArray(function(err, result) {
-                                    if(err) {
-                                        res.writeHead(500, err.message);
-                                        res.end();
-                                        return;
-                                    }
-
-                                    // CONSOLELOG
-                                    //console.log(req.url + ": " + req.method + ": " + token.substring(0, 10) + "..." + ": \t" + result);
-
-                                    var atme = false;
-
-                                    if (result.length > 0) {
-                                        chatUserId = result[0]['id'];
-                                        chatUser = result[0]['username'];
-                                    }
-                                    else {
-                                        if (url == '/channel/@me') {
-                                            chatUserId = 0;
-                                            chatUser = "me";
-                                            atme = true;
-                                        }
-                                        else {
-                                            res.writeHead(301,
-                                                {Location: '/channel/@me'}
-                                            );
-                                            res.end();
-                                            return;
-                                        }
-                                    }
-
-                                    url = "/index.html";
-
-                                    serverRequestedMethod(req, res, token, url, chatUserId, userId, atme);
+                            else {
+                                res.writeHead(200, {
+                                    "Access-Control-Allow-Origin": "http://localhost",
+                                    "Access-Control-Allow-Methods": "POST, GET",
+                                    "Access-Control-Max-Age": 2592000,
+                                    "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
                                 });
-                            });
+                                res.write("ChatApp is currently under maintenance");
+                                res.end();
+                            }
                         }
                     });
-                });
-            }
-            
-            if (url.startsWith("/channel/@") == false) {
-                if (url.startsWith("/channel")) {
-                    url = url.slice(("/channel").length);
                 }
-        
-                serverRequestedMethod(req, res, "", url, 0, 0, false);
+                else {
+                    // Return resource/other than webpage file request
+                    fs.readFile(webFolder + url, "utf-8", function (error, results) {
+                        if (error) {
+                            res.writeHead(404, { "message": "File not found" });
+                            res.end();
+                        } else {
+                            res.writeHead(200, {
+                                "Access-Control-Allow-Origin": "http://localhost",
+                                "Access-Control-Allow-Methods": "POST, GET",
+                                "Access-Control-Max-Age": 2592000,
+                                "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
+                            });
+                            res.write(results);
+                            res.end();
+                        }
+                    });
+                }
             }
-        });
+        }
     });
 }
 
@@ -1109,10 +1019,12 @@ module.exports = class AppServer {
         dbPort = config['rethinkdb-port'];
         
         // Database connect test
-        r.connect({ host: dbAddress, port: dbPort }, function(err, conn) {
+        r.connect({ host: dbAddress, port: dbPort }, function(err, connection) {
             if(err) {
                 throw "\u001b[31m" + err.message + "\n\n===========================\nDatabase connection failed!\nServer could not be started\n===========================\u001b[37m";
             }
+
+            conn = connection;
         });
     
         emojis.loadEmojis();

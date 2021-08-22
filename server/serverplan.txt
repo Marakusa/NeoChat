@@ -11,7 +11,7 @@ RequestHandler
     -> Get client user data
 
         - Fail: -> 
-            -> Return a login page ;;;
+            -> Return an error message ;;;
         
         - Success: -> 
 
