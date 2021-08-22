@@ -1,0 +1,34 @@
+Client connect
+-> Inform client address, and request url and method -> 
+
+RequestHandler
+
+-> Check if clients token is valid
+
+    - Not: Return a login page ;;;
+
+    - Valid: ->
+    -> Get client user data
+
+        - Fail: -> 
+            -> Return a login page ;;;
+        
+        - Success: -> 
+
+        Prepare page with base for adding the content later
+
+        -> Check request method
+            - GET: -> 
+                If user is on main page (user list):
+                    -> Return user list page ;;;
+                If user is on chat page:
+                    -> Get chatting user data
+
+                        - Fail: -> 
+                            -> Return user list page ;;;
+                        
+                        - Success: -> 
+                            -> Return chat ;;;
+
+            - POST: -> 
+                Get post action

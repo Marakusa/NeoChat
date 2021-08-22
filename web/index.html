@@ -52,10 +52,10 @@
 
         <div class="footer">
             <a onclick="emojiOpen();" class="footerLeftButton">
-                <div style="background-image: url(img/Emojis.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div>
+                <div style="background-image: url(../img/Emojis.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div>
             </a>
             <textarea id="messageField" class="inputArea" placeholder="Message" maxlength="500"></textarea>
-            <a onclick="sendMessage();" class="footerSend buttonRound"><div style="background-image: url(img/SendArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
+            <a onclick="sendMessage();" class="footerSend buttonRound"><div style="background-image: url(../img/SendArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
         </div>
     </body>
 
@@ -125,7 +125,7 @@
             };
         })(window);
         
-        const userListButton = `<a href="@USERNAME" id="userUID" class="users">
+        const userListButton = `<a href="@USERNAMELINK" id="userUID" class="users">
             <div class="listUser">
                 <p id="listUserNameUID" class="listUserName">USERNAME</p>
             </div>
@@ -155,12 +155,12 @@
                         
                         if (typeof elem !== null && elem !== 'undefined') {
                             if (document.getElementById("listUserName" + i).innerText != array[i][0]) {
-                                elem.outerHTML = userListButton.replace(/USERNAME/g, array[i][0].toLowerCase()).replace(/UID/g, i);
+                                elem.outerHTML = userListButton.replace(/USERNAMELINK/g, array[i][0].toLowerCase()).replace(/USERNAME/g, array[i][0]).replace(/UID/g, i);
                             }
                         }
                         else {
                             console.log(userListButton.replace(/USERNAME/g, array[i][0]).replace(/UID/g, i));
-                            document.getElementById("chatUsersList").innerHTML += userListButton.replace(/USERNAME/g, array[i][0].toLowerCase()).replace(/UID/g, i);
+                            document.getElementById("chatUsersList").innerHTML += userListButton.replace(/USERNAMELINK/g, array[i][0].toLowerCase()).replace(/USERNAME/g, array[i][0]).replace(/UID/g, i);
                         }
                     }
 
@@ -224,15 +224,6 @@
         var emojicontent = document.getElementById("emojiListContent");
         var emoji = `<div onclick="emoji('_');" id="_" class="emoji">EMOJIICON</div>`;
 
-        window.onbeforeunload = onUnload;
-
-        function onUnload() {
-            if(xhr) {
-                xhr.abort();
-            }
-            interval = null;
-        };
-
         function emojiclick(emojitag) {
             document.getElementById("messageField").value += document.getElementById(emojitag).innerText;
             document.getElementById("messageField").focus();
@@ -249,8 +240,7 @@
             }
 
             $.ajax({
-                url: "/emojis.txt",
-                async: true,
+                url: "/web/emojis.txt",
                 success: function (data){
                     emojicontent.innerHTML = data;
                 }

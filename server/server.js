@@ -12,7 +12,7 @@ var webFolder;
 var dbAddress;
 var dbPort;
 
-const userListButton = `<a href="@USERNAME" id="userUID" class="users">
+const userListButton = `<a href="@USERNAMELINK" id="userUID" class="users">
     <div class="listUser">
         <p id="listUserNameUID" class="listUserName">USERNAME</p>
     </div>
@@ -115,6 +115,9 @@ function checkIfTokenValid(validatetoken, callbackFunction) {
 }
 
 function requestListener(req, res) {
+    console.log(req.connection.remoteAddress + ": \"" + req.url + "\" (" + req.method + ")");
+
+    // Check if clients account token is valid
     var cookies = parseCookies(req);
 
     if (cookies['token']) {
@@ -126,6 +129,12 @@ function requestListener(req, res) {
 
     // Try to check if tokein is valid
     checkIfTokenValid(token.toString(), function(validateError, validtoken) {
+        if(validateError) {
+            res.writeHead(500, validateError.message);
+            res.end();
+            return;
+        }
+
         r.connect({ host: dbAddress, port: dbPort }, function(err, conn) {
             if(err) {
                 res.writeHead(500, err.message);
@@ -463,7 +472,7 @@ function serverRequestedMethod(req, res, token, url, chatUserId, own_userId, atm
 
                                                                         if (user['id'].toString() != own_userId) {
                                                                             if (user['username'] != undefined) {
-                                                                                msghistory += userListButton.replace(/USERNAME/g, user['username'].toLowerCase()).replace(/UID/g, doneIndexI);
+                                                                                msghistory += userListButton.replace(/USERNAMELINK/g, user['username'].toLowerCase()).replace(/USERNAME/g, user['username']).replace(/UID/g, doneIndexI);
                                                                                 doneIndexI++;
                                                                             }
                                                                         }
