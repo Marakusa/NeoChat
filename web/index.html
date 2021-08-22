@@ -1,63 +1,50 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>NeoChat</title>
-        <link rel="shortcut icon" href="/img/AppIcon.svg">
-        <link rel="stylesheet" href="/css/style.css">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-    </head>
-    <body>
-        <div class="header">
-            HEADERLEFTBUTTON
-            <p class="headerTextLeft">TITLEUSERNAME</p>
+<body>
+    <div class="header">
+        HEADERLEFTBUTTON
+        <p class="headerTextLeft">TITLEUSERNAME</p>
+    </div>
+    <div id="sideMenu" class="headerSideList" style="margin-left: -100%;">
+        <div class="headerSideListButton">
+            <p class="headerSideListButtonText">Profile</p>
         </div>
-        <div id="sideMenu" class="headerSideList" style="margin-left: -100%;">
-            <div class="headerSideListButton">
-                <p class="headerSideListButtonText">Profile</p>
-            </div>
-            <div class="headerSideListButton">
-                <p class="headerSideListButtonText">Friends</p>
-            </div>
-            <div class="headerSideListButton">
-                <p class="headerSideListButtonText">Search</p>
-            </div>
-            <div class="headerSideListButton">
-                <p class="headerSideListButtonText">Settings</p>
-            </div>
-            <div class="headerSideListButton">
-                <p class="headerSideListButtonText">Log Out</p>
-            </div>
+        <div class="headerSideListButton">
+            <p class="headerSideListButtonText">Friends</p>
         </div>
-        <div onclick="closeSideMenu();" id="headerSideListBackground" class="headerSideListBackground" style="transition: 0.4s;display: none;background-color: rgba(0, 0, 0, 0);"></div>
+        <div class="headerSideListButton">
+            <p class="headerSideListButtonText">Search</p>
+        </div>
+        <div class="headerSideListButton">
+            <p class="headerSideListButtonText">Settings</p>
+        </div>
+        <div class="headerSideListButton">
+            <p class="headerSideListButtonText">Log Out</p>
+        </div>
+    </div>
+    <div onclick="closeSideMenu();" id="headerSideListBackground" class="headerSideListBackground" style="transition: 0.4s;display: none;background-color: rgba(0, 0, 0, 0);"></div>
 
-        <div id="chatScroll" class="chatLog">
-            <div id="chat" class="chatLogHistory"><div id="chat" class="chatLogHistory">
-                <h2 id="welcomeText" style="color: white;text-align: center;display: none;">Welcome @YOURUSERNAME</h2>
-                <p class="messageHistoryTitle">Message history with @TITLEUSERNAME begins here.</p><hr>MESSAGEHISTORYSTARTSHERE<div id="chatUsersList">USERSLIST</div><p id="sendStatus" class="bubbleSent" style="display: none;">Sent</p>
+    <div id="chatScroll" class="chatLog">
+        <div id="chat" class="chatLogHistory"><div id="chat" class="chatLogHistory">
+            <h2 id="welcomeText" style="color: white;text-align: center;display: none;">Welcome @YOURUSERNAME</h2>
+            <p class="messageHistoryTitle">Message history with @TITLEUSERNAME begins here.</p><hr>MESSAGEHISTORYSTARTSHERE<div id="chatUsersList">USERSLIST</div><p id="sendStatus" class="bubbleSent" style="display: none;">Sent</p>
+        </div>
+    </div>
+
+    <div id="emojiList" class="emojiList" style="display: none;">
+        <h2>Emoji</h2>
+        <div class="emojiListGrid">
+            <div id="emojiListContent" class="emojiListContent">
+                
             </div>
         </div>
+    </div>
 
-        <div id="emojiList" class="emojiList" style="display: none;">
-            <h2>Emoji</h2>
-            <div class="emojiListGrid">
-                <div id="emojiListContent" class="emojiListContent">
-                    
-                </div>
-            </div>
-        </div>
-
-        <div class="footer">
-            <a onclick="emojiOpen();" class="footerLeftButton">
-                <div style="background-image: url(../img/Emojis.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div>
-            </a>
-            <textarea id="messageField" class="inputArea" placeholder="Message" maxlength="500"></textarea>
-            <a onclick="sendMessage();" class="footerSend buttonRound"><div style="background-image: url(../img/SendArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
-        </div>
-    </body>
+    <div class="footer">
+        <a onclick="emojiOpen();" class="footerLeftButton">
+            <div style="background-image: url(../img/Emojis.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div>
+        </a>
+        <textarea id="messageField" class="inputArea" placeholder="Message" maxlength="500"></textarea>
+        <a onclick="sendMessage();" class="footerSend buttonRound"><div style="background-image: url(../img/SendArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
+    </div>
 
     <script>
         var menuOpen = false;
@@ -400,4 +387,4 @@
             return format.replace(/mm|dd|yy|yyyy|t/gi, matched => map[matched])
         }
     </script>
-</html>
+</body>

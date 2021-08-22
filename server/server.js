@@ -84,6 +84,8 @@ var pending = {};
 
 var conn = null;
 
+var mainpageTemplate = "";
+
 function checkIfTokenValid(validatetoken, callbackFunction) {
     if (validatetoken == "") {
         callbackFunction(null, false);
@@ -129,13 +131,32 @@ function getUserData(usertoken, callbackFunction) {
         });
     });
 }
+function preparePageTemplate(callbackFunction) {
+    fs.readFile("./server/templates/mainpage.html", "utf-8", function (error, results) {
+        if (error) {
+            throw error;
+        } else {
+            mainpageTemplate = results;
+            callbackFunction();
+        }
+    });
+}
+function getWebpage(callbackFunction) {
+    fs.readFile(webFolder + url, "utf-8", function (error, results) {
+        if (error) {
+            console.log("File not found");
+            callbackFunction(error, null);
+        } else {
+            callbackFunction(null, results);
+        }
+    });
+}
 
 function requestListener(req, res) {
     console.log(req.connection.remoteAddress + ": \"" + req.url + "\" (" + req.method + ")");
 
-    // Check if clients account token is valid
+    // Get clients token from clients cookies
     var cookies = parseCookies(req);
-
     if (cookies['token']) {
         token = cookies['token'];
     }
@@ -143,70 +164,127 @@ function requestListener(req, res) {
         token = "";
     }
 
+    // Check if clients account token is valid
     checkIfTokenValid(token.toString(), function(validateError, validtoken) {
+
         if(validateError) {
             res.writeHead(500, { "message": validateError.message });
             res.end();
         }
+
         else {
             url = req.url;
-        
-            // If token is invalid return login page
+            
+            // If token is invalid and request is webpage return login page
             if (validtoken == false && (path.extname(url) == "" || path.extname(url) == ".html") && req.method == "GET") {
+                
+                // Check if url is correct
                 if (url !== "/signin") {
-                    // Return to right url
+                    // Redirect to correct url
                     res.writeHead(301,
                         {Location: '/signin'}
                     );
                     res.end();
                 }
+
+                // Return login page
                 else {
-                    // Return login page
                     url = "/l.html";
-                    serverRequestedMethod(req, res, "", url, 0, 0, false);
-                }
-            }
-            else {
-                if ((path.extname(url) == "" || path.extname(url) == ".html") && req.method == "GET") {
-                    // Get user data
-                    getUserData(token.toString(), function(userdataError, userdata) {
-                        if (userdataError) {
-                            res.writeHead(500, { "message": "Failed to request user data: " + userdataError });
+                    getWebpage(function (pageerror, pageres) {
+
+                        if (pageerror) {
+                            res.writeHead(404, { "message": "Page not found: " + url });
                             res.end();
                         }
+
                         else {
-                            console.log("User data request success: " + userdata['username']);
-                
-                            if (userdata['username'] == "Mara" || userdata['username'] == "Makapapu") {
-                                res.writeHead(200, {
-                                    "Access-Control-Allow-Origin": "http://localhost",
-                                    "Access-Control-Allow-Methods": "POST, GET",
-                                    "Access-Control-Max-Age": 2592000,
-                                    "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                });
-                                res.write("ChatApp is currently under maintenance but you will get an access after a while...");
-                                res.end();
-                            }
-                            else {
-                                res.writeHead(200, {
-                                    "Access-Control-Allow-Origin": "http://localhost",
-                                    "Access-Control-Allow-Methods": "POST, GET",
-                                    "Access-Control-Max-Age": 2592000,
-                                    "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                });
-                                res.write("ChatApp is currently under maintenance");
-                                res.end();
-                            }
+                            res.writeHead(200, {
+                                "Access-Control-Allow-Origin": "http://localhost",
+                                "Access-Control-Allow-Methods": "POST, GET",
+                                "Access-Control-Max-Age": 2592000,
+                                "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
+                            });
+                            res.write(mainpageTemplate.replace(/TEMPLATE_BODY/, pageres));
+                            res.end();
                         }
+
                     });
                 }
+
+            }
+
+            // Token is valid or request is not a webpage
+            else {
+
+                // Get user data and return webpage
+                if ((path.extname(url) == "" || path.extname(url) == ".html") && req.method == "GET") {
+                    
+                    // Check if url is correct (/channel/@...)
+                    if (url.startsWith("/channel/@")) {
+
+                        // Get user data
+                        getUserData(token.toString(), function(userdataError, userdata) {
+                            
+                            if (userdataError) {
+                                res.writeHead(500, { "message": "Failed to request user data: " + userdataError });
+                                res.end();
+                            }
+                            
+                            // User data request success
+                            else {
+
+                                console.log("User data request success: " + userdata['username']);
+                                
+                                if (userdata['username'] == "Mara" || userdata['username'] == "Makapapu") {
+                                    res.writeHead(200, {
+                                        "Access-Control-Allow-Origin": "http://localhost",
+                                        "Access-Control-Allow-Methods": "POST, GET",
+                                        "Access-Control-Max-Age": 2592000,
+                                        "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
+                                    });
+                                    res.write("ChatApp is currently under maintenance but you will get an access after a while...");
+                                    res.end();
+                                }
+                                
+                                else {
+                                    res.writeHead(200, {
+                                        "Access-Control-Allow-Origin": "http://localhost",
+                                        "Access-Control-Allow-Methods": "POST, GET",
+                                        "Access-Control-Max-Age": 2592000,
+                                        "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
+                                    });
+                                    res.write("ChatApp is currently under maintenance");
+                                    res.end();
+                                }
+
+                            }
+
+                        });
+
+                    }
+                    
+                    // Url is not correct redirect to "/channel/@me"
+                    else {
+                        res.writeHead(301,
+                            {Location: '/channel/@me'}
+                        );
+                        res.end();
+                    }
+
+                }
+
+                // Return resource/other than webpage file request
                 else {
-                    // Return resource/other than webpage file request
+
                     fs.readFile(webFolder + url, "utf-8", function (error, results) {
+
                         if (error) {
                             res.writeHead(404, { "message": "File not found" });
                             res.end();
-                        } else {
+                        }
+                        
+                        // Return the file
+                        else {
                             res.writeHead(200, {
                                 "Access-Control-Allow-Origin": "http://localhost",
                                 "Access-Control-Allow-Methods": "POST, GET",
@@ -216,10 +294,14 @@ function requestListener(req, res) {
                             res.write(results);
                             res.end();
                         }
+
                     });
+
                 }
+
             }
         }
+    
     });
 }
 
@@ -1029,12 +1111,14 @@ module.exports = class AppServer {
     
         emojis.loadEmojis();
 
-        // Start server
-        server = http.createServer(requestListener);
-        server.listen(port);
+        preparePageTemplate(function() {
+            // Start server
+            server = http.createServer(requestListener);
+            server.listen(port);
 
-        if (server.listening == true) {
-            console.log("Server started at http://localhost:" + port);
-        }
+            if (server.listening == true) {
+                console.log("Server started at http://localhost:" + port);
+            }
+        });
     }
 }

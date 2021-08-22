@@ -1,66 +1,53 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>NeoChat</title>
-        <link rel="shortcut icon" href="img/AppIcon.svg">
-        <link rel="stylesheet" href="css/style.css">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-    </head>
-    <body>
-        <div id="leftline" style="
-            width: 5px;
-            height: 50px;
-            background-color: #ffe264;
-            top: 10px;
-            position: absolute;
-            transition: all 5s cubic-bezier(0.3, 0.08, 0.71, 0.97) 0s;
-            transform: translateY(0px);
-        "></div>
-        <div id="rightline" style="
-            width: 5px;
-            height: 50px;
-            background-color: #ffe264;
-            top: 10px;
-            right: 10px;
-            float: right;
-            position: absolute;
-            transition: all 5s cubic-bezier(0.3, 0.08, 0.71, 0.97) 0s;
-            transform: translateY(0px);
-        "></div>
-        <div id="loginBackground" class="loginBackground" style="background-image: url(img/MainBackground.svg);transition: 5s;filter: opacity(0);"></div>
-        <div class="loginContent">
-            <div class="logo" style="background-image: url(img/AppIcon.svg);">
-                <span class="logoText">NeoChat</span>
-            </div>
-            <form id="loginform" style="position: absolute;width: 100%;transition: 0.5s;">
-                <input type="text" maxlength="20" id="usernameField" name="usernameField" class="inputArea inputForm" placeholder="Username" style="margin-top: 30px;" />
-                <input type="password" maxlength="50" id="passwordField" name="passwordField" class="inputArea inputForm" placeholder="Password" style="margin-top: 5px;" />
-                <p id="logErr" class="loginError" style="display: none;"><span onclick="closeError('logErr');" class="errorClose">&#10006;</span><span>ERROR</span></p>
-                <input type="submit" name="submitLogIn" class="inputArea inputForm" value="Log In" style="margin-top: 15px;height: 40px;width: calc(70% + 34px);" />
-                <a onclick="showpanel(3);" class="loginOption">Forgot your password?</a>
-                <a onclick="showpanel(2);" class="loginOption">Don't have an account?</a>
-            </form>
-            <form id="registerform" style="position: absolute;width: 100%;transition: 0.5s;display: none;filter: opacity(0);">
-                <input type="text" maxlength="20" id="usernameFieldR" name="usernameFieldR" class="inputArea inputForm" placeholder="Username" style="margin-top: 30px;">
-                <input type="email" maxlength="200" id="emailFieldR" name="emailFieldR" class="inputArea inputForm" placeholder="Email" style="margin-top: 5px;">
-                <input type="password" maxlength="50" id="passwordFieldR" name="passwordFieldR" class="inputArea inputForm" placeholder="Password" style="margin-top: 5px;">
-                <input type="password" maxlength="50" id="passwordField2R" name="passwordFieldR" class="inputArea inputForm" placeholder="Retype Password" style="margin-top: 5px;">
-                <p id="regErr" class="loginError" style="display: none;"><span onclick="closeError('regErr');" class="errorClose">&#10006;</span><span>ERROR</span></p>
-                <input type="submit" name="submitRegister" class="inputArea inputForm" value="Register" style="margin-top: 15px;height: 40px;width: calc(70% + 34px);">
-                <a onclick="showpanel(0);" class="loginOption">Already have an account?</a>
-            </form>
-            <div id="loggingin" style="position: absolute;width: 100%;transition: 0.5s;filter: opacity(0);display: none;text-align: center;">
-                <p style="margin: 0 auto;margin-top: 30px;width: calc(70% + 34px);font-size: 22px;border: solid;border-width: 1px;border-color: #ffe264;padding: 30px 0;border-radius: 10px;">
-                    Logging in...
-                </p>
-            </div>
+<body>
+    <div id="leftline" style="
+        width: 5px;
+        height: 50px;
+        background-color: #ffe264;
+        top: 10px;
+        position: absolute;
+        transition: all 5s cubic-bezier(0.3, 0.08, 0.71, 0.97) 0s;
+        transform: translateY(0px);
+    "></div>
+    <div id="rightline" style="
+        width: 5px;
+        height: 50px;
+        background-color: #ffe264;
+        top: 10px;
+        right: 10px;
+        float: right;
+        position: absolute;
+        transition: all 5s cubic-bezier(0.3, 0.08, 0.71, 0.97) 0s;
+        transform: translateY(0px);
+    "></div>
+    <div id="loginBackground" class="loginBackground" style="background-image: url(img/MainBackground.svg);transition: 5s;filter: opacity(0);"></div>
+    <div class="loginContent">
+        <div class="logo" style="background-image: url(img/AppIcon.svg);">
+            <span class="logoText">NeoChat</span>
         </div>
-    </body>
-    
+        <form id="loginform" style="position: absolute;width: 100%;transition: 0.5s;">
+            <input type="text" maxlength="20" id="usernameField" name="usernameField" class="inputArea inputForm" placeholder="Username" style="margin-top: 30px;" />
+            <input type="password" maxlength="50" id="passwordField" name="passwordField" class="inputArea inputForm" placeholder="Password" style="margin-top: 5px;" />
+            <p id="logErr" class="loginError" style="display: none;"><span onclick="closeError('logErr');" class="errorClose">&#10006;</span><span>ERROR</span></p>
+            <input type="submit" name="submitLogIn" class="inputArea inputForm" value="Log In" style="margin-top: 15px;height: 40px;width: calc(70% + 34px);" />
+            <a onclick="showpanel(3);" class="loginOption">Forgot your password?</a>
+            <a onclick="showpanel(2);" class="loginOption">Don't have an account?</a>
+        </form>
+        <form id="registerform" style="position: absolute;width: 100%;transition: 0.5s;display: none;filter: opacity(0);">
+            <input type="text" maxlength="20" id="usernameFieldR" name="usernameFieldR" class="inputArea inputForm" placeholder="Username" style="margin-top: 30px;">
+            <input type="email" maxlength="200" id="emailFieldR" name="emailFieldR" class="inputArea inputForm" placeholder="Email" style="margin-top: 5px;">
+            <input type="password" maxlength="50" id="passwordFieldR" name="passwordFieldR" class="inputArea inputForm" placeholder="Password" style="margin-top: 5px;">
+            <input type="password" maxlength="50" id="passwordField2R" name="passwordFieldR" class="inputArea inputForm" placeholder="Retype Password" style="margin-top: 5px;">
+            <p id="regErr" class="loginError" style="display: none;"><span onclick="closeError('regErr');" class="errorClose">&#10006;</span><span>ERROR</span></p>
+            <input type="submit" name="submitRegister" class="inputArea inputForm" value="Register" style="margin-top: 15px;height: 40px;width: calc(70% + 34px);">
+            <a onclick="showpanel(0);" class="loginOption">Already have an account?</a>
+        </form>
+        <div id="loggingin" style="position: absolute;width: 100%;transition: 0.5s;filter: opacity(0);display: none;text-align: center;">
+            <p style="margin: 0 auto;margin-top: 30px;width: calc(70% + 34px);font-size: 22px;border: solid;border-width: 1px;border-color: #ffe264;padding: 30px 0;border-radius: 10px;">
+                Logging in...
+            </p>
+        </div>
+    </div>
+
     <script>
         var bg = document.getElementById('loginBackground');
         var leftline = document.getElementById('leftline');
@@ -297,4 +284,4 @@
             });
         });
     </script>
-</html>
+</body>
