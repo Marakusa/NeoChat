@@ -82,36 +82,15 @@
             }, 200);
         }
     </script>
+
     <script>
-        (function(window){
-            window.htmlentities = {
-                /**
-                 * Converts a string to its html characters completely.
-                 *
-                 * @param {String} str String with unescaped HTML characters
-                 **/
-                encode : function(str) {
-                    var buf = [];
-                    
-                    for (var i=str.length-1;i>=0;i--) {
-                        buf.unshift(['&#', str[i].charCodeAt(), ';'].join(''));
-                    }
-                    
-                    return buf.join('');
-                },
-                /**
-                 * Converts an html characterSet into its original character.
-                 *
-                 * @param {String} str htmlSet entities
-                 **/
-                decode : function(str) {
-                    return str.replace(/&#(\d+);/g, function(match, dec) {
-                        return String.fromCharCode(dec);
-                    });
-                }
-            };
-        })(window);
-        
+        var socket = io();
+        socket.on('message', receiveMessage2);
+        function receiveMessage2(data) {
+            console.log("Message");
+            console.log(data);
+        }
+
         const userListButton = `<a href="@USERNAMELINK" id="userUID" class="users">
             <div class="listUser">
                 <p id="listUserNameUID" class="listUserName">USERNAME</p>
@@ -121,11 +100,11 @@
         var xhr = null;
         var interval = null;
 
-        function refreshusers() {
+        /*function refreshusers() {
             xhr = $.ajax({
                 dataType: "json",
                 type: "POST",
-                url: "",
+                url: "../refreshusers",
                 data: {action: "refreshusers"},
                 error: function (error, response, data) {
                     console.error(error);
@@ -140,20 +119,22 @@
                     for (var i = 0; i < count(array); i++) {
                         var elem = document.getElementById("user" + i);
                         
-                        if (typeof elem !== null && elem !== 'undefined') {
+                        if (elem !== null) {
                             if (document.getElementById("listUserName" + i).innerText != array[i][0]) {
                                 elem.outerHTML = userListButton.replace(/USERNAMELINK/g, array[i][0].toLowerCase()).replace(/USERNAME/g, array[i][0]).replace(/UID/g, i);
                             }
                         }
                         else {
                             console.log(userListButton.replace(/USERNAME/g, array[i][0]).replace(/UID/g, i));
-                            document.getElementById("chatUsersList").innerHTML += userListButton.replace(/USERNAMELINK/g, array[i][0].toLowerCase()).replace(/USERNAME/g, array[i][0]).replace(/UID/g, i);
+                            var chatUsersList = document.getElementById("chatUsersList");
+                            var newChild = document.createRange().createContextualFragment(userListButton.replace(/USERNAMELINK/g, array[i][0].toLowerCase()).replace(/USERNAME/g, array[i][0]).replace(/UID/g, i));
+                            chatUsersList.insertBefore(newChild, chatUsersList.children[i]);
                         }
                     }
 
                     setTimeout(function () {
                         refreshusers();
-                    }, 500);
+                    }, 1000);
                 }
             });
         }
@@ -161,7 +142,7 @@
             xhr = $.ajax({
                 dataType: "json",
                 type: "POST",
-                url: "",
+                url: "../requestmessages",
                 data: {action: "requestmessages"},
                 error: function (error, response, data) {
                     console.error(error);
@@ -178,11 +159,11 @@
 
                         setTimeout(function () {
                             requestmessages();
-                        }, 500);
+                        }, 1000);
                     }
                 }
             });
-        }
+        }*/
 
         function count(obj) {
             var count=0;
@@ -197,11 +178,11 @@
         if ((document.documentURI).endsWith("@me", document.documentURI.length)) {
             document.getElementsByClassName("footer")[0].style.display = "none";
             document.getElementById("welcomeText").style.display = "block";
-            refreshusers();
+            //refreshusers();
         }
-        else {
+        /*else {
             requestmessages();
-        }
+        }*/
 
         document.getElementById("emojiList").style.display = "none";
 
@@ -303,7 +284,7 @@
             $.ajax({
                 dataType: "json",
                 type: "POST",
-                url: "",
+                url: "../sendmessage",
                 data: {action: "sendmessage", message: msg},
                 error: function (error, response, data) {
                     console.error(error);
