@@ -240,20 +240,20 @@ function requestListener(req, res) {
                                         "Access-Control-Allow-Origin": "http://localhost",
                                         "Access-Control-Allow-Methods": "POST, GET",
                                         "Access-Control-Max-Age": 2592000,
-                                        "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
+                                        "Content-Type": getMIMEType(".txt") + "; charset=UTF-8",
                                     });
-                                    res.write("ChatApp is currently under maintenance but you will get an access after a while...");
+                                    res.write("NeoChat is currently under maintenance but you will get an access after a while...");
                                     res.end();
                                 }
-                                
+
                                 else {
                                     res.writeHead(200, {
                                         "Access-Control-Allow-Origin": "http://localhost",
                                         "Access-Control-Allow-Methods": "POST, GET",
                                         "Access-Control-Max-Age": 2592000,
-                                        "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
+                                        "Content-Type": getMIMEType(".txt") + "; charset=UTF-8",
                                     });
-                                    res.write("ChatApp is currently under maintenance");
+                                    res.write("NeoChat is currently under maintenance");
                                     res.end();
                                 }
 
@@ -471,7 +471,7 @@ function serverRequestedMethod(req, res, token, url, chatUserId, own_userId, atm
                                                                         
                                                                         if (aresult.length == doneIndex) {
                                                                             res.write(pgres
-                                                                                .replace(/TITLEUSERNAME/g, "ChatApp")
+                                                                                .replace(/TITLEUSERNAME/g, "NeoChat")
                                                                                 .replace(/YOURUSERNAME/g, ownusername)
                                                                                 .replace(/HEADERLEFTBUTTON/g, headerMenuButton)
                                                                                 .replace("MESSAGEHISTORYSTARTSHERE", "")

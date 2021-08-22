@@ -368,6 +368,7 @@ hr {
     top: 22px;
     display: block;
     position: absolute;
+    text-shadow: 0 0 10px white;
 }
 .loginContent {
     color: white;
