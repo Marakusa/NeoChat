@@ -238,27 +238,283 @@ function requestListener(req, res) {
 
                                     console.log("User data request success: " + userdata['username']);
                                     
-                                    if (userdata['username'] == "Mara" || userdata['username'] == "Makapapu") {
-                                        res.writeHead(200, {
-                                            "Access-Control-Allow-Origin": "http://localhost",
-                                            "Access-Control-Allow-Methods": "POST, GET",
-                                            "Access-Control-Max-Age": 2592000,
-                                            "Content-Type": getMIMEType(".txt") + "; charset=UTF-8",
-                                        });
-                                        res.write("NeoChat is currently under maintenance but you will get an access after a while...");
-                                        res.end();
-                                    }
+                                    // Load page
+                                    r.db('chatapp').table('users').filter(r.row('username').match("(?i)^" + (url.slice(("/channel/@").length)).toLowerCase() + "$")).run(conn, function(err, dbres) {
+                                        if(err) {
+                                            res.writeHead(500, err.message);
+                                            res.end();
+                                        }
+                                        else {
+                                            dbres.toArray(function(err, result) {
+                                                if(err) {
+                                                    res.writeHead(500, err.message);
+                                                    res.end();
+                                                }
+                                                else {
+                                                    var chatUserId = 0;
+                                                    var chatUser = "";
+                    
+                                                    // User exists
+                                                    if (result.length > 0) {
+                                                        chatUserId = result[0]['id'];
+                                                        chatUser = result[0]['username'];
+                                                    }
 
-                                    else {
-                                        res.writeHead(200, {
-                                            "Access-Control-Allow-Origin": "http://localhost",
-                                            "Access-Control-Allow-Methods": "POST, GET",
-                                            "Access-Control-Max-Age": 2592000,
-                                            "Content-Type": getMIMEType(".txt") + "; charset=UTF-8",
-                                        });
-                                        res.write("NeoChat is currently under maintenance");
-                                        res.end();
-                                    }
+                                                    // User doesn't exist redirecting to @me
+                                                    else {
+                                                        if (url == '/channel/@me') {
+                                                            chatUserId = 0;
+                                                            chatUser = "me";
+                                                        }
+                                                        else {
+                                                            res.writeHead(301,
+                                                                {Location: '/channel/@me'}
+                                                            );
+                                                            res.end();
+                                                            return;
+                                                        }
+                                                    }
+
+                                                    url = "/index.html"
+
+                                                    // Load users page
+                                                    if (chatUserId == 0) {
+                                                        r.db('chatapp').table('users').run(conn, function(err, dbres) {
+                                                            if(err) {
+                                                                res.writeHead(500, err.message);
+                                                                res.end();
+                                                            }
+                                                            else {
+                                                                msghistory = "";
+    
+                                                                dbres.toArray(function(err, aresult) {
+                                                                    if(err) {
+                                                                        res.writeHead(500, err.message);
+                                                                        res.end();
+                                                                    }
+                                                                    else {
+                                                                        var doneIndex = 0;
+                                                                        var doneIndexI = 0;
+                                                                        
+                                                                        aresult.forEach(user => {
+                                                                            doneIndex++;
+        
+                                                                            if (user['id'].toString() != userdata['id']) {
+                                                                                if (user['username'] != undefined) {
+                                                                                    msghistory += userListButton.replace(/USERNAMELINK/g, user['username'].toLowerCase()).replace(/USERNAME/g, user['username']).replace(/UID/g, doneIndexI);
+                                                                                    doneIndexI++;
+                                                                                }
+                                                                            }
+                                                                            
+                                                                            if (aresult.length == doneIndex) {
+                                                                                getWebpage(function (pageerror, pageres) {
+                                                            
+                                                                                    if (pageerror) {
+                                                                                        res.writeHead(404, { "message": "Page not found: " + url });
+                                                                                        res.end();
+                                                                                    }
+                                                            
+                                                                                    else {
+                                                                                        res.writeHead(200, {
+                                                                                            "Access-Control-Allow-Origin": "http://localhost",
+                                                                                            "Access-Control-Allow-Methods": "POST, GET",
+                                                                                            "Access-Control-Max-Age": 2592000,
+                                                                                            "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
+                                                                                        });
+                                                                                        res.write(mainpageTemplate
+                                                                                            .replace(/TEMPLATE_BODY/, pageres)
+                                                                                            .replace(/TITLEUSERNAME/g, "NeoChat")
+                                                                                            .replace(/YOURUSERNAME/g, userdata['username'])
+                                                                                            .replace(/HEADERLEFTBUTTON/g, headerMenuButton)
+                                                                                            .replace("MESSAGEHISTORYSTARTSHERE", "")
+                                                                                            .replace("USERSLIST", msghistory)
+                                                                                        );
+                                                                                        res.end();
+                                                                                    }
+                                                            
+                                                                                });
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                });
+                                                            }
+                                                        });
+                                                    }
+
+                                                    // Load chat
+                                                    else {
+                                                        
+                                                        getWebpage(function (pageerror, pageres) {
+                                    
+                                                            if (pageerror) {
+                                                                res.writeHead(404, { "message": "Page not found: " + url });
+                                                                res.end();
+                                                            }
+                                    
+                                                            else {
+                                                                var chatMessages = new Array();
+                                                                var msghistory = "";
+                                                                
+                                                                console.log(userdata['id']);
+                                                                console.log(chatUserId);
+                                                                r.db('chatapp').table('messages').filter({userfrom: userdata['id'], userto: chatUserId}).run(conn, function(err, dbres) {
+                                                                    if(err) {
+                                                                        res.writeHead(500, err.message);
+                                                                        res.end();
+                                                                    }
+                                                                    else {
+                                                                        dbres.toArray(function(err, result) {
+                                                                            if(err) {
+                                                                                res.writeHead(500, err.message);
+                                                                                res.end();
+                                                                            }
+                                                                            else {
+                                                                                result.forEach(element => {
+                                                                                    chatMessages.push(element);
+                                                                                });
+                                        
+                                                                                r.db('chatapp').table('messages').filter({userto: userdata['id'], userfrom: chatUserId}).run(conn, function(err, dbres) {
+                                                                                    if(err) {
+                                                                                        res.writeHead(500, err.message);
+                                                                                        res.end();
+                                                                                    }
+                                                                                    else {
+                                                                                        dbres.toArray(function(err, result) {
+                                                                                            if(err) {
+                                                                                                res.writeHead(500, err.message);
+                                                                                                res.end();
+                                                                                            }
+                                                                                            else {
+                                                                                                result.forEach(element => {
+                                                                                                    chatMessages.push(element);
+                                                                                                });
+                                                                
+                                                                                                chatMessages = chatMessages.sort(function (a, b) {
+                                                                                                    return a.time - b.time;
+                                                                                                });
+                                        
+                                                                                                chatMessages.forEach(element => {
+                                                                                                    var m_userto = element['userto'];
+                                                                                                    var m_userfrom = element['userfrom'];
+                                                                                                    var m_message = element['message'];
+                                                                                                    
+                                                                                                    if (m_userfrom == userdata['id']) {
+                                                                                                        msghistory += meBubble.replace("_", m_message);
+                                                                                                    }
+                                                                                                    else {
+                                                                                                        msghistory += theyBubble.replace("_", m_message);
+                                                                                                    }
+                                                                                                });
+                                                                        
+                                                                                                var emojiarray = new Array(msghistory.match(/:[^:\s]*(?:::[^:\s])*:/g));
+                                                                        
+                                                                                                if (emojiarray[0] != null)
+                                                                                                {
+                                                                                                    for (i = 0; i < emojiarray[0].length; i++) {
+                                                                                                        msghistory = msghistory.replace(emojiarray[0][i], emojis.findEmoji(emojiarray[0][i]));
+                                                                                                    }
+                                                                                                }
+                                                                                                
+                                                                                                if (chatUserId == 0) {
+                                                                                                    r.db('chatapp').table('users').run(conn, function(err, dbres) {
+                                                                                                        if(err) {
+                                                                                                            res.writeHead(500, err.message);
+                                                                                                            res.end();
+                                                                                                        }
+                                                                                                        else {
+                                                                                                            msghistory = "";
+                                            
+                                                                                                            dbres.toArray(function(err, aresult) {
+                                                                                                                if(err) {
+                                                                                                                    res.writeHead(500, err.message);
+                                                                                                                    res.end();
+                                                                                                                }
+                                                                                                                else {
+                                                                                                                    var doneIndex = 0;
+                                                                                                                    var doneIndexI = 0;
+                                                                                                                    
+                                                                                                                    aresult.forEach(user => {
+                                                                                                                        doneIndex++;
+                                                
+                                                                                                                        if (user['id'].toString() != userdata['id']) {
+                                                                                                                            if (user['username'] != undefined) {
+                                                                                                                                msghistory += userListButton.replace(/USERNAMELINK/g, user['username'].toLowerCase()).replace(/USERNAME/g, user['username']).replace(/UID/g, doneIndexI);
+                                                                                                                                doneIndexI++;
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                        
+                                                                                                                        if (aresult.length == doneIndex) {
+                                                                                                                            res.writeHead(200, {
+                                                                                                                                "Access-Control-Allow-Origin": "http://localhost",
+                                                                                                                                "Access-Control-Allow-Methods": "POST, GET",
+                                                                                                                                "Access-Control-Max-Age": 2592000,
+                                                                                                                                "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
+                                                                                                                            });
+                                                                                                                            res.write(mainpageTemplate
+                                                                                                                                .replace(/TEMPLATE_BODY/, pageres)
+                                                                                                                                .replace(/TITLEUSERNAME/g, "NeoChat")
+                                                                                                                                .replace(/YOURUSERNAME/g, ownusername)
+                                                                                                                                .replace(/HEADERLEFTBUTTON/g, headerMenuButton)
+                                                                                                                                .replace("MESSAGEHISTORYSTARTSHERE", "")
+                                                                                                                                .replace("USERSLIST", msghistory)
+                                                                                                                                );
+                                                                                                                            res.end();
+                                                                                                                        }
+                                                                                                                    });
+                                                                                                                }
+                                                                                                            });
+                                                                                                        }
+                                                                                                    });
+                                                                                                }
+                                                                                                else {
+                                                                                                    res.writeHead(200, {
+                                                                                                        "Access-Control-Allow-Origin": "http://localhost",
+                                                                                                        "Access-Control-Allow-Methods": "POST, GET",
+                                                                                                        "Access-Control-Max-Age": 2592000,
+                                                                                                        "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
+                                                                                                    });
+                                                                                                    res.write(mainpageTemplate
+                                                                                                        .replace(/TEMPLATE_BODY/, pageres)
+                                                                                                        .replace(/TITLEUSERNAME/g, chatUser)
+                                                                                                        .replace(/YOURUSERNAME/g, ownusername)
+                                                                                                        .replace(/HEADERLEFTBUTTON/g, headerBackButton)
+                                                                                                        .replace("MESSAGEHISTORYSTARTSHERE", msghistory)
+                                                                                                        .replace("USERSLIST", "")
+                                                                                                        );
+                                                                                                    res.end();
+                                                                                                }
+                                                                                            }
+                                                                                        });
+                                                                                    }
+                                                                                });
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                });
+                                                                res.writeHead(200, {
+                                                                    "Access-Control-Allow-Origin": "http://localhost",
+                                                                    "Access-Control-Allow-Methods": "POST, GET",
+                                                                    "Access-Control-Max-Age": 2592000,
+                                                                    "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
+                                                                });
+                                                                res.write(mainpageTemplate
+                                                                    .replace(/TEMPLATE_BODY/, pageres)
+                                                                    .replace(/TITLEUSERNAME/g, "NeoChat")
+                                                                    .replace(/YOURUSERNAME/g, userdata['username'])
+                                                                    .replace(/HEADERLEFTBUTTON/g, headerBackButton)
+                                                                    .replace("MESSAGEHISTORYSTARTSHERE", msghistory)
+                                                                    .replace("USERSLIST", "")
+                                                                );
+                                                                res.end();
+                                                            }
+                                    
+                                                        });
+
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    });
 
                                 }
 
