@@ -14,6 +14,32 @@ hr {
     border-color: #3a3a3a;
 }
 
+#notifications {
+    display: block;
+    position: absolute;
+    z-index: 999;
+}
+.notification {
+    width: 303px;
+    margin-bottom: 5px;
+    background-color: #2a2a2a;
+    border-radius: 5px;
+    border: solid;
+    border-color: #ffe264;
+    border-width: 1px;
+}
+.notification a {
+    color: white;
+    text-decoration-line: none;
+}
+.notification a p, .notification a h3 {
+    margin: 5px;
+    overflow-wrap: anywhere;
+}
+.notification a h3 {
+    color: #ffe264;
+}
+
 .header {
     background-color: rgb(28, 28, 28);
     color: white;

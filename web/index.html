@@ -1,8 +1,9 @@
 <body>
     <div class="header">
-        HEADERLEFTBUTTON
-        <p class="headerTextLeft">TITLEUSERNAME</p>
+        &HEADERLEFTBUTTON
+        <p class="headerTextLeft">&TITLEUSERNAME</p>
     </div>
+    <div id="notifications"></div>
     <div id="sideMenu" class="headerSideList" style="margin-left: -100%;">
         <div class="headerSideListButton">
             <p class="headerSideListButtonText">Profile</p>
@@ -24,8 +25,8 @@
 
     <div id="chatScroll" class="chatLog">
         <div id="chat" class="chatLogHistory"><div id="chat" class="chatLogHistory">
-            <h2 id="welcomeText" style="color: white;text-align: center;display: none;">Welcome @YOURUSERNAME</h2>
-            <p class="messageHistoryTitle">Message history with @TITLEUSERNAME begins here.</p><hr>MESSAGEHISTORYSTARTSHERE<div id="chatUsersList">USERSLIST</div><p id="sendStatus" class="bubbleSent" style="display: none;">Sent</p>
+            <h2 id="welcomeText" style="color: white;text-align: center;display: none;">Welcome @&YOURUSERNAME</h2>
+            <p class="messageHistoryTitle">Message history with @&TITLEUSERNAME begins here.</p><hr>&MESSAGEHISTORYSTARTSHERE<div id="chatUsersList">&USERSLIST</div><p id="sendStatus" class="bubbleSent" style="display: none;">Sent</p>
         </div>
     </div>
 
@@ -84,87 +85,39 @@
     </script>
 
     <script>
-        var socket = io();
-        socket.on('message', receiveMessage2);
-        function receiveMessage2(data) {
-            console.log("Message");
-            console.log(data);
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
         }
 
-        const userListButton = `<a href="@USERNAMELINK" id="userUID" class="users">
+        const userListButton = `<a href="@&USERNAMELINK" id="user&UID" class="users">
             <div class="listUser">
-                <p id="listUserNameUID" class="listUserName">USERNAME</p>
+                <p id="listUserName&UID" class="listUserName">&USERNAME</p>
             </div>
         </a>`;
+
+        const notification = `<div id="notification&ID" class="notification">
+            <span style="user-select: none;float: right;color: grey;top: 0;margin: 5px;cursor: pointer;" onclick="document.getElementById('notification&ID').outerHTML = '';">Dismiss</span>
+            <a href="@&USERNAME">
+                <h3>New message from &USERNAME</h3>
+                <p>&MESSAGE</p>
+            </a>
+        </div>`;
+
+        const theyBubble = "<div class=\"bubble bubbleLeft\">&MESSAGE</div>";
+        const meBubble = "<div class=\"bubble bubbleRight\">&MESSAGE</div>";
 
         var xhr = null;
         var interval = null;
 
-        /*function refreshusers() {
-            xhr = $.ajax({
-                dataType: "json",
-                type: "POST",
-                url: "../refreshusers",
-                data: {action: "refreshusers"},
-                error: function (error, response, data) {
-                    console.error(error);
-                    console.error(response);
-                    console.error(data);
+        var chatusername = (document.documentURI).split("@")[1];
+        var token = getCookie("token");
 
-                    alert("Connection to the server lost.\nRefresh the page to reconnect.");
-                },
-                success: function (data) {
-                    var array = data;
-
-                    for (var i = 0; i < count(array); i++) {
-                        var elem = document.getElementById("user" + i);
-                        
-                        if (elem !== null) {
-                            if (document.getElementById("listUserName" + i).innerText != array[i][0]) {
-                                elem.outerHTML = userListButton.replace(/USERNAMELINK/g, array[i][0].toLowerCase()).replace(/USERNAME/g, array[i][0]).replace(/UID/g, i);
-                            }
-                        }
-                        else {
-                            console.log(userListButton.replace(/USERNAME/g, array[i][0]).replace(/UID/g, i));
-                            var chatUsersList = document.getElementById("chatUsersList");
-                            var newChild = document.createRange().createContextualFragment(userListButton.replace(/USERNAMELINK/g, array[i][0].toLowerCase()).replace(/USERNAME/g, array[i][0]).replace(/UID/g, i));
-                            chatUsersList.insertBefore(newChild, chatUsersList.children[i]);
-                        }
-                    }
-
-                    setTimeout(function () {
-                        refreshusers();
-                    }, 1000);
-                }
-            });
-        }
-        function requestmessages() {
-            xhr = $.ajax({
-                dataType: "json",
-                type: "POST",
-                url: "../requestmessages",
-                data: {action: "requestmessages"},
-                error: function (error, response, data) {
-                    console.error(error);
-                    console.error(response);
-                    console.error(data);
-
-                    alert("Connection to the server lost.\nRefresh the page to reconnect.");
-                },
-                success: function (data) {
-                    if (data["messages"] !== undefined && data["messages"] !== null && data["messages"] !== "") {
-                        console.log(data);
-                        console.log("Success");
-                        receiveMessage((data["messages"]).replace(/&QUO;/g, '"'));
-
-                        setTimeout(function () {
-                            requestmessages();
-                        }, 1000);
-                    }
-                }
-            });
-        }*/
-
+        var socket = io();
+        socket.emit('settoken', token);
+        socket.on('message', receiveMessage);
+        
         function count(obj) {
             var count=0;
             for(var prop in obj) {
@@ -208,27 +161,14 @@
             }
 
             $.ajax({
-                url: "/web/emojis.txt",
+                url: "/emojis.txt",
                 success: function (data){
                     emojicontent.innerHTML = data;
                 }
             });
-            /*$.ajax({
-                url: "/full-emoji-list.json",
-                async: true,
-                success: function (data){
-                    Object.keys(data).forEach(function(k){
-                        Object.keys(data[k]["emojis"]).forEach(function(e){
-                            setTimeout(function () {
-                                emojicontent.innerHTML += emoji.replaceAll(/_/g, data[k]["emojis"][e]["shortname"]).replace("EMOJIICON", data[k]["emojis"][e]["char"]);
-                            }, 10);
-                        });
-                    });
-                }
-            });*/
         }
         
-        var dateString = "<p id=\"timestamp\" name=\"timestamp\" class=\"bubbleSent\" style=\"display: block;\">_</p>";
+        var dateString = "<p id=\"timestamp\" name=\"timestamp\" class=\"bubbleSent\" style=\"display: block;\">&MESSAGE</p>";
         var dateSplit = true;
 
         $(function() {
@@ -248,7 +188,85 @@
             chatScroll.scrollTop = chatScroll.scrollHeight - chatScroll.clientHeight;
         }, 10);
 
-        function receiveMessage(htmlCode)
+        function receiveMessage(data)
+        {
+            var chatScroll = document.getElementById("chatScroll");
+            var scroll = false;
+            if (chatScroll.scrollTop == (chatScroll.scrollHeight - chatScroll.clientHeight)) {
+                scroll = true;
+            }
+
+            if (data.from == chatusername) {
+                var sendStatus = document.getElementById("sendStatus");
+                sendStatus.innerText = "Seen";
+
+                message = "";
+
+                var htmlCode = theyBubble.replace("&MESSAGE", data.message);
+
+                id = Math.floor((Math.random() * 999999) + 1);
+                document.getElementById("chat").innerHTML += htmlCode;
+                
+                dateSplit = true;
+
+                setTimeout(() => {  
+                    if (scroll) {
+                        chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                    }
+                }, 100);
+            }
+            else {
+                var msg = data.message;
+
+                if (data.message.length > 50) {
+                    msg = data.message.substring(0, 50) + "...";
+                }
+
+                id = Math.floor((Math.random() * 999999) + 1);
+
+                var htmlCode = notification
+                                .replace(/&ID/g, id)
+                                .replace(/&USERNAME/g, data.from)
+                                .replace(/&MESSAGE/g, msg);
+                                
+                var notifications = document.getElementById("notifications");
+
+                const placeholder = document.createElement('div');
+                placeholder.innerHTML = htmlCode;
+                const node = placeholder.firstElementChild;
+
+                notifications.insertBefore(node, notifications.firstChild);
+
+                setTimeout(() => {  
+                    if (scroll) {
+                        chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                    }
+                }, 100);
+
+                notificated("notification" + id);
+            }
+        }
+
+        function notificated(id) {
+            document.getElementById(id).style.transition = "0.2s";
+            document.getElementById(id).style.transform = "translateX(0px) translateY(-200px)";
+
+            setTimeout(() => {  
+                document.getElementById(id).style.transform = "translateX(0px) translateY(0px)";
+            }, 10);
+
+            setTimeout(() => {  
+                
+                document.getElementById(id).style.transform = "translateX(-350px) translateY(0px)";
+                
+                setTimeout(() => {  
+                    document.getElementById(id).outerHTML = "";
+                }, 200);
+
+            }, 10000);
+        }
+        
+        function sendMessage()
         {
             var sendStatus = document.getElementById("sendStatus");
             sendStatus.innerText = "Seen";
@@ -261,42 +279,22 @@
                 scroll = true;
             }
 
-            id = Math.floor((Math.random() * 999999) + 1);
-            document.getElementById("chat").innerHTML += htmlCode;
-            
-            dateSplit = true;
-
-            setTimeout(() => {  
-                if (scroll) {
-                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
-                }
-            }, 100);
-        }
-        
-        function sendMessage()
-        {
             document.getElementById("emojiList").style.display = "none";
             
             var msg = document.getElementById("messageField").value;
 
             messageField.value = "";
 
-            $.ajax({
-                dataType: "json",
-                type: "POST",
-                url: "../sendmessage",
-                data: {action: "sendmessage", message: msg},
-                error: function (error, response, data) {
-                    console.error(error);
-                    console.error(response);
-                    console.error(data);
-                },
-                success: function (data) {
-                    console.log(data);
-                    console.log("Success");
-                    messageSentConfirm(data["message"]);
+            socket.emit('message', chatusername, token, msg);
+
+            var htmlCode = meBubble.replace("&MESSAGE", msg);
+            document.getElementById("chat").innerHTML += htmlCode;
+
+            setTimeout(() => {  
+                if (scroll) {
+                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
                 }
-            });
+            }, 100);
         }
 
         function messageSentConfirm(message) {
@@ -349,7 +347,7 @@
             // DATE TIMESTAMP
             const today = new Date();
             var date = formatDate(today, 't');
-            document.getElementById("chat").innerHTML += dateString.replace("_", date);
+            document.getElementById("chat").innerHTML += dateString.replace("&MESSAGE", date);
             
             if (scroll) {
                 chatScroll.scrollTop = chatScroll.scrollHeight + 10;

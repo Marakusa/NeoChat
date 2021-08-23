@@ -11,6 +11,7 @@ const emojis = require('./emojis.js');
 const crypto = require('crypto');
 
 const { Server } = require("socket.io");
+const { encode } = require('punycode');
 var io;
 
 var port;
@@ -18,15 +19,15 @@ var webFolder;
 var dbAddress;
 var dbPort;
 
-const userListButton = `<a href="@USERNAMELINK" id="userUID" class="users">
+const userListButton = `<a href="@&USERNAMELINK" id="user&UID" class="users">
     <div class="listUser">
-        <p id="listUserNameUID" class="listUserName">USERNAME</p>
+        <p id="listUserNameUID" class="listUserName">&USERNAME</p>
     </div>
 </a>`;
 const headerBackButton = `<a href="@me" class="headerBack buttonRound"><div style="background-image: url(../img/BackArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>`;
 const headerMenuButton = `<a onclick="openSideMenu();" class="headerBack buttonRound"><div style="background-image: url(../img/MenuLines.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>`;
-const theyBubble = "<div class=\"bubble bubbleLeft\">_</div>";
-const meBubble = "<div class=\"bubble bubbleRight\">_</div>";
+const theyBubble = "<div class=\"bubble bubbleLeft\">&MESSAGE</div>";
+const meBubble = "<div class=\"bubble bubbleRight\">&MESSAGE</div>";
 
 var token = "";
 
@@ -188,7 +189,7 @@ function requestListener(req, res) {
                                 "Access-Control-Max-Age": 2592000,
                                 "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
                             });
-                            res.write(mainpageTemplate.replace(/TEMPLATE_BODY/, pageres));
+                            res.write(mainpageTemplate.replace(/&TEMPLATE_BODY/, pageres));
                             res.end();
                         }
 
@@ -285,7 +286,7 @@ function requestListener(req, res) {
         
                                                                             if (user['id'].toString() != userdata['id']) {
                                                                                 if (user['username'] != undefined) {
-                                                                                    msghistory += userListButton.replace(/USERNAMELINK/g, user['username'].toLowerCase()).replace(/USERNAME/g, user['username']).replace(/UID/g, doneIndexI);
+                                                                                    msghistory += userListButton.replace(/&USERNAMELINK/g, user['username'].toLowerCase()).replace(/&USERNAME/g, user['username']).replace(/&UID/g, doneIndexI);
                                                                                     doneIndexI++;
                                                                                 }
                                                                             }
@@ -306,12 +307,12 @@ function requestListener(req, res) {
                                                                                             "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
                                                                                         });
                                                                                         res.write(mainpageTemplate
-                                                                                            .replace(/TEMPLATE_BODY/, pageres)
-                                                                                            .replace(/TITLEUSERNAME/g, "NeoChat")
-                                                                                            .replace(/YOURUSERNAME/g, userdata['username'])
-                                                                                            .replace(/HEADERLEFTBUTTON/g, headerMenuButton)
-                                                                                            .replace("MESSAGEHISTORYSTARTSHERE", "")
-                                                                                            .replace("USERSLIST", msghistory)
+                                                                                            .replace(/&TEMPLATE_BODY/, pageres)
+                                                                                            .replace(/&TITLEUSERNAME/g, "NeoChat")
+                                                                                            .replace(/&YOURUSERNAME/g, userdata['username'])
+                                                                                            .replace(/&HEADERLEFTBUTTON/g, headerMenuButton)
+                                                                                            .replace("&MESSAGEHISTORYSTARTSHERE", "")
+                                                                                            .replace("&USERSLIST", msghistory)
                                                                                         );
                                                                                         res.end();
                                                                                     }
@@ -400,11 +401,11 @@ function requestListener(req, res) {
                                                                                                     
                                                                                                     // Message is sent by client
                                                                                                     if (m_userfrom == userdata['id']) {
-                                                                                                        msghistory += meBubble.replace("_", m_message);
+                                                                                                        msghistory += meBubble.replace("&MESSAGE", m_message);
                                                                                                     }
                                                                                                     // Client has received the message
                                                                                                     else {
-                                                                                                        msghistory += theyBubble.replace("_", m_message);
+                                                                                                        msghistory += theyBubble.replace("&MESSAGE", m_message);
                                                                                                     }
 
                                                                                                 });
@@ -413,7 +414,7 @@ function requestListener(req, res) {
                                                                                                 var emojiarray = new Array(msghistory.match(/:[^:\s]*(?:::[^:\s])*:/g));
                                                                                                 if (emojiarray[0] != null)
                                                                                                 {
-                                                                                                    for (i = 0; i < emojiarray[0].length; i++) {
+                                                                                                    for (var i = 0; i < emojiarray[0].length; i++) {
                                                                                                         msghistory = msghistory.replace(emojiarray[0][i], emojis.findEmoji(emojiarray[0][i]));
                                                                                                     }
                                                                                                 }
@@ -426,12 +427,12 @@ function requestListener(req, res) {
                                                                                                     "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
                                                                                                 });
                                                                                                 res.write(mainpageTemplate
-                                                                                                    .replace(/TEMPLATE_BODY/, pageres)
-                                                                                                    .replace(/TITLEUSERNAME/g, chatUser)
-                                                                                                    .replace(/YOURUSERNAME/g, userdata['username'])
-                                                                                                    .replace(/HEADERLEFTBUTTON/g, headerBackButton)
-                                                                                                    .replace("MESSAGEHISTORYSTARTSHERE", msghistory)
-                                                                                                    .replace("USERSLIST", "")
+                                                                                                    .replace(/&TEMPLATE_BODY/, pageres)
+                                                                                                    .replace(/&TITLEUSERNAME/g, chatUser)
+                                                                                                    .replace(/&YOURUSERNAME/g, userdata['username'])
+                                                                                                    .replace(/&HEADERLEFTBUTTON/g, headerBackButton)
+                                                                                                    .replace("&MESSAGEHISTORYSTARTSHERE", msghistory)
+                                                                                                    .replace("&USERSLIST", "")
                                                                                                     );
                                                                                                 res.end();
 
@@ -847,116 +848,7 @@ function requestListener(req, res) {
                                         }
                                     }
                                 }
-
-                                else if (url == "/sendmessage") {
-
-                                    if (post['message'].length <= 500 && post['message'].trim() != "") {
-                                        
-                                        var post_message = entities.encode(post['message']).replace(/\n/g, "<br>");
-                                        var post_time = Date.now();
-                        
-                                        var emojiarray = new Array(post_message.match(/:[^:\s]*(?:::[^:\s])*:/g));
-                                        if (emojiarray[0] != null) {
-                                            for (i = 0; i < emojiarray[0].length; i++) {
-                                                post_message = post_message.replace(emojiarray[0][i], emojis.findEmoji(emojiarray[0][i]));
-                                            }
-                                        }
-                        
-                                        r.db('chatapp').table('messages').insert({ userfrom: userdata['id'], userto: post_user, message: post_message, time: post_time }).run(conn, function(err, dbres) {
-                                            if(err) {
-                                                res.writeHead(200, {
-                                                    "Access-Control-Allow-Origin": "http://localhost",
-                                                    "Access-Control-Allow-Methods": "POST, GET",
-                                                    "Access-Control-Max-Age": 2592000,
-                                                    "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                                });
-                                                res.write(`{"registerstatus": 1, "message": "Message sending failed"}`);
-                                                res.end();
-                                            }
-                                            else {
-                                                res.writeHead(200, {
-                                                    "Access-Control-Allow-Origin": "http://localhost",
-                                                    "Access-Control-Allow-Methods": "POST, GET",
-                                                    "Access-Control-Max-Age": 2592000,
-                                                    "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                                });
-            
-                                                pending[post_user + "," + userdata['id']] += "\t" + post_message;
-                                                console.log(pending[post_user + "," + userdata['id']] + " - " + post_user + "," + userdata['id']);
-            
-                                                res.write(`{"user": "` + post_user + `", "message": "` + post_message + `"}`);
-                                                res.end();
-                                            }
-                                        });
-                                    }
-
-                                }
-
-                                // Client refreshes users
-                                /*else if (url == "/refreshusers") {
-                                    
-                                    r.db('chatapp').table('users').orderBy('id').run(conn, function(err, dbres) {
-                                        
-                                        if(err) {
-                                            res.writeHead(500, err.message);
-                                            res.end();
-                                        }
-
-                                        else {
-
-                                            var usersjson = {};
-            
-                                            dbres.toArray(function(err, aresult) {
-
-                                                if(err) {
-                                                    res.writeHead(500, err.message);
-                                                    res.end();
-                                                }
-                                                
-                                                else {
-
-                                                    var userListIndex = 0;
-                                                    var userListIndexI = 0;
-                                                    
-                                                    aresult.forEach(user => {
-                                                        
-                                                        if (user['id'].toString() != userdata['id']) {
-                                                            
-                                                            if (user['username'] != undefined) {
-
-                                                                usersjson[userListIndexI] = new Array(user['username'], "0");
-                                                                userListIndexI = userListIndexI + 1;
-
-                                                            }
-
-                                                        }
-                
-                                                        userListIndex = userListIndex + 1;
-                
-                                                        if (aresult.length == userListIndex) {
-                                                            res.writeHead(200, {
-                                                                "Access-Control-Allow-Origin": "http://localhost",
-                                                                "Access-Control-Allow-Methods": "POST, GET",
-                                                                "Access-Control-Max-Age": 2592000,
-                                                                "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                                            });
-                                                            console.log(usersjson);
-                                                            res.write(JSON.stringify(usersjson));
-                                                            res.end();
-                                                        }
-                
-                                                    });
-
-                                                }
-            
-                                            });
-
-                                        }
-
-                                    });
-
-                                }*/
-
+                                
                             });
 
                         }
@@ -971,288 +863,6 @@ function requestListener(req, res) {
     });
 }
 
-function serverRequestedMethod(req, res, token, url, chatUserId, own_userId, atme) {
-    r.connect({ host: dbAddress, port: dbPort }, function(err, conn) {
-        if(err) {
-            res.writeHead(500, err.message);
-            res.end();
-            return;
-        }
-
-        // Check own user id
-        if (own_userId == 0 && atme == false) {
-            if (path.extname(url) == "" || path.extname(url) == ".html") {
-                // Get client user id
-                r.db('chatapp').table('users').filter(r.row('token').match(token)).run(conn, function(err, dbres) {
-                    if(err) {
-                        res.writeHead(200, {
-                            "Access-Control-Allow-Origin": "http://localhost",
-                            "Access-Control-Allow-Methods": "POST, GET",
-                            "Access-Control-Max-Age": 2592000,
-                            "Content-Type": getMIMEType(".html") + "; charset=UTF-8",
-                        });
-                        res.write(err.message);
-                        res.end();
-                        return;
-                    }
-                    
-                    dbres.toArray(function(err, result) {
-                        if (err) {
-                            res.writeHead(200, {
-                                "Access-Control-Allow-Origin": "http://localhost",
-                                "Access-Control-Allow-Methods": "POST, GET",
-                                "Access-Control-Max-Age": 2592000,
-                                "Content-Type": getMIMEType(".html") + "; charset=UTF-8",
-                            });
-                            res.write(err.message);
-                            res.end();
-                            return;
-                        }
-        
-                        if ((result.length == 0 || result[0] == undefined || result[0]['id'] == undefined || result[0]['id'] == null || result[0]['id'] == 0)) {
-                            own_userId = 0;
-                            return;
-                        }
-                        else {
-                            own_userId = result[0]['id'];
-                        }
-                    });
-                });
-            }
-        }
-
-        var headers = {
-            "Access-Control-Allow-Origin": "http://localhost",
-            "Access-Control-Allow-Methods": "POST, GET",
-            "Access-Control-Max-Age": 2592000,
-            "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
-        };
-        
-        // Request is a GET request
-        if (req.method == "GET") {
-            fs.readFile(webFolder + url, "utf-8", function (error, pgres) {
-                if (error) {
-                    res.writeHead(404);
-                    res.write("Contents you are looking are Not Found\n" + url);
-                } else {
-                    res.writeHead(200, headers);
-        
-                    // If page opened is chat load messages
-                    if (url == "/index.html" && (chatUser != "@me" || chatUser != "")) {
-                        var chatMessages = new Array();
-                        
-                        r.db('chatapp').table('messages').filter({userfrom: own_userId, userto: chatUserId}).run(conn, function(err, dbres) {
-                            if(err) {
-                                res.writeHead(500, err.message);
-                                res.end();
-                                return;
-                            }
-                            else {
-                                dbres.toArray(function(err, result) {
-                                    if(err) {
-                                        res.writeHead(500, err.message);
-                                        res.end();
-                                        return;
-                                    }
-                                    else {
-                                        result.forEach(element => {
-                                            chatMessages.push(element);
-                                        });
-
-                                        r.db('chatapp').table('messages').filter({userto: own_userId, userfrom: chatUserId}).run(conn, function(err, dbres) {
-                                            if(err) {
-                                                res.writeHead(500, err.message);
-                                                res.end();
-                                                return;
-                                            }
-                                            else {
-                                                dbres.toArray(function(err, result) {
-                                                    if(err) {
-                                                        res.writeHead(500, err.message);
-                                                        res.end();
-                                                        return;
-                                                    }
-                                                    else {
-                                                        result.forEach(element => {
-                                                            chatMessages.push(element);
-                                                        });
-                        
-                                                        chatMessages = chatMessages.sort(function (a, b) {
-                                                            return a.time - b.time;
-                                                        });
-
-                                                        var msghistory = "";
-                                        
-                                                        chatMessages.forEach(element => {
-                                                            var m_userto = element['userto'];
-                                                            var m_userfrom = element['userfrom'];
-                                                            var m_message = element['message'];
-                                                            
-                                                            if (m_userfrom == own_userId) {
-                                                                msghistory += meBubble.replace("_", m_message);
-                                                            }
-                                                            else {
-                                                                msghistory += theyBubble.replace("_", m_message);
-                                                            }
-                                                        });
-                                
-                                                        var emojiarray = new Array(msghistory.match(/:[^:\s]*(?:::[^:\s])*:/g));
-                                
-                                                        if (emojiarray[0] != null)
-                                                        {
-                                                            for (i = 0; i < emojiarray[0].length; i++) {
-                                                                msghistory = msghistory.replace(emojiarray[0][i], emojis.findEmoji(emojiarray[0][i]));
-                                                            }
-                                                        }
-                                                        
-                                                        if (chatUserId == 0) {
-                                                            r.db('chatapp').table('users').run(conn, function(err, dbres) {
-                                                                if(err) {
-                                                                    res.writeHead(500, err.message);
-                                                                    res.end();
-                                                                    return;
-                                                                }
-
-                                                                msghistory = "";
-
-                                                                dbres.toArray(function(err, aresult) {
-                                                                    if(err) {
-                                                                        res.writeHead(500, err.message);
-                                                                        res.end();
-                                                                        return;
-                                                                    }
-
-                                                                    var doneIndex = 0;
-                                                                    var doneIndexI = 0;
-                                                                    
-                                                                    aresult.forEach(user => {
-                                                                        doneIndex++;
-
-                                                                        if (user['id'].toString() != own_userId) {
-                                                                            if (user['username'] != undefined) {
-                                                                                msghistory += userListButton.replace(/USERNAMELINK/g, user['username'].toLowerCase()).replace(/USERNAME/g, user['username']).replace(/UID/g, doneIndexI);
-                                                                                doneIndexI++;
-                                                                            }
-                                                                        }
-                                                                        
-                                                                        if (aresult.length == doneIndex) {
-                                                                            res.write(pgres
-                                                                                .replace(/TITLEUSERNAME/g, "NeoChat")
-                                                                                .replace(/YOURUSERNAME/g, ownusername)
-                                                                                .replace(/HEADERLEFTBUTTON/g, headerMenuButton)
-                                                                                .replace("MESSAGEHISTORYSTARTSHERE", "")
-                                                                                .replace("USERSLIST", msghistory)
-                                                                                );
-                                                                            res.end();
-                                                                            return;
-                                                                        }
-                                                                    });
-                                                                });
-                                                            });
-                                                        }
-                                                        else {
-                                                            res.write(pgres
-                                                                .replace(/TITLEUSERNAME/g, chatUser)
-                                                                .replace(/YOURUSERNAME/g, ownusername)
-                                                                .replace(/HEADERLEFTBUTTON/g, headerBackButton)
-                                                                .replace("MESSAGEHISTORYSTARTSHERE", msghistory)
-                                                                .replace("USERSLIST", "")
-                                                                );
-                                                            res.end();
-                                                            return;
-                                                        }
-                                                    }
-                                                });
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        });
-                    }
-                    else {
-                        // Return the page to client
-                        res.write(pgres);
-                        res.end();
-                        return;
-                    }
-                }
-            });
-        }
-        // Request is a POST request
-        else if (req.method == "POST") {
-            const post_user = chatUserId;
-
-            // Form actions
-            if (url == "/l.html" || url == "/index.html") {
-                var body = "";
-        
-                req.on('data', function (chunk) {
-                    body += chunk;
-        
-                    const post = qs.parse(body);
-                    const action = post['undefinedaction'];
-
-                    if (action == 'sendmessage') {
-                        
-                    }
-                    else if (action == "requestmessages") {
-                        var postuser = chatUserId;
-                        var body = "";
-            
-                        //console.log(own_userId + "," + postuser);
-                        //console.log(pending[own_userId + "," + postuser]);
-                        if (pending[own_userId + "," + postuser] !== undefined && pending[own_userId + "," + postuser] !== null && pending[own_userId + "," + postuser] !== "") {
-                            var pendingMessages = (pending[own_userId + "," + postuser]).toString().split("\t");
-                            
-                            pendingMessages.forEach(msg => {
-                                if (msg !== null && msg.trim() != "") {
-                                    body += theyBubble.replace("_", (msg)).replace(/"/g, "&QUO;");
-                                }
-                            });
-                
-                            pending[own_userId + "," + postuser] = "";
-                
-                            var emojiarray = new Array(body.match(/:[^:\s]*(?:::[^:\s])*:/g));
-                
-                            if (emojiarray[0] != null)
-                            {
-                                for (i = 0; i < emojiarray[0].length; i++) {
-                                    body = body.replace(emojiarray[0][i], emojis.findEmoji(emojiarray[0][i]));
-                                }
-                            }
-                    
-                            res.writeHead(200, {
-                                "Access-Control-Allow-Origin": "http://localhost",
-                                "Access-Control-Allow-Methods": "POST, GET",
-                                "Access-Control-Max-Age": 2592000,
-                                "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                            });
-                            res.write("{\"messages\": \"" + body + "\"}");
-                            res.end();
-                            return;
-                        }
-                        else {
-                            res.writeHead(200, {
-                                "Access-Control-Allow-Origin": "http://localhost",
-                                "Access-Control-Allow-Methods": "POST, GET",
-                                "Access-Control-Max-Age": 2592000,
-                                "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                            });
-                            res.write("{\"messages\": \"" + body + "\"}");
-                            res.end();
-                            return;
-                        }
-                    }
-                    else if (action == "refreshusers") {
-                        
-                    }
-                });
-            }
-        }
-    });
-}
-
 // Generate a user token
 function generateToken() {
     var result           = '';
@@ -1263,6 +873,8 @@ function generateToken() {
     }
     return result;
 }
+
+var clients = {};
 
 // App server class
 module.exports = class AppServer {
@@ -1293,8 +905,110 @@ module.exports = class AppServer {
             io = new Server(server);
 
             // socket.io connection
-            io.on('connection', () =>{
+            io.on('connection', (socket) =>{
                 console.log('User connected');
+
+                // User disconnected
+                socket.on('disconnect', () => {
+                    console.log('User disconnected');
+                    socket = null;
+                });
+
+                // Chat message handler
+                socket.on('message', (username, token, msg) => {
+                    if (msg.length <= 500 && msg.trim() != "") {
+                                        
+                        var post_message = entities.encode(msg).replace(/\n/g, "<br>");
+                        var post_time = Date.now();
+        
+                        var emojiarray = new Array(post_message.match(/:[^:\s]*(?:::[^:\s])*:/g));
+                        if (emojiarray[0] != null) {
+                            for (var i = 0; i < emojiarray[0].length; i++) {
+                                post_message = post_message.replace(emojiarray[0][i], emojis.findEmoji(emojiarray[0][i]));
+                            }
+                        }
+        
+                        r.db('chatapp').table('users').filter(r.row('username').match("(?i)^" + username.toLowerCase() + "$")).run(conn, function(err, dbres) {
+                        
+                            if(err) {
+                                console.log("User error " + err.message);
+                            }
+                            
+                            else {
+                                
+                                dbres.toArray(function(err, result) {
+    
+                                    if (err) {
+                                        console.log("User error " + err.message);
+                                    }
+    
+                                    else {
+    
+                                        if (result.length == 0 || result[0] == undefined || result[0]['id'] == undefined || result[0]['id'] == null || result[0]['id'] == 0) {
+                                            console.log("User result null");
+                                        }
+                                        else {
+                                            var clientid = result[0]['id'];
+    
+                                            console.log('Message (to ' + username + '): ' + msg);
+
+                                            getUserData(token.toString(), function(userdataError, userdata) {
+                                                            
+                                                if (clients[clientid]) {
+                                                    console.log('User online');
+        
+                                                    if (userdataError) {
+                                                        console.log("Failed to request user data: " + userdataError);
+                                                    }
+                                                    
+                                                    // User data request success
+                                                    else {
+                                                        var fromuser = userdata['username'].toLowerCase();
+                                                        clients[clientid].emit('message', { from: fromuser, message: post_message });
+                                                    }
+                                                }
+                                            
+                                                r.db('chatapp').table('messages').insert({ userfrom: userdata['id'], userto: clientid, message: post_message, time: post_time }).run(conn, function(err, dbres) {
+                                                    if(err) {
+                                                        console.log("Failed to send message: " + err.message);
+                                                    }
+                                                    else {
+                                                        console.log("Message saved");
+                                                    }
+                                                });
+                            
+                                            });
+
+                                        }
+    
+                                    }
+                                });
+    
+                            }
+    
+                        });
+                    }
+                    
+                });
+
+                // Set client token
+                socket.on('settoken', (token) => {
+
+                    getUserData(token.toString(), function(userdataError, userdata) {
+                                
+                        if (userdataError) {
+                            console.log("Failed to request user data: " + userdataError);
+                        }
+                        
+                        // User data request success
+                        else {
+                            var clientid = userdata['id'];
+                            clients[clientid] = socket;
+                        }
+
+                    });
+
+                });
             })
 
             if (server.listening == true) {
