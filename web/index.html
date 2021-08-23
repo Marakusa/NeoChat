@@ -167,6 +167,13 @@
         var socket = io();
         socket.emit('settoken', token);
         socket.on('message', receiveMessage);
+
+        var allBubbles = document.getElementsByClassName('bubble');
+        for (var i=0, len=allBubbles.length|0; i<len; i=i+1|0) {
+            allBubbles[i].addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
+        }
+        
+        socket.on('userstatus', receiveUserStatus);
         
         function count(obj) {
             var count=0;
@@ -178,19 +185,29 @@
             return count;
         }
         
-        var allBubbles = document.getElementsByClassName('bubble');
-        for (var i=0, len=allBubbles.length|0; i<len; i=i+1|0) {
-            allBubbles[i].addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
-        }
-        
         if ((document.documentURI).endsWith("@me", document.documentURI.length)) {
             document.getElementsByClassName("footer")[0].style.display = "none";
             document.getElementById("welcomeText").style.display = "block";
-            //refreshusers();
+
+            var users = document.getElementsByClassName('listUserName');
+            for (var i=0, len=users.length|0; i<len; i=i+1|0) {
+                socket.emit('getuserstatus', users[i].innerText, token);
+            }
         }
-        /*else {
-            requestmessages();
-        }*/
+        else {
+            var allBubbles = document.getElementsByClassName('bubble');
+            for (var i=0, len=allBubbles.length|0; i<len; i=i+1|0) {
+                allBubbles[i].addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
+            }
+        }
+
+        function receiveUserStatus(data) {
+            console.log(data);
+            if (document.getElementById('listUserName' + data.user)) {
+                var user = document.getElementById('listUserName' + data.user);
+                user.innerHTML = "<span class=\"userStatus" + data.status + "\"></span>" + user.innerHTML.split("</span>")[1];
+            }
+        }
 
         document.getElementById("emojiList").style.display = "none";
 

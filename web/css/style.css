@@ -354,6 +354,43 @@ hr {
     white-space: nowrap;
 }
 
+.userStatus0 {
+    width: 14px;
+    height: 14px;
+    background-color: #6d6d6d;
+    display: inline-block;
+    margin-right: 10px;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+.userStatus1 {
+    width: 14px;
+    height: 14px;
+    background-color: #47f247;
+    display: inline-block;
+    margin-right: 10px;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+.userStatus2 {
+    width: 14px;
+    height: 14px;
+    background-color: #f8ca31;
+    display: inline-block;
+    margin-right: 10px;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+.userStatus3 {
+    width: 14px;
+    height: 14px;
+    background-color: #f24d47;
+    display: inline-block;
+    margin-right: 10px;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+
 .emojiList {
     width: 305px;
     height: 310px;

@@ -21,7 +21,7 @@ var dbPort;
 
 const userListButton = `<a href="@&USERNAMELINK" id="user&UID" class="users">
     <div class="listUser">
-        <p id="listUserNameUID" class="listUserName">&USERNAME</p>
+        <p id="listUserName&USERNAMELINK" class="listUserName"><span class="userStatus&ONLINESTATUS"></span>&USERNAME</p>
     </div>
 </a>`;
 const headerBackButton = `<a href="@me" class="headerBack buttonRound"><div style="background-image: url(../img/BackArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>`;
@@ -137,6 +137,7 @@ function getWebpage(callbackFunction) {
     });
 }
 
+// Listen for requests
 function requestListener(req, res) {
     console.log(req.connection.remoteAddress + ": \"" + req.url + "\" (" + req.method + ")");
 
@@ -286,7 +287,10 @@ function requestListener(req, res) {
         
                                                                             if (user['id'].toString() != userdata['id']) {
                                                                                 if (user['username'] != undefined) {
-                                                                                    msghistory += userListButton.replace(/&USERNAMELINK/g, user['username'].toLowerCase()).replace(/&USERNAME/g, user['username']).replace(/&UID/g, doneIndexI);
+                                                                                    msghistory += userListButton
+                                                                                                    .replace(/&USERNAMELINK/g, user['username'].toLowerCase())
+                                                                                                    .replace(/&USERNAME/g, user['username'])
+                                                                                                    .replace(/&ONLINESTATUS/g, 0);
                                                                                     doneIndexI++;
                                                                                 }
                                                                             }
@@ -874,7 +878,7 @@ function generateToken() {
     return result;
 }
 
-var clients = {};
+var clients = [];
 
 // App server class
 module.exports = class AppServer {
@@ -911,7 +915,38 @@ module.exports = class AppServer {
                 // User disconnected
                 socket.on('disconnect', () => {
                     console.log('User disconnected');
-                    socket = null;
+
+                    getClientBySocket(socket, function (client) {
+
+                        if (client !== null) {
+                            r.db('chatapp').table('users').filter(r.row('id').match(client.id.toString())).run(conn, function(err, cursor) {
+                                if (err) {
+                                    console.log(err.message);
+                                    socket = null;
+                                }
+                                else {
+                                    cursor.toArray(function(err, result) {
+                                        if (err) {
+                                            console.log(err.message);
+                                            socket = null;
+                                        }
+                                        else {
+                                            if (result.length > 0) {
+                                                clients.forEach(c => {
+                                                    c.socket.emit('userstatus', { user: result[0]['username'].toLowerCase(), status: 0 });
+                                                });
+                                                socket = null;
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                        else {
+                            socket = null;
+                        }
+
+                    });
                 });
 
                 // Chat message handler
@@ -953,29 +988,36 @@ module.exports = class AppServer {
                                             console.log('Message (to ' + username + '): ' + msg);
 
                                             getUserData(token.toString(), function(userdataError, userdata) {
-                                                            
-                                                if (clients[clientid]) {
-                                                    console.log('User online');
-        
-                                                    if (userdataError) {
-                                                        console.log("Failed to request user data: " + userdataError);
-                                                    }
-                                                    
-                                                    // User data request success
-                                                    else {
-                                                        var fromuser = userdata['username'].toLowerCase();
-                                                        clients[clientid].emit('message', { from: fromuser, message: post_message });
-                                                    }
+                                                
+                                                if (userdataError) {
+                                                    console.log(userdataError.message);
                                                 }
-                                            
-                                                r.db('chatapp').table('messages').insert({ userfrom: userdata['id'], userto: clientid, message: post_message, time: post_time }).run(conn, function(err, dbres) {
-                                                    if(err) {
-                                                        console.log("Failed to send message: " + err.message);
+                                                else {
+                                                    var client = getClientById(clientid);
+
+                                                    if (client) {
+                                                        console.log('User online');
+            
+                                                        if (userdataError) {
+                                                            console.log("Failed to request user data: " + userdataError);
+                                                        }
+                                                        
+                                                        // User data request success
+                                                        else {
+                                                            var fromuser = userdata['username'].toLowerCase();
+                                                            client.emit('message', { from: fromuser, message: post_message });
+                                                        }
                                                     }
-                                                    else {
-                                                        console.log("Message saved");
-                                                    }
-                                                });
+                                                
+                                                    r.db('chatapp').table('messages').insert({ userfrom: userdata['id'], userto: clientid, message: post_message, time: post_time }).run(conn, function(err, dbres) {
+                                                        if(err) {
+                                                            console.log("Failed to send message: " + err.message);
+                                                        }
+                                                        else {
+                                                            console.log("Message saved");
+                                                        }
+                                                    });
+                                                }
                             
                                             });
 
@@ -1003,7 +1045,95 @@ module.exports = class AppServer {
                         // User data request success
                         else {
                             var clientid = userdata['id'];
-                            clients[clientid] = socket;
+                            setClientSocket(clientid, socket, function () {
+                                getClientBySocket(socket, function (client) {
+                
+                                    if (client !== null) {
+                                        r.db('chatapp').table('users').filter(r.row('id').match(client.id.toString())).run(conn, function(err, cursor) {
+                                            if (err) {
+                                                console.log(err.message);
+                                            }
+                                            else {
+                                                cursor.toArray(function(err, result) {
+                                                    if (err) {
+                                                        console.log(err.message);
+                                                    }
+                                                    else {
+                                                        if (result.length > 0) {
+                                                            clients.forEach(c => {
+                                                                c.socket.emit('userstatus', { user: result[0]['username'].toLowerCase(), status: 1 });
+                                                            });
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                
+                                });
+
+                            });
+            
+                        }
+
+                    });
+
+                });
+
+                // Set client token
+                socket.on('getuserstatus', (username, token) => {
+
+                    // User data request success
+                    r.db('chatapp').table('users').filter(r.row('username').match("(?i)^" + username.toLowerCase() + "$")).run(conn, function(err, dbres) {
+                    
+                        if(err) {
+                            console.log("User error " + err.message);
+                        }
+                        
+                        else {
+                            
+                            dbres.toArray(function(err, result) {
+
+                                if (err) {
+                                    console.log("User error " + err.message);
+                                }
+
+                                else {
+
+                                    if (result.length == 0 || result[0] == undefined || result[0]['id'] == undefined || result[0]['id'] == null || result[0]['id'] == 0) {
+                                        console.log("User result null");
+                                    }
+                                    else {
+                                        var clientid = result[0]['id'];
+
+                                        console.log('Request user status of ' + username);
+
+                                        getUserData(token.toString(), function(userdataError, userdata) {
+                                                        
+                                            if (userdataError) {
+                                                console.log("Failed to request user data: " + userdataError);
+                                                socket.emit('userstatus', { user: username.toLowerCase(), status: 0 });
+                                            }
+                                            
+                                            else {
+
+                                                if (getClientById(clientid)) {
+                                                    socket.emit('userstatus', { user: username.toLowerCase(), status: 1 });
+                                                }
+
+                                                else {
+                                                    socket.emit('userstatus', { user: username.toLowerCase(), status: 0 });
+                                                }
+
+                                            }
+                        
+                                        });
+
+                                    }
+
+                                }
+                            });
+
                         }
 
                     });
@@ -1015,5 +1145,40 @@ module.exports = class AppServer {
                 console.log("Server started at http://localhost:" + port);
             }
         });
+        
+        function getClientBySocket(socket, callback) {
+            clients.forEach(client => {
+                if (client.socket == socket) {
+                    callback(client);
+                    return;
+                }
+            });
+            callback(null);
+        }
+        function getClientById(id) {
+            clients.forEach(client => {
+                if (client.id == id) {
+                    return client.socket;
+                }
+            });
+
+            return null;
+        }
+        function setClientSocket(id, socket, callback) {
+            var set = false;
+
+            clients.forEach(client => {
+                if (client.id == id && set == false) {
+                    client.socket = socket;
+                    set = true;
+                    callback();
+                }
+            });
+
+            if (set == false) {
+                clients.push({ id: id, socket: socket });
+                callback();
+            }
+        }
     }
 }
