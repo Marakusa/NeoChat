@@ -207,9 +207,7 @@
                                 console.log(data["loginstatus"] + ": " + data["message"]);
                                 redirecting = true;
                                 document.cookie = "token=" + data["token"] + "; path=/";
-                                setTimeout(function () {
-                                    window.location.href = "/channel/@me";
-                                }, 1000);
+                                window.location.href = "/channel/@me";
                             }
                             else {
                                 console.log(data["loginstatus"] + ": " + data["message"]);
@@ -261,11 +259,9 @@
                             submitting = false;
                             
                             if (data["registerstatus"] == "0") {
-                                setTimeout(function () {
-                                    console.log(data["message"]);
-                                    document.cookie = "token=" + data["token"] + "; path=/";
-                                    window.location.href = "/";
-                                }, 1000);
+                                console.log(data["message"]);
+                                document.cookie = "token=" + data["token"] + "; path=/";
+                                window.location.href = "/";
                             }
                             else {
                                 setTimeout(function () {
