@@ -17,7 +17,7 @@
         <div class="headerSideListButton">
             <p class="headerSideListButtonText">Settings</p>
         </div>
-        <div class="headerSideListButton">
+        <div onclick="logout();" class="headerSideListButton">
             <p class="headerSideListButtonText">Log Out</p>
         </div>
     </div>
@@ -85,6 +85,11 @@
     </script>
 
     <script>
+        function logout() {
+            document.cookie = "token=; path=/";
+            window.location.href = "../signin";
+        }
+
         function getCookie(name) {
             const value = `; ${document.cookie}`;
             const parts = value.split(`; ${name}=`);
