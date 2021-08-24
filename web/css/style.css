@@ -4,6 +4,18 @@ body {
     color: white;
 }
 
+::-webkit-scrollbar {
+    width: 10px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1); 
+    border-radius: 12px;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2); 
+    border-radius: 12px;
+}
+  
 .messageHistoryTitle {
     color: #989898;
     margin: 10px;
@@ -38,6 +50,56 @@ hr {
 }
 .notification a h3 {
     color: #ffe264;
+}
+
+.disconnectedD {
+    width: 300px;
+    padding: 20px;
+    margin: 150px auto auto;
+    background: #1d1d1d;
+    border: solid;
+    border-width: 1px;
+    border-color: #ffe264;
+    border-radius: 5px;
+    display: flow-root;
+}
+.disconnectedH {
+    color: #ffe264;
+    margin: 0;
+}
+.disconnectedT {
+    margin: 0;
+}
+.disconnectedB {
+    width: fit-content;
+    height: 22px;
+    margin-top: 15px;
+    margin-right: 5px;
+    padding: 8px 16px 8px;
+    float: left;
+    display: block;
+    background-color: #242424;
+    color: #ffe264;
+    border-color: #ffe264;
+    border: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    user-select: none;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.disconnectedB:hover {
+    background-color: #363636;
+    color: #ffffff;
+    border-color: #ffffff;
+    transition: 0.2s;
+}
+.disconnectedB:active {
+    background-color: #1b1b1b;
+    color: #5a5a5a;
+    border-color: #5a5a5a;
+    transition: 0.2s;
 }
 
 .header {
@@ -362,6 +424,7 @@ hr {
     margin-right: 10px;
     border-radius: 50%;
     transition: 0.2s;
+    transition-delay: 5s;
 }
 .userStatus1 {
     width: 14px;
@@ -398,7 +461,7 @@ hr {
     left: 0;
     display: block;
     position: absolute;
-    background-color: white;
+    background-color: #2a2a2a;
     border-radius: 5px;
     padding: 10px;
 }

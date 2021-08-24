@@ -19,6 +19,8 @@ var webFolder;
 var dbAddress;
 var dbPort;
 
+const afkTime = 5000;
+
 const userListButton = `<a href="@&USERNAMELINK" id="user&UID" class="users">
     <div class="listUser">
         <p id="listUserName&USERNAMELINK" class="listUserName"><span class="userStatus&ONLINESTATUS"></span>&USERNAME</p>
@@ -951,6 +953,11 @@ module.exports = class AppServer {
 
                 // Chat message handler
                 socket.on('message', (username, token, msg) => {
+
+                    if (token == null) {
+                        token = "";
+                    }
+
                     if (msg.length <= 500 && msg.trim() != "") {
                                         
                         var post_message = entities.encode(msg).replace(/\n/g, "<br>");
@@ -993,28 +1000,23 @@ module.exports = class AppServer {
                                                     console.log(userdataError.message);
                                                 }
                                                 else {
-                                                    var client = getClientById(clientid);
+                                                    getClientById(clientid.toString(), function (mclient) {
+                                                        if (mclient !== undefined && mclient !== null && mclient.socket !== undefined && mclient.socket !== null) {
+                                                            if (userdataError) {
+                                                                console.log("Failed to request user data: " + userdataError);
+                                                            }
+                                                            
+                                                            else {
+                                                                var fromuser = userdata['username'].toLowerCase();
+                                                                mclient.socket.emit('message', { from: fromuser, message: post_message });
+                                                            }
+                                                        }
+                                                    
+                                                    });
 
-                                                    if (client) {
-                                                        console.log('User online');
-            
-                                                        if (userdataError) {
-                                                            console.log("Failed to request user data: " + userdataError);
-                                                        }
-                                                        
-                                                        // User data request success
-                                                        else {
-                                                            var fromuser = userdata['username'].toLowerCase();
-                                                            client.emit('message', { from: fromuser, message: post_message });
-                                                        }
-                                                    }
-                                                
                                                     r.db('chatapp').table('messages').insert({ userfrom: userdata['id'], userto: clientid, message: post_message, time: post_time }).run(conn, function(err, dbres) {
                                                         if(err) {
                                                             console.log("Failed to send message: " + err.message);
-                                                        }
-                                                        else {
-                                                            console.log("Message saved");
                                                         }
                                                     });
                                                 }
@@ -1036,6 +1038,10 @@ module.exports = class AppServer {
                 // Set client token
                 socket.on('settoken', (token) => {
 
+                    if (token == null) {
+                        token = "";
+                    }
+
                     getUserData(token.toString(), function(userdataError, userdata) {
                                 
                         if (userdataError) {
@@ -1045,9 +1051,11 @@ module.exports = class AppServer {
                         // User data request success
                         else {
                             var clientid = userdata['id'];
-                            setClientSocket(clientid, socket, function () {
+                            var clientname = userdata['username'];
+                            setClientSocket(clientid, clientname, socket, function () {
+
                                 getClientBySocket(socket, function (client) {
-                
+                                    
                                     if (client !== null) {
                                         r.db('chatapp').table('users').filter(r.row('id').match(client.id.toString())).run(conn, function(err, cursor) {
                                             if (err) {
@@ -1061,7 +1069,13 @@ module.exports = class AppServer {
                                                     else {
                                                         if (result.length > 0) {
                                                             clients.forEach(c => {
-                                                                c.socket.emit('userstatus', { user: result[0]['username'].toLowerCase(), status: 1 });
+                                                                if (c.id !== clientid) {
+                                                                    c.socket.emit('userstatus', { user: result[0]['username'].toLowerCase(), status: 1 });
+
+                                                                    if (Date.now() - c.lastActivity > afkTime) {
+                                                                        socket.emit('userstatus', { user: c.username.toLowerCase(), status: 1 });
+                                                                    }
+                                                                }
                                                             });
                                                         }
                                                     }
@@ -1080,8 +1094,12 @@ module.exports = class AppServer {
 
                 });
 
-                // Set client token
+                // Get users status
                 socket.on('getuserstatus', (username, token) => {
+
+                    if (token == null) {
+                        token = "";
+                    }
 
                     // User data request success
                     r.db('chatapp').table('users').filter(r.row('username').match("(?i)^" + username.toLowerCase() + "$")).run(conn, function(err, dbres) {
@@ -1117,7 +1135,7 @@ module.exports = class AppServer {
                                             
                                             else {
 
-                                                if (getClientById(clientid)) {
+                                                if (getClientExistsById(clientid)) {
                                                     socket.emit('userstatus', { user: username.toLowerCase(), status: 1 });
                                                 }
 
@@ -1139,6 +1157,31 @@ module.exports = class AppServer {
                     });
 
                 });
+
+                // Set users status
+                socket.on('setuserstatus', (status, token) => {
+
+                    if (token == null) {
+                        token = "";
+                    }
+
+                    getUserData(token.toString(), function(userdataError, userdata) {
+                                                        
+                        if (userdataError) {
+                            console.log("Failed to request user data: " + userdataError);
+                        }
+                        
+                        else {
+
+                            clients.forEach(c => {
+                                c.socket.emit('userstatus', { user: userdata['username'].toLowerCase(), status: status });
+                            });
+
+                        }
+    
+                    });
+
+                });
             })
 
             if (server.listening == true) {
@@ -1155,20 +1198,39 @@ module.exports = class AppServer {
             });
             callback(null);
         }
-        function getClientById(id) {
-            clients.forEach(client => {
-                if (client.id == id) {
-                    return client.socket;
-                }
-            });
-
-            return null;
-        }
-        function setClientSocket(id, socket, callback) {
+        function getClientById(id, callback) {
             var set = false;
 
             clients.forEach(client => {
-                if (client.id == id && set == false) {
+                if (set == false && client.id.toString() == id.toString()) {
+                    set = true;
+                    callback(client);
+                }
+            });
+
+            if (set == false) {
+                callback(null);
+            }
+        }
+        function getClientExistsById(id) {
+            var set = false;
+
+            clients.forEach(client => {
+                if (set == false && client.id.toString() == id.toString()) {
+                    set = true;
+                    return client;
+                }
+            });
+
+            if (set == false) {
+                return null;
+            }
+        }
+        function setClientSocket(id, username, socket, callback) {
+            var set = false;
+
+            clients.forEach(client => {
+                if (set == false && client.id == id) {
                     client.socket = socket;
                     set = true;
                     callback();
@@ -1176,7 +1238,7 @@ module.exports = class AppServer {
             });
 
             if (set == false) {
-                clients.push({ id: id, socket: socket });
+                clients.push({ id: id, username: username, socket: socket, lastActivity:  Date.now()});
                 callback();
             }
         }
