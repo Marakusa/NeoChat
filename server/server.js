@@ -1,33 +1,30 @@
-const http = require('http');
+const { http } = import("http");
+const { Server } = import("socket.io");
+const { fs } = import("fs");
+const { path } = import("path");
+const { qs } = import("qs");
+const { entities } = import("html-entities");
+const { r } = import("rethinkdb");
+const { crypto } = import("crypto");
+const { emojis } = import("./emojis.js");
+
+// HTTP server variables
 var server;
 var conn = null;
 
-const fs = require('fs');
-const path = require('path');
-const qs = require('qs');
-const entities = require('html-entities');
-const r = require('rethinkdb');
-const emojis = require('./emojis.js');
-const crypto = require('crypto');
-
-const { Server } = require("socket.io");
-const { encode } = require('punycode');
+// Socket.io
 var io;
 
+// Config settings
 var port;
 var webFolder;
 var dbAddress;
 var dbPort;
 
-const afkTime = 5000;
-
-const userListButton = `<a href="@&USERNAMELINK" id="user&UID" class="users">
-    <div class="listUser">
-        <p id="listUserName&USERNAMELINK" class="listUserName"><span class="userStatus&ONLINESTATUS"></span>&USERNAME</p>
-    </div>
-</a>`;
-const headerBackButton = `<a href="@me" class="headerBack buttonRound"><div style="background-image: url(../img/BackArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>`;
-const headerMenuButton = `<a onclick="openSideMenu();" class="headerBack buttonRound"><div style="background-image: url(../img/MenuLines.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>`;
+// Template code snippets
+const userListButton = "<a href=\"@&USERNAMELINK\" id=\"user&UID\" class=\"users\"><div class=\"listUser\"><p id=\"listUserName&USERNAMELINK\" class=\"listUserName\"><span class=\"userStatus&ONLINESTATUS\"></span>&USERNAME</p></div></a>";
+const headerBackButton = "<a href=\"@me\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/BackArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
+const headerMenuButton = "<a onclick=\"openSideMenu();\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/MenuLines.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
 const theyBubble = "<div class=\"bubble bubbleLeft\">&MESSAGE</div>";
 const meBubble = "<div class=\"bubble bubbleRight\">&MESSAGE</div>";
 
@@ -47,7 +44,7 @@ function parseCookies (request) {
 }
 // Get MIME type
 function getMIMEType(ext) {
-    var array = fs.readFileSync('server/data/mimes.dat').toString().split("\n");
+    var array = fs.readFileSync("server/data/mimes.dat").toString().split("\n");
     
     if (array.filter(option => option.startsWith(ext + "\t")).length == 0) {
         return "text/plain";
@@ -68,9 +65,6 @@ function hash(stringtohash) {
 // Server
 
 var url = "";
-
-var pending = {};
-
 var mainpageTemplate = "";
 
 function checkIfTokenValid(validatetoken, callbackFunction) {
@@ -882,8 +876,7 @@ function generateToken() {
 
 var clients = [];
 
-// App server class
-module.exports = class AppServer {
+module.exports = class ChatServer {
     constructor(config) {
         console.log("Server instantiated");
 
@@ -1071,10 +1064,7 @@ module.exports = class AppServer {
                                                             clients.forEach(c => {
                                                                 if (c.id !== clientid) {
                                                                     c.socket.emit('userstatus', { user: result[0]['username'].toLowerCase(), status: 1 });
-
-                                                                    if (Date.now() - c.lastActivity > afkTime) {
-                                                                        socket.emit('userstatus', { user: c.username.toLowerCase(), status: 1 });
-                                                                    }
+                                                                    socket.emit('userstatus', { user: c.username.toLowerCase(), status: 1 });
                                                                 }
                                                             });
                                                         }
