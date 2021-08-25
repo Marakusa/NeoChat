@@ -1,4 +1,4 @@
-var fs = require('fs');
+var fs = require("fs");
 
 var emojis;
 
@@ -23,7 +23,6 @@ function loadEmojis() {
         }
     });
 }
-
 // Find emojis
 function findEmoji(emoji) {
     return emojis.find(f => f["shortname"] == emoji)["char"];

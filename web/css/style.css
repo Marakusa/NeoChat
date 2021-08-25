@@ -587,3 +587,24 @@ input {
     display: block;
     cursor: pointer;
 }
+
+.newMessage {
+    width: calc(100% - 20px);
+    height: 32px;
+    position: absolute;
+    top: -32px;
+    background-color: #e82e2e;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    z-index: 1;
+    margin: auto 5px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    user-select: none;
+    cursor: pointer;
+}
+.newMessage span {
+    margin: 6px 0;
+    display: block;
+}

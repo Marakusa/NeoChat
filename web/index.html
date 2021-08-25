@@ -3,7 +3,7 @@
         <div class="disconnectedD">
             <h2 class="disconnectedH">Disconnected</h2>
             <hr>
-            <p class="disconnectedT">Please refresh the page to try reconnecting...</p>
+            <p class="disconnectedT">Server closed.<br><br>Please refresh the page to try reconnecting...</p>
             <a href="/" class="disconnectedB">Reconnect</a>
             <a onclick="logout();" class="disconnectedB">Log Out</a>
         </div>
@@ -52,6 +52,9 @@
     </div>
 
     <div class="footer">
+        <div onclick="chatScroll.scrollTop = chatScroll.scrollHeight - chatScroll.clientHeight;" class="newMessage">
+            <span>You have unread messages</span>
+        </div>
         <a onclick="emojiOpen();" class="footerLeftButton">
             <div style="background-image: url(../img/Emojis.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div>
         </a>
@@ -303,16 +306,28 @@
         });
 
         var chatScroll = document.getElementById("chatScroll");
+        var newMessage = document.getElementsByClassName("newMessage")[0];
+        newMessage.style.display = "none";
 
-        setTimeout(() => {  
-            chatScroll.scrollTop = chatScroll.scrollHeight - chatScroll.clientHeight;
-        }, 10);
+        if (mepage == false) {
+            setTimeout(() => {
+                chatScroll.scrollTop = chatScroll.scrollHeight - chatScroll.clientHeight;
+            }, 10);
+
+            setInterval(() => {
+                if (Math.round(chatScroll.scrollTop) >= Math.round(chatScroll.scrollHeight - chatScroll.clientHeight)) {
+                    newMessage.style.display = "none";
+                    document.title = "NeoChat";
+                }
+            }, 100);
+        }
 
         function receiveMessage(data)
         {
             var chatScroll = document.getElementById("chatScroll");
             var scroll = false;
-            if (chatScroll.scrollTop == (chatScroll.scrollHeight - chatScroll.clientHeight)) {
+            
+            if (Math.round(chatScroll.scrollTop) >= Math.round(chatScroll.scrollHeight - chatScroll.clientHeight)) {
                 scroll = true;
             }
 
@@ -331,13 +346,25 @@
                 
                 dateSplit = true;
 
-                setTimeout(() => {  
-                    if (scroll) {
-                        chatScroll.scrollTop = chatScroll.scrollHeight + 10;
-                    }
-                }, 100);
+                if (mepage == false) {
+                    setTimeout(() => {  
+                        if (scroll && document[hidden] == false) {
+                            chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                            document.title = "NeoChat";
+                        }
+                        else {
+                            playPing();
+                            newMessage.style.display = "";
+                        }
+                    }, 100);
+                }
+                else {
+                    playPing();
+                }
             }
             else {
+                playPing();
+
                 var msg = data.message;
 
                 if (data.message.length > 50) {
@@ -359,14 +386,44 @@
 
                 notifications.insertBefore(node, notifications.firstChild);
 
-                setTimeout(() => {  
-                    if (scroll) {
-                        chatScroll.scrollTop = chatScroll.scrollHeight + 10;
-                    }
-                }, 100);
+                if (mepage == false) {
+                    setTimeout(() => {  
+                        if (scroll) {
+                            chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                            document.title = "NeoChat";
+                        }
+                        else {
+                            newMessage.style.display = "";
+                        }
+                    }, 100);
+                }
 
                 notificated("notification" + id);
             }
+        }
+
+        function playPing() {
+            setTimeout(function () {
+                var mp3Source = '<source src="/sounds/ping.mp3" type="audio/mpeg">';
+                var embedSource = '<embed hidden="true" autostart="true" loop="false" src="/sounds/ping.mp3">';
+                document.getElementById("sound").innerHTML = '<audio autoplay="autoplay">' + mp3Source + embedSource + '</audio>';
+
+                var audio = document.getElementById("sound").childNodes[0];
+
+                if (getMobileOperatingSystem() == '') {
+                    audio.volume = 0.2;
+                }
+
+                document.title = "(1) NeoChat";
+            }, 100);
+
+            /*var sound = new Audio({
+                src: ['/sounds/ping.wav'],
+                autoplay: true,
+                loop: false,
+                muted: true
+            });
+            sound.play();*/
         }
 
         function notificated(id) {
@@ -390,6 +447,8 @@
         
         function sendMessage()
         {
+            document.getElementById("messageField").focus();
+
             var sendStatus = document.getElementById("sendStatus");
             sendStatus.innerText = "Seen";
 
@@ -397,7 +456,7 @@
 
             var chatScroll = document.getElementById("chatScroll");
             var scroll = false;
-            if (chatScroll.scrollTop == (chatScroll.scrollHeight - chatScroll.clientHeight)) {
+            if (Math.round(chatScroll.scrollTop) >= Math.round(chatScroll.scrollHeight - chatScroll.clientHeight)) {
                 scroll = true;
             }
 
@@ -407,19 +466,21 @@
 
             messageField.value = "";
 
-            socket.emit('message', chatusername, token, msg);
+            if (msg.trim() !== "") {
+                socket.emit('message', chatusername, token, msg);
 
-            id = Math.floor((Math.random() * 999999) + 1);
-            var htmlCode = meBubble.replace("&MESSAGE", msg).replace("&ID", id);
-            document.getElementById("chat").innerHTML += htmlCode;
+                id = Math.floor((Math.random() * 999999) + 1);
+                var htmlCode = meBubble.replace("&MESSAGE", msg).replace("&ID", id);
+                document.getElementById("chat").innerHTML += htmlCode;
 
-            document.getElementById("bubble" + id).addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
+                document.getElementById("bubble" + id).addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
                 
-            setTimeout(() => {  
-                if (scroll) {
-                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
-                }
-            }, 100);
+                setTimeout(() => {  
+                    if (scroll) {
+                        chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                    }
+                }, 100);
+            }
         }
 
         function messageSentConfirm(message) {
@@ -427,26 +488,17 @@
 
             var chatScroll = document.getElementById("chatScroll");
             var scroll = false;
-            if (chatScroll.scrollTop == (chatScroll.scrollHeight - chatScroll.clientHeight)) {
+            if (Math.round(chatScroll.scrollTop) >= Math.round(chatScroll.scrollHeight - chatScroll.clientHeight)) {
                 scroll = true;
             }
 
             id = Math.floor((Math.random() * 999999) + 1);
             document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleRight\">" + message + "</div>";
             
-            if (scroll)
-            {
-                chatScroll.scrollTop = chatScroll.scrollHeight;
-            }
-
             var sendStatus = document.getElementById("sendStatus");
             sendStatus.style.display = "block";
             sendStatus.parentNode.appendChild(sendStatus);
 
-            if (scroll) {
-                chatScroll.scrollTop = chatScroll.scrollHeight + 10;
-            }
-            
             if (dateSplit == false)
             {
                 document.getElementsByName("timestamp").forEach(element => {
@@ -474,9 +526,11 @@
             var date = formatDate(today, 't');
             document.getElementById("chat").innerHTML += dateString.replace("&MESSAGE", date);
             
-            if (scroll) {
-                chatScroll.scrollTop = chatScroll.scrollHeight + 10;
-            }
+            setTimeout(() => {  
+                if (scroll) {
+                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                }
+            }, 100);
         }
 
         function formatDate(date, format) {
@@ -505,5 +559,47 @@
 
             contextListE.style.transform = "translate(" + pageX + "px, " + pageY + "px)";
         }
+    
+        var hidden = false;
+
+        (function() {
+            hidden = false;
+
+            // Standards:
+            if (hidden in document)
+                document.addEventListener("visibilitychange", onchange);
+            else if ((hidden = "mozHidden") in document)
+                document.addEventListener("mozvisibilitychange", onchange);
+            else if ((hidden = "webkitHidden") in document)
+                document.addEventListener("webkitvisibilitychange", onchange);
+            else if ((hidden = "msHidden") in document)
+                document.addEventListener("msvisibilitychange", onchange);
+            // IE 9 and lower:
+            else if ("onfocusin" in document)
+                document.onfocusin = document.onfocusout = onchange;
+            // All others:
+            else
+                window.onpageshow = window.onpagehide
+                = window.onfocus = window.onblur = onchange;
+
+            function onchange (evt) {
+                var v = "visible", h = "hidden",
+                    evtMap = {
+                    focus:v, focusin:v, pageshow:v, blur:h, focusout:h, pagehide:h
+                    };
+
+                evt = evt || window.event;
+                if (evt.type in evtMap)
+                document.body.className = evtMap[evt.type];
+                else
+                document.body.className = this[hidden] ? "hidden" : "visible";
+            }
+
+            // set the initial state (but only if browser supports the Page Visibility API)
+            if( document[hidden] !== undefined )
+                onchange({type: document[hidden] ? "blur" : "focus"});
+            })();
     </script>
+    
+    <div id="sound"></div>
 </body>

@@ -1,11 +1,8 @@
-var Server = require('./server.js');
-
-var fs = require('fs');
+const Server = require("./server.js");
+const fs = require("fs");
 
 var configLoadSuccess = true;
 var config = JSON.parse("{}");
-
-var appServerInstance;
 
 // Load configuration file
 fs.readFile("./server/serverconfig.json", "utf-8", function (err, res) {
@@ -25,8 +22,7 @@ fs.readFile("./server/serverconfig.json", "utf-8", function (err, res) {
         
         if (configLoadSuccess) {
             console.log("Config loaded successfully!");
-            
-            appServerInstance = new Server(config);
+            new Server(config);
         }
         else {
             console.log("Config load failed.");

@@ -1,12 +1,13 @@
-const { http } = import("http");
-const { Server } = import("socket.io");
-const { fs } = import("fs");
-const { path } = import("path");
-const { qs } = import("qs");
-const { entities } = import("html-entities");
-const { r } = import("rethinkdb");
-const { crypto } = import("crypto");
-const { emojis } = import("./emojis.js");
+const http = require("http");
+const fs = require("fs");
+const path = require("path");
+const qs = require("qs");
+const entities = require("html-entities");
+const r = require("rethinkdb");
+const crypto = require("crypto");
+const emojis = require("./emojis.js");
+const { Server } = require("socket.io");
+const client = require("./client.js");
 
 // HTTP server variables
 var server;
@@ -35,15 +36,19 @@ function parseCookies (request) {
     var list = {},
         rc = request.headers.cookie;
 
-    rc && rc.split(';').forEach(function( cookie ) {
-        var parts = cookie.split('=');
-        list[parts.shift().trim()] = decodeURI(parts.join('='));
+    rc && rc.split(";").forEach(function( cookie ) {
+        var parts = cookie.split("=");
+        list[parts.shift().trim()] = decodeURI(parts.join("="));
     });
 
     return list;
 }
 // Get MIME type
 function getMIMEType(ext) {
+
+    if (ext.startsWith(".") == false)
+        ext = path.extname(ext);
+
     var array = fs.readFileSync("server/data/mimes.dat").toString().split("\n");
     
     if (array.filter(option => option.startsWith(ext + "\t")).length == 0) {
@@ -56,9 +61,9 @@ function getMIMEType(ext) {
 }
 // Convert string to hash
 function hash(stringtohash) {
-    var hash = crypto.createHash('sha512');
-    data = hash.update(stringtohash + "Yc7vFy3WtaOP9a8YOlRi", 'utf-8');
-    gen_hash= data.digest('hex');
+    var hash = crypto.createHash("sha512");
+    var data = hash.update(stringtohash + "Yc7vFy3WtaOP9a8YOlRi", "utf-8");
+    var gen_hash = data.digest("hex");
     return gen_hash;
 }
 
@@ -72,7 +77,7 @@ function checkIfTokenValid(validatetoken, callbackFunction) {
         callbackFunction(null, false);
     }
     else {
-        r.db('chatapp').table('users').filter(r.row('token').match(validatetoken)).run(conn, function(err, dbres) {
+        r.db("chatapp").table("users").filter(r.row("token").match(validatetoken)).run(conn, function(err, dbres) {
             if(err) {
                 callbackFunction(err, false);
             }
@@ -82,7 +87,7 @@ function checkIfTokenValid(validatetoken, callbackFunction) {
                     callbackFunction(err, false);
                 }
 
-                if (result.length == 0 || result[0] == undefined || result[0]['id'] == undefined || result[0]['id'] == null || result[0]['id'] == 0) {
+                if (result.length == 0 || result[0] == undefined || result[0]["id"] == undefined || result[0]["id"] == null || result[0]["id"] == 0) {
                     callbackFunction(null, false);
                 }
                 else {
@@ -93,7 +98,7 @@ function checkIfTokenValid(validatetoken, callbackFunction) {
     }
 }
 function getUserData(usertoken, callbackFunction) {
-    r.db('chatapp').table('users').filter(r.row('token').match(usertoken)).run(conn, function(err, dbres) {
+    r.db("chatapp").table("users").filter(r.row("token").match(usertoken)).run(conn, function(err, dbres) {
         if(err) {
             callbackFunction(err, null);
         }
@@ -103,7 +108,7 @@ function getUserData(usertoken, callbackFunction) {
                 callbackFunction(err, null);
             }
 
-            if (result.length == 0 || result[0] == undefined || result[0]['id'] == undefined || result[0]['id'] == null || result[0]['id'] == 0) {
+            if (result.length == 0 || result[0] == undefined || result[0]["id"] == undefined || result[0]["id"] == null || result[0]["id"] == 0) {
                 callbackFunction("User not found", null);
             }
             else {
@@ -132,6 +137,100 @@ function getWebpage(callbackFunction) {
         }
     });
 }
+function isUrlWebpage(url, req) {
+    return (path.extname(url) == "" || path.extname(url) == ".html") && req.method == "GET";
+}
+function redirect(url, res) {
+    res.writeHead(301,
+        {Location: url}
+    );
+    res.end();
+}
+function getHeader(file) {
+    return {
+        "Access-Control-Allow-Origin": "http://localhost",
+        "Access-Control-Allow-Methods": "POST, GET",
+        "Access-Control-Max-Age": 2592000,
+        "Content-Type": getMIMEType(path.extname(file)) + "; charset=UTF-8",
+    };
+}
+function sendLoginStatus(res, status, message) {
+    res.writeHead(200, getHeader(".json"));
+    res.write("{\"loginstatus\": " + status + ", \"message\": \"" + message + "\"}");
+    res.end();
+}
+function sendRegisterStatus(res, status, message) {
+    res.writeHead(200, getHeader(".json"));
+    res.write("{\"registerstatus\": " + status + ", \"message\": \"" + message + "\"}");
+    res.end();
+}
+function registerUser(res, new_username, new_email, new_hash) {
+    // Duplicate username check
+    r.db("chatapp").table("users").filter(r.row("username").match("(?i)^" + new_username.toLowerCase() + "$")).run(conn, function(err, cursor) {
+        if (err) {
+            res.writeHead(500, err.message);
+            res.end();
+        }
+        else {
+            cursor.toArray(function(err, result) {
+                if (err) {
+                    res.writeHead(500, err.message);
+                    res.end();
+                }
+                else {
+                    if (result.length == 0) {
+                        // Duplicate email check
+                        r.db("chatapp").table("users").filter(r.row("email").match("(?i)^" + new_email.toLowerCase() + "$")).run(conn, function(err, cursor) {
+                            if (err) {
+                                res.writeHead(500, err.message);
+                                res.end();
+                            }
+                            else {
+                                cursor.toArray(function(err, result) {
+                                    if (err) {
+                                        res.writeHead(500, err.message);
+                                        res.end();
+                                    }
+                                    else {
+                                        if (result.length == 0) {
+                                            r.db("chatapp").table("users").insert({ username: new_username, email: new_email, hash: new_hash }).run(conn, function(err) {
+                                                if(err) {
+                                                    res.writeHead(500, err.message);
+                                                    res.end();
+                                                }
+                                                else {
+                                                    res.writeHead(200, getHeader(".json"));
+
+                                                    var token = generateToken();
+                                                    r.db("chatapp").table("users").filter(r.row("username").match("(?i)^" + new_username.toLowerCase() + "$")).update({token: token}).run(conn, function(err) {
+                                                        if(err) {
+                                                            res.writeHead(500, err.message);
+                                                            res.end();
+                                                        }
+                                                        else {
+                                                            res.write("{\"registerstatus\": 0, \"message\": \"Account created successfully\"}");
+                                                            res.end();
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                        else {
+                                            sendRegisterStatus(res, 1, "Email is already in use");
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    else {
+                        sendRegisterStatus(res, 1, "Username is not available");
+                    }
+                }
+            });
+        }
+    });
+}
 
 // Listen for requests
 function requestListener(req, res) {
@@ -139,8 +238,8 @@ function requestListener(req, res) {
 
     // Get clients token from clients cookies
     var cookies = parseCookies(req);
-    if (cookies['token']) {
-        token = cookies['token'];
+    if (cookies["token"]) {
+        token = cookies["token"];
     }
     else {
         token = "";
@@ -158,15 +257,12 @@ function requestListener(req, res) {
             url = req.url;
             
             // If token is invalid and request is webpage return login page
-            if (validtoken == false && (path.extname(url) == "" || path.extname(url) == ".html") && req.method == "GET") {
+            if (validtoken == false && isUrlWebpage(url, req)) {
                 
                 // Check if url is correct
                 if (url !== "/signin") {
                     // Redirect to correct url
-                    res.writeHead(301,
-                        {Location: '/signin'}
-                    );
-                    res.end();
+                    redirect("/signin", res);
                 }
 
                 // Return login page
@@ -180,12 +276,7 @@ function requestListener(req, res) {
                         }
 
                         else {
-                            res.writeHead(200, {
-                                "Access-Control-Allow-Origin": "http://localhost",
-                                "Access-Control-Allow-Methods": "POST, GET",
-                                "Access-Control-Max-Age": 2592000,
-                                "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
-                            });
+                            res.writeHead(200, getHeader(url));
                             res.write(mainpageTemplate.replace(/&TEMPLATE_BODY/, pageres));
                             res.end();
                         }
@@ -202,7 +293,7 @@ function requestListener(req, res) {
                 if (req.method == "GET") {
 
                     // Get user data and return webpage
-                    if ((path.extname(url) == "" || path.extname(url) == ".html") && req.method == "GET") {
+                    if (isUrlWebpage(url, req)) {
                         
                         // Check if url is correct (/channel/@...)
                         if (url.startsWith("/channel/@")) {
@@ -218,10 +309,10 @@ function requestListener(req, res) {
                                 // User data request success
                                 else {
 
-                                    console.log("User data request success: " + userdata['username']);
+                                    console.log("User data request success: " + userdata["username"]);
                                     
                                     // Load page
-                                    r.db('chatapp').table('users').filter(r.row('username').match("(?i)^" + (url.slice(("/channel/@").length)).toLowerCase() + "$")).run(conn, function(err, dbres) {
+                                    r.db("chatapp").table("users").filter(r.row("username").match("(?i)^" + (url.slice(("/channel/@").length)).toLowerCase() + "$")).run(conn, function(err, dbres) {
                                         if(err) {
                                             res.writeHead(500, err.message);
                                             res.end();
@@ -238,36 +329,33 @@ function requestListener(req, res) {
                     
                                                     // User exists
                                                     if (result.length > 0) {
-                                                        chatUserId = result[0]['id'];
-                                                        chatUser = result[0]['username'];
+                                                        chatUserId = result[0]["id"];
+                                                        chatUser = result[0]["username"];
                                                     }
 
                                                     // User doesn't exist redirecting to @me
                                                     else {
-                                                        if (url == '/channel/@me') {
+                                                        if (url == "/channel/@me") {
                                                             chatUserId = 0;
                                                             chatUser = "me";
                                                         }
                                                         else {
-                                                            res.writeHead(301,
-                                                                {Location: '/channel/@me'}
-                                                            );
-                                                            res.end();
+                                                            redirect("/channel/@me", res);
                                                             return;
                                                         }
                                                     }
 
-                                                    url = "/index.html"
+                                                    url = "/index.html";
 
                                                     // Load users page
                                                     if (chatUserId == 0) {
-                                                        r.db('chatapp').table('users').run(conn, function(err, dbres) {
+                                                        r.db("chatapp").table("users").run(conn, function(err, dbres) {
                                                             if(err) {
                                                                 res.writeHead(500, err.message);
                                                                 res.end();
                                                             }
                                                             else {
-                                                                msghistory = "";
+                                                                var msghistory = "";
     
                                                                 dbres.toArray(function(err, aresult) {
                                                                     if(err) {
@@ -276,18 +364,16 @@ function requestListener(req, res) {
                                                                     }
                                                                     else {
                                                                         var doneIndex = 0;
-                                                                        var doneIndexI = 0;
                                                                         
                                                                         aresult.forEach(user => {
                                                                             doneIndex++;
         
-                                                                            if (user['id'].toString() != userdata['id']) {
-                                                                                if (user['username'] != undefined) {
+                                                                            if (user["id"].toString() != userdata["id"]) {
+                                                                                if (user["username"] != undefined) {
                                                                                     msghistory += userListButton
-                                                                                                    .replace(/&USERNAMELINK/g, user['username'].toLowerCase())
-                                                                                                    .replace(/&USERNAME/g, user['username'])
-                                                                                                    .replace(/&ONLINESTATUS/g, 0);
-                                                                                    doneIndexI++;
+                                                                                        .replace(/&USERNAMELINK/g, user["username"].toLowerCase())
+                                                                                        .replace(/&USERNAME/g, user["username"])
+                                                                                        .replace(/&ONLINESTATUS/g, 0);
                                                                                 }
                                                                             }
                                                                             
@@ -300,16 +386,11 @@ function requestListener(req, res) {
                                                                                     }
                                                             
                                                                                     else {
-                                                                                        res.writeHead(200, {
-                                                                                            "Access-Control-Allow-Origin": "http://localhost",
-                                                                                            "Access-Control-Allow-Methods": "POST, GET",
-                                                                                            "Access-Control-Max-Age": 2592000,
-                                                                                            "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
-                                                                                        });
+                                                                                        res.writeHead(200, getHeader(url));
                                                                                         res.write(mainpageTemplate
                                                                                             .replace(/&TEMPLATE_BODY/, pageres)
                                                                                             .replace(/&TITLEUSERNAME/g, "NeoChat")
-                                                                                            .replace(/&YOURUSERNAME/g, userdata['username'])
+                                                                                            .replace(/&YOURUSERNAME/g, userdata["username"])
                                                                                             .replace(/&HEADERLEFTBUTTON/g, headerMenuButton)
                                                                                             .replace("&MESSAGEHISTORYSTARTSHERE", "")
                                                                                             .replace("&USERSLIST", msghistory)
@@ -341,7 +422,7 @@ function requestListener(req, res) {
                                                                 var msghistory = "";
                                                                 
                                                                 // Get sent messages
-                                                                r.db('chatapp').table('messages').filter({userfrom: userdata['id'], userto: chatUserId}).run(conn, function(err, dbres) {
+                                                                r.db("chatapp").table("messages").filter({userfrom: userdata["id"], userto: chatUserId}).run(conn, function(err, dbres) {
                                                                     
                                                                     if(err) {
                                                                         res.writeHead(500, err.message);
@@ -365,7 +446,7 @@ function requestListener(req, res) {
                                                                                 });
                                                                                 
                                                                                 // Get received messages
-                                                                                r.db('chatapp').table('messages').filter({userto: userdata['id'], userfrom: chatUserId}).run(conn, function(err, dbres) {
+                                                                                r.db("chatapp").table("messages").filter({userto: userdata["id"], userfrom: chatUserId}).run(conn, function(err, dbres) {
                                                                                     
                                                                                     if(err) {
                                                                                         res.writeHead(500, err.message);
@@ -396,11 +477,11 @@ function requestListener(req, res) {
                                                                                                 // Loop through messages and add them to display on webpage
                                                                                                 chatMessages.forEach(element => {
 
-                                                                                                    var m_userfrom = element['userfrom'];
-                                                                                                    var m_message = element['message'];
+                                                                                                    var m_userfrom = element["userfrom"];
+                                                                                                    var m_message = element["message"];
                                                                                                     
                                                                                                     // Message is sent by client
-                                                                                                    if (m_userfrom == userdata['id']) {
+                                                                                                    if (m_userfrom == userdata["id"]) {
                                                                                                         msghistory += meBubble.replace("&MESSAGE", m_message);
                                                                                                     }
                                                                                                     // Client has received the message
@@ -420,20 +501,15 @@ function requestListener(req, res) {
                                                                                                 }
                                                                                                 
                                                                                                 // Write page for client
-                                                                                                res.writeHead(200, {
-                                                                                                    "Access-Control-Allow-Origin": "http://localhost",
-                                                                                                    "Access-Control-Allow-Methods": "POST, GET",
-                                                                                                    "Access-Control-Max-Age": 2592000,
-                                                                                                    "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
-                                                                                                });
+                                                                                                res.writeHead(200, getHeader(url));
                                                                                                 res.write(mainpageTemplate
                                                                                                     .replace(/&TEMPLATE_BODY/, pageres)
                                                                                                     .replace(/&TITLEUSERNAME/g, chatUser)
-                                                                                                    .replace(/&YOURUSERNAME/g, userdata['username'])
+                                                                                                    .replace(/&YOURUSERNAME/g, userdata["username"])
                                                                                                     .replace(/&HEADERLEFTBUTTON/g, headerBackButton)
                                                                                                     .replace("&MESSAGEHISTORYSTARTSHERE", msghistory)
                                                                                                     .replace("&USERSLIST", "")
-                                                                                                    );
+                                                                                                );
                                                                                                 res.end();
 
                                                                                             }
@@ -469,10 +545,7 @@ function requestListener(req, res) {
                         
                         // Url is not correct redirect to "/channel/@me"
                         else {
-                            res.writeHead(301,
-                                {Location: '/channel/@me'}
-                            );
-                            res.end();
+                            redirect("/channel/@me", res);
                         }
 
                     }
@@ -480,26 +553,41 @@ function requestListener(req, res) {
                     // Return resource/other than webpage file request
                     else {
 
-                        fs.readFile(webFolder + url, "utf-8", function (error, results) {
+                        if (getMIMEType(url) == "audio/mpeg") {
+                            res.writeHead(200, getHeader(url));
+                            fs.exists(webFolder + url, function(exists){
+                                if(exists)
+                                {
+                                    var rstream = fs.createReadStream(webFolder + url);
+                                    rstream.pipe(res);
+                                }
+                                else
+                                {
+                                    res.end("Its a 404");
+                                }
+                            });
 
-                            if (error) {
-                                res.writeHead(404, { "message": "File not found" });
-                                res.end();
-                            }
-                            
-                            // Return the file
-                            else {
-                                res.writeHead(200, {
-                                    "Access-Control-Allow-Origin": "http://localhost",
-                                    "Access-Control-Allow-Methods": "POST, GET",
-                                    "Access-Control-Max-Age": 2592000,
-                                    "Content-Type": getMIMEType(path.extname(url)) + "; charset=UTF-8",
-                                });
-                                res.write(results);
-                                res.end();
-                            }
+                        }
 
-                        });
+                        else {
+
+                            fs.readFile(webFolder + url, "utf-8", function (error, results) {
+    
+                                if (error) {
+                                    res.writeHead(404, { "message": "File not found" });
+                                    res.end();
+                                }
+                                
+                                // Return the file
+                                else {
+                                    res.writeHead(200, getHeader(url));
+                                    res.write(results);
+                                    res.end();
+                                }
+    
+                            });
+
+                        }
 
                     }
 
@@ -509,7 +597,7 @@ function requestListener(req, res) {
                 else {
 
                     // Get user data
-                    getUserData(token.toString(), function(userdataError, userdata) {
+                    getUserData(token.toString(), function(userdataError) {
                         
                         if (userdataError) {
                             res.writeHead(500, { "message": "Failed to request user data: " + userdataError });
@@ -520,19 +608,21 @@ function requestListener(req, res) {
                         else {
 
                             // Get POST data
-                            req.on('data', function (chunk) {
+                            req.on("data", function (chunk) {
                                 var body = "";
                                 body += chunk;
                     
                                 const post = qs.parse(body);
                     
+                                var new_username = "";
+                                var new_email = "";
+                                var new_password = "";
+                                var new_password2 = "";
+                    
                                 // Client log in
                                 if (url == "/login") {
-                                    var new_username = "";
-                                    var new_password = "";
-                        
-                                    var new_username = post['username'];
-                                    var new_password = post['password'];
+                                    new_username = post["username"];
+                                    new_password = post["password"];
                         
                                     if (new_username == null) new_username = "";
                                     if (new_password == null) new_password = "";
@@ -545,7 +635,7 @@ function requestListener(req, res) {
                 
                                     if (usernameLengthCheck && usernameMatch) {
                                         if (passwordLengthCheck) {
-                                            r.db('chatapp').table('users').filter(r.row('username').match("(?i)^" + new_username.toLowerCase() + "$")).run(conn, function(err, cursor) {
+                                            r.db("chatapp").table("users").filter(r.row("username").match("(?i)^" + new_username.toLowerCase() + "$")).run(conn, function(err, cursor) {
                                                 if (err) {
                                                     res.writeHead(500, err.message);
                                                     res.end();
@@ -558,51 +648,28 @@ function requestListener(req, res) {
                                                         }
                                                         else {
                                                             if (result.length > 0) {
-                                                                if (new_hash == result[0]['hash']) {
-                                                                    res.writeHead(200, {
-                                                                        "Access-Control-Allow-Origin": "http://localhost",
-                                                                        "Access-Control-Allow-Methods": "POST, GET",
-                                                                        "Access-Control-Max-Age": 2592000,
-                                                                        "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                                                    });
+                                                                if (new_hash == result[0]["hash"]) {
+                                                                    res.writeHead(200, getHeader(".json"));
 
                                                                     var token = generateToken();
                                                                     
-                                                                    r.db('chatapp').table('users').filter(r.row('username').match("(?i)^" + new_username.toLowerCase() + "$")).update({token: token}).run(conn, function() {
+                                                                    r.db("chatapp").table("users").filter(r.row("username").match("(?i)^" + new_username.toLowerCase() + "$")).update({token: token}).run(conn, function() {
                                                                         if (err) {
-                                                                            res.write(`{"loginstatus": 1, "message": "Generating a token failed"}`);
+                                                                            res.write("{\"loginstatus\": 1, \"message\": \"Generating a token failed\"}");
                                                                             res.end();
                                                                         }
                                                                         else {
-                                                                            res.write(`{"loginstatus": 0, "message": "Log in successful", "id": "` + result[0]['id'] + `", "username": "` + result[0]['username'] + `", "token": "` + token + `"}`);
+                                                                            res.write("{\"loginstatus\": 0, \"message\": \"Log in successful\", \"id\": \"" + result[0]["id"] + "\", \"username\": \"" + result[0]["username"] + "\", \"token\": \"" + token + "\"}");
                                                                             res.end();
                                                                         }
                                                                     });
                                                                 }
                                                                 else {
-                                                                    console.log("Wrong password");
-                
-                                                                    res.writeHead(200, {
-                                                                        "Access-Control-Allow-Origin": "http://localhost",
-                                                                        "Access-Control-Allow-Methods": "POST, GET",
-                                                                        "Access-Control-Max-Age": 2592000,
-                                                                        "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                                                    });
-                                                                    res.write(`{"loginstatus": 1, "message": "Wrong password"}`);
-                                                                    res.end();
+                                                                    sendLoginStatus(res, 1, "Wrong username or password");
                                                                 }
                                                             }
                                                             else {
-                                                                console.log("User named \"" + new_username + "\" not found");
-                    
-                                                                res.writeHead(200, {
-                                                                    "Access-Control-Allow-Origin": "http://localhost",
-                                                                    "Access-Control-Allow-Methods": "POST, GET",
-                                                                    "Access-Control-Max-Age": 2592000,
-                                                                    "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                                                });
-                                                                res.write(`{"loginstatus": 1, "message": "User named ` + new_username + ` not found"}`);
-                                                                res.end();
+                                                                sendLoginStatus(res, 1, "Wrong username or password");
                                                             }
                                                         }
                                                     });
@@ -610,242 +677,78 @@ function requestListener(req, res) {
                                             });
                                         }
                                         else {
-                                            console.log("Password contains invalid amount of characters (8-50)");
-                        
-                                            res.writeHead(200, {
-                                                "Access-Control-Allow-Origin": "http://localhost",
-                                                "Access-Control-Allow-Methods": "POST, GET",
-                                                "Access-Control-Max-Age": 2592000,
-                                                "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                            });
-                                            res.write(`{"loginstatus": 1, "message": "Password contains invalid amount of characters (8-50)"}`);
-                                            res.end();
+                                            sendLoginStatus(res, 1, "Password contains invalid amount of characters (8-50)");
                                         }
                                     }
                                     else {
                                         if (usernameLengthCheck) {
-                                            console.log("Username contains invalid characters");
-                        
-                                            res.writeHead(200, {
-                                                "Access-Control-Allow-Origin": "http://localhost",
-                                                "Access-Control-Allow-Methods": "POST, GET",
-                                                "Access-Control-Max-Age": 2592000,
-                                                "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                            });
-                                            res.write(`{"loginstatus": 1, "message": "Username contains invalid characters (Letters, numbers and _ only allowed)"}`);
-                                            res.end();
+                                            sendLoginStatus(res, 1, "Username contains invalid characters (Letters, numbers and _ only allowed)");
                                         }
                                         else {
-                                            console.log("Username contains invalid amount of characters (3-20)");
-                        
-                                            res.writeHead(200, {
-                                                "Access-Control-Allow-Origin": "http://localhost",
-                                                "Access-Control-Allow-Methods": "POST, GET",
-                                                "Access-Control-Max-Age": 2592000,
-                                                "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                            });
-                                            res.write(`{"loginstatus": 1, "message": "Username contains invalid amount of characters (3-20)"}`);
-                                            res.end();
+                                            sendLoginStatus(res, 1, "Username contains invalid amount of characters (3-20)");
                                         }
                                     }
                                 }
 
                                 // Create a new user
                                 else if (url == "/register") {
-                                    var new_username = "";
-                                    var new_email = "";
-                                    var new_password = "";
+                                    new_username = post["username"];
+                                    new_email = post["email"];
+                                    new_password = post["password"];
+                                    new_password2 = post["password2"];
                         
-                                    var new_username = post['username'];
-                                    var new_email = post['email'];
-                                    var new_password = post['password'];
-                                    var new_password2 = post['password2'];
-                        
+                                    // Do this so null exception wont occur
                                     if (new_username == null) new_username = "";
                                     if (new_email == null) new_email = "";
                                     if (new_password == null) new_password = "";
                                     if (new_password2 == null) new_password2 = "";
                                     
-                                    const usernameLengthCheck = (new_username.length <= 20 && new_username.length >= 3);
-                                    const emailLengthCheck = (new_email.length <= 200 && new_email.length >= 5);
-                                    const passwordLengthCheck = (new_password.length <= 50 && new_password.length >= 8);
-                                    const usernameMatch = (new_username.match(/[^a-zA-Z0-9_]/g) == null);
-                                    const emailMatch = (new_email.match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/g) !== null);
-                        
-                                    const new_hash = hash(new_password);
-                
-                                    if (usernameLengthCheck && usernameMatch) {
-                                        if (emailLengthCheck && emailMatch) {
-                                            if (passwordLengthCheck) {
-                                                if (new_password == new_password2)
-                                                {
-                                                    // Duplicate username check
-                                                    r.db('chatapp').table('users').filter(r.row('username').match("(?i)^" + new_username.toLowerCase() + "$")).run(conn, function(err, cursor) {
-                                                        if (err) {
-                                                            res.writeHead(500, err.message);
-                                                            res.end();
-                                                        }
-                                                        else {
-                                                            cursor.toArray(function(err, result) {
-                                                                if (err) {
-                                                                    res.writeHead(500, err.message);
-                                                                    res.end();
-                                                                }
-                                                                else {
-                                                                    if (result.length == 0) {
-                                                                        // Duplicate email check
-                                                                        r.db('chatapp').table('users').filter(r.row('email').match("(?i)^" + new_email.toLowerCase() + "$")).run(conn, function(err, cursor) {
-                                                                            if (err) {
-                                                                                res.writeHead(500, err.message);
-                                                                                res.end();
-                                                                            }
-                                                                            else {
-                                                                                cursor.toArray(function(err, result) {
-                                                                                    if (err) {
-                                                                                        res.writeHead(500, err.message);
-                                                                                        res.end();
-                                                                                    }
-                                                                                    else {
-                                                                                        if (result.length == 0) {
-                                                                                            r.db('chatapp').table('users').insert({ username: new_username, email: new_email, hash: new_hash }).run(conn, function(err, dbres) {
-                                                                                                if(err) {
-                                                                                                    res.writeHead(500, err.message);
-                                                                                                    res.end();
-                                                                                                }
-                                                                                                else {
-                                                                                                    res.writeHead(200, {
-                                                                                                        "Access-Control-Allow-Origin": "http://localhost",
-                                                                                                        "Access-Control-Allow-Methods": "POST, GET",
-                                                                                                        "Access-Control-Max-Age": 2592000,
-                                                                                                        "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                                                                                    });
-                                
-                                                                                                    var token = generateToken();
-                                                                                                    r.db('chatapp').table('users').filter(r.row('username').match("(?i)^" + new_username.toLowerCase() + "$")).update({token: token}).run(conn, function(err, dbres) {
-                                                                                                        if(err) {
-                                                                                                            res.writeHead(500, err.message);
-                                                                                                            res.end();
-                                                                                                        }
-                                                                                                        else {
-                                                                                                            res.write(`{"registerstatus": 0, "message": "Account created successfully"}`);
-                                                                                                            res.end();
-                                                                                                        }
-                                                                                                    });
-                                                                                                }
-                                                                                            });
-                                                                                        }
-                                                                                        else {
-                                                                                            console.log("Email \"" + new_email + "\" is already in use");
-                                        
-                                                                                            res.writeHead(200, {
-                                                                                                "Access-Control-Allow-Origin": "http://localhost",
-                                                                                                "Access-Control-Allow-Methods": "POST, GET",
-                                                                                                "Access-Control-Max-Age": 2592000,
-                                                                                                "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                                                                            });
-                                                                                            res.write(`{"registerstatus": 1, "message": "Email is already in use"}`);
-                                                                                            res.end();
-                                                                                        }
-                                                                                    }
-                                                                                });
-                                                                            }
-                                                                        });
-                                                                    }
-                                                                    else {
-                                                                        console.log("Username \"" + new_username + "\" is not available");
+                                    try {
+                                        // Credentials checks
+                                        const usernameLengthCheck = (new_username.length <= 20 && new_username.length >= 3);
+                                        const emailLengthCheck = (new_email.length <= 200 && new_email.length >= 5);
+                                        const passwordLengthCheck = (new_password.length <= 50 && new_password.length >= 8);
+                                        const usernameMatch = (new_username.match(/[^a-zA-Z0-9_]/g) == null);
+                                        const emailMatch = (new_email.match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/g) !== null);
+                            
+                                        const new_hash = hash(new_password);
                     
-                                                                        res.writeHead(200, {
-                                                                            "Access-Control-Allow-Origin": "http://localhost",
-                                                                            "Access-Control-Allow-Methods": "POST, GET",
-                                                                            "Access-Control-Max-Age": 2592000,
-                                                                            "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                                                        });
-                                                                        res.write(`{"registerstatus": 1, "message": "Username is not available"}`);
-                                                                        res.end();
-                                                                    }
-                                                                }
-                                                            });
-                                                        }
-                                                    });
+                                        if (usernameLengthCheck && usernameMatch) {
+                                            if (emailLengthCheck && emailMatch) {
+                                                if (passwordLengthCheck) {
+                                                    if (new_password == new_password2)
+                                                    {
+                                                        registerUser(res, new_username, new_email, new_hash);
+                                                    }
+                                                    else {
+                                                        sendRegisterStatus(res,1, "Passwords must match");
+                                                    }
                                                 }
                                                 else {
-                                                    console.log("Passwords must match");
-                                
-                                                    res.writeHead(200, {
-                                                        "Access-Control-Allow-Origin": "http://localhost",
-                                                        "Access-Control-Allow-Methods": "POST, GET",
-                                                        "Access-Control-Max-Age": 2592000,
-                                                        "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                                    });
-                                                    res.write(`{"registerstatus": 1, "message": "Passwords must match"}`);
-                                                    res.end();
+                                                    sendRegisterStatus(res, 1, "Password contains invalid amount of characters (8-50)");
                                                 }
                                             }
                                             else {
-                                                console.log("Password contains invalid amount of characters (8-50)");
-                            
-                                                res.writeHead(200, {
-                                                    "Access-Control-Allow-Origin": "http://localhost",
-                                                    "Access-Control-Allow-Methods": "POST, GET",
-                                                    "Access-Control-Max-Age": 2592000,
-                                                    "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                                });
-                                                res.write(`{"registerstatus": 1, "message": "Password contains invalid amount of characters (8-50)"}`);
-                                                res.end();
+                                                if (emailLengthCheck) {
+                                                    sendRegisterStatus(res, 1, "Email is invalid");
+                                                }
+                                                else {
+                                                    sendRegisterStatus(res, 1, "Email contains invalid amount of characters (5-200)");
+                                                }
                                             }
                                         }
                                         else {
-                                            if (emailLengthCheck) {
-                                                console.log("Email is invalid");
-                            
-                                                res.writeHead(200, {
-                                                    "Access-Control-Allow-Origin": "http://localhost",
-                                                    "Access-Control-Allow-Methods": "POST, GET",
-                                                    "Access-Control-Max-Age": 2592000,
-                                                    "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                                });
-                                                res.write(`{"registerstatus": 1, "message": "Email is invalid"}`);
-                                                res.end();
+                                            if (usernameLengthCheck) {
+                                                sendRegisterStatus(res, 1, "Username contains invalid characters (Letters, numbers and _ only allowed)");
                                             }
                                             else {
-                                                console.log("Email contains invalid amount of characters (5-200)");
-                            
-                                                res.writeHead(200, {
-                                                    "Access-Control-Allow-Origin": "http://localhost",
-                                                    "Access-Control-Allow-Methods": "POST, GET",
-                                                    "Access-Control-Max-Age": 2592000,
-                                                    "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                                });
-                                                res.write(`{"registerstatus": 1, "message": "Email contains invalid amount of characters (5-200)"}`);
-                                                res.end();
+                                                sendRegisterStatus(res, 1, "Username contains invalid amount of characters (3-20)");
                                             }
                                         }
                                     }
-                                    else {
-                                        if (usernameLengthCheck) {
-                                            console.log("Username contains invalid characters");
-                        
-                                            res.writeHead(200, {
-                                                "Access-Control-Allow-Origin": "http://localhost",
-                                                "Access-Control-Allow-Methods": "POST, GET",
-                                                "Access-Control-Max-Age": 2592000,
-                                                "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                            });
-                                            res.write(`{"registerstatus": 1, "message": "Username contains invalid characters (Letters, numbers and _ only allowed)"}`);
-                                            res.end();
-                                        }
-                                        else {
-                                            console.log("Username contains invalid amount of characters (3-20)");
-                        
-                                            res.writeHead(200, {
-                                                "Access-Control-Allow-Origin": "http://localhost",
-                                                "Access-Control-Allow-Methods": "POST, GET",
-                                                "Access-Control-Max-Age": 2592000,
-                                                "Content-Type": getMIMEType(".json") + "; charset=UTF-8",
-                                            });
-                                            res.write(`{"registerstatus": 1, "message": "Username contains invalid amount of characters (3-20)"}`);
-                                            res.end();
-                                        }
+                                    catch (ex) {
+                                        console.log("Error: " + ex.message);
+                                        sendRegisterStatus(res, 1, "Error: " + ex.message);
                                     }
                                 }
                                 
@@ -865,8 +768,8 @@ function requestListener(req, res) {
 
 // Generate a user token
 function generateToken() {
-    var result           = '';
-    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var result           = "";
+    var characters       = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     var charactersLength = characters.length;
     for (var i = 0; i < 100; i++) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -881,10 +784,15 @@ module.exports = class ChatServer {
         console.log("Server instantiated");
 
         // Apply config values
-        port = config['port'];
-        webFolder = config['web-folder'];
-        dbAddress = config['rethinkdb'];
-        dbPort = config['rethinkdb-port'];
+        try {
+            port = config["port"];
+            webFolder = config["web-folder"];
+            dbAddress = config["rethinkdb"];
+            dbPort = config["rethinkdb-port"];
+        }
+        catch (ex) {
+            throw "Failed to apply config: " + ex.message;
+        }
         
         // Database connect test
         r.connect({ host: dbAddress, port: dbPort }, function(err, connection) {
@@ -894,7 +802,7 @@ module.exports = class ChatServer {
 
             conn = connection;
         });
-    
+        
         emojis.loadEmojis();
 
         preparePageTemplate(function() {
@@ -904,48 +812,26 @@ module.exports = class ChatServer {
             io = new Server(server);
 
             // socket.io connection
-            io.on('connection', (socket) =>{
-                console.log('User connected');
+            io.on("connection", (socket) =>{
+                console.log("User connected");
 
                 // User disconnected
-                socket.on('disconnect', () => {
-                    console.log('User disconnected');
+                socket.on("disconnect", () => {
+                    console.log("User disconnected");
 
-                    getClientBySocket(socket, function (client) {
-
-                        if (client !== null) {
-                            r.db('chatapp').table('users').filter(r.row('id').match(client.id.toString())).run(conn, function(err, cursor) {
-                                if (err) {
-                                    console.log(err.message);
-                                    socket = null;
-                                }
-                                else {
-                                    cursor.toArray(function(err, result) {
-                                        if (err) {
-                                            console.log(err.message);
-                                            socket = null;
-                                        }
-                                        else {
-                                            if (result.length > 0) {
-                                                clients.forEach(c => {
-                                                    c.socket.emit('userstatus', { user: result[0]['username'].toLowerCase(), status: 0 });
-                                                });
-                                                socket = null;
-                                            }
-                                        }
-                                    });
+                    clients.forEach(c => {
+                        if (c.socket !== null && c.socket.connected) {
+                            clients.forEach(c2 => {
+                                if (c2.socket == null || c2.socket.connected == false) {
+                                    c.socket.emit("userstatus", { user: c2.username.toLowerCase(), status: 0 });
                                 }
                             });
                         }
-                        else {
-                            socket = null;
-                        }
-
                     });
                 });
 
                 // Chat message handler
-                socket.on('message', (username, token, msg) => {
+                socket.on("message", (username, token, msg) => {
 
                     if (token == null) {
                         token = "";
@@ -963,7 +849,7 @@ module.exports = class ChatServer {
                             }
                         }
         
-                        r.db('chatapp').table('users').filter(r.row('username').match("(?i)^" + username.toLowerCase() + "$")).run(conn, function(err, dbres) {
+                        r.db("chatapp").table("users").filter(r.row("username").match("(?i)^" + username.toLowerCase() + "$")).run(conn, function(err, dbres) {
                         
                             if(err) {
                                 console.log("User error " + err.message);
@@ -979,13 +865,13 @@ module.exports = class ChatServer {
     
                                     else {
     
-                                        if (result.length == 0 || result[0] == undefined || result[0]['id'] == undefined || result[0]['id'] == null || result[0]['id'] == 0) {
+                                        if (result.length == 0 || result[0] == undefined || result[0]["id"] == undefined || result[0]["id"] == null || result[0]["id"] == 0) {
                                             console.log("User result null");
                                         }
                                         else {
-                                            var clientid = result[0]['id'];
+                                            var clientid = result[0]["id"];
     
-                                            console.log('Message (to ' + username + '): ' + msg);
+                                            console.log("Message (to " + username + "): " + msg);
 
                                             getUserData(token.toString(), function(userdataError, userdata) {
                                                 
@@ -996,20 +882,20 @@ module.exports = class ChatServer {
                                                     getClientById(clientid.toString(), function (mclient) {
                                                         if (mclient !== undefined && mclient !== null && mclient.socket !== undefined && mclient.socket !== null) {
                                                             if (userdataError) {
-                                                                console.log("Failed to request user data: " + userdataError);
+                                                                //console.log("Failed to request user data: " + userdataError);
                                                             }
                                                             
                                                             else {
-                                                                var fromuser = userdata['username'].toLowerCase();
-                                                                mclient.socket.emit('message', { from: fromuser, message: post_message });
+                                                                var fromuser = userdata["username"].toLowerCase();
+                                                                mclient.socket.emit("message", { from: fromuser, message: post_message });
                                                             }
                                                         }
                                                     
                                                     });
 
-                                                    r.db('chatapp').table('messages').insert({ userfrom: userdata['id'], userto: clientid, message: post_message, time: post_time }).run(conn, function(err, dbres) {
+                                                    r.db("chatapp").table("messages").insert({ userfrom: userdata["id"], userto: clientid, message: post_message, time: post_time }).run(conn, function(err) {
                                                         if(err) {
-                                                            console.log("Failed to send message: " + err.message);
+                                                            //console.log("Failed to send message: " + err.message);
                                                         }
                                                     });
                                                 }
@@ -1029,7 +915,7 @@ module.exports = class ChatServer {
                 });
 
                 // Set client token
-                socket.on('settoken', (token) => {
+                socket.on("settoken", (token) => {
 
                     if (token == null) {
                         token = "";
@@ -1038,19 +924,19 @@ module.exports = class ChatServer {
                     getUserData(token.toString(), function(userdataError, userdata) {
                                 
                         if (userdataError) {
-                            console.log("Failed to request user data: " + userdataError);
+                            //console.log("Failed to request user data: " + userdataError);
                         }
                         
                         // User data request success
                         else {
-                            var clientid = userdata['id'];
-                            var clientname = userdata['username'];
+                            var clientid = userdata["id"];
+                            var clientname = userdata["username"];
                             setClientSocket(clientid, clientname, socket, function () {
 
                                 getClientBySocket(socket, function (client) {
                                     
                                     if (client !== null) {
-                                        r.db('chatapp').table('users').filter(r.row('id').match(client.id.toString())).run(conn, function(err, cursor) {
+                                        r.db("chatapp").table("users").filter(r.row("id").match(client.id.toString())).run(conn, function(err, cursor) {
                                             if (err) {
                                                 console.log(err.message);
                                             }
@@ -1062,9 +948,9 @@ module.exports = class ChatServer {
                                                     else {
                                                         if (result.length > 0) {
                                                             clients.forEach(c => {
-                                                                if (c.id !== clientid) {
-                                                                    c.socket.emit('userstatus', { user: result[0]['username'].toLowerCase(), status: 1 });
-                                                                    socket.emit('userstatus', { user: c.username.toLowerCase(), status: 1 });
+                                                                if (c.id !== clientid && c.socket !== null && c.socket.connected) {
+                                                                    c.socket.emit("userstatus", { user: result[0]["username"].toLowerCase(), status: 1 });
+                                                                    socket.emit("userstatus", { user: c.username.toLowerCase(), status: 1 });
                                                                 }
                                                             });
                                                         }
@@ -1085,14 +971,14 @@ module.exports = class ChatServer {
                 });
 
                 // Get users status
-                socket.on('getuserstatus', (username, token) => {
+                socket.on("getuserstatus", (username, token) => {
 
                     if (token == null) {
                         token = "";
                     }
 
                     // User data request success
-                    r.db('chatapp').table('users').filter(r.row('username').match("(?i)^" + username.toLowerCase() + "$")).run(conn, function(err, dbres) {
+                    r.db("chatapp").table("users").filter(r.row("username").match("(?i)^" + username.toLowerCase() + "$")).run(conn, function(err, dbres) {
                     
                         if(err) {
                             console.log("User error " + err.message);
@@ -1108,33 +994,22 @@ module.exports = class ChatServer {
 
                                 else {
 
-                                    if (result.length == 0 || result[0] == undefined || result[0]['id'] == undefined || result[0]['id'] == null || result[0]['id'] == 0) {
+                                    if (result.length == 0 || result[0] == undefined || result[0]["id"] == undefined || result[0]["id"] == null || result[0]["id"] == 0) {
                                         console.log("User result null");
                                     }
                                     else {
-                                        var clientid = result[0]['id'];
+                                        var clientid = result[0]["id"];
 
-                                        console.log('Request user status of ' + username);
+                                        console.log("Request user status of " + username);
 
-                                        getUserData(token.toString(), function(userdataError, userdata) {
-                                                        
-                                            if (userdataError) {
-                                                console.log("Failed to request user data: " + userdataError);
-                                                socket.emit('userstatus', { user: username.toLowerCase(), status: 0 });
+                                        getClientById(clientid, function (c) {
+                                            if (c !== null && c.socket !== null && c.socket.connected == true) {
+                                                socket.emit("userstatus", { user: username.toLowerCase(), status: 1 });
                                             }
-                                            
+    
                                             else {
-
-                                                if (getClientExistsById(clientid)) {
-                                                    socket.emit('userstatus', { user: username.toLowerCase(), status: 1 });
-                                                }
-
-                                                else {
-                                                    socket.emit('userstatus', { user: username.toLowerCase(), status: 0 });
-                                                }
-
+                                                socket.emit("userstatus", { user: username.toLowerCase(), status: 0 });
                                             }
-                        
                                         });
 
                                     }
@@ -1149,7 +1024,7 @@ module.exports = class ChatServer {
                 });
 
                 // Set users status
-                socket.on('setuserstatus', (status, token) => {
+                socket.on("setuserstatus", (status, token) => {
 
                     if (token == null) {
                         token = "";
@@ -1158,13 +1033,15 @@ module.exports = class ChatServer {
                     getUserData(token.toString(), function(userdataError, userdata) {
                                                         
                         if (userdataError) {
-                            console.log("Failed to request user data: " + userdataError);
+                            //console.log("Failed to request user data: " + userdataError);
                         }
                         
                         else {
 
                             clients.forEach(c => {
-                                c.socket.emit('userstatus', { user: userdata['username'].toLowerCase(), status: status });
+                                if (c.socket !== null && c.socket.connected) {
+                                    c.socket.emit("userstatus", { user: userdata["username"].toLowerCase(), status: status });
+                                }
                             });
 
                         }
@@ -1172,7 +1049,7 @@ module.exports = class ChatServer {
                     });
 
                 });
-            })
+            });
 
             if (server.listening == true) {
                 console.log("Server started at http://localhost:" + port);
@@ -1180,9 +1057,9 @@ module.exports = class ChatServer {
         });
         
         function getClientBySocket(socket, callback) {
-            clients.forEach(client => {
-                if (client.socket == socket) {
-                    callback(client);
+            clients.forEach(c => {
+                if (c.socket == socket) {
+                    callback(c);
                     return;
                 }
             });
@@ -1191,10 +1068,10 @@ module.exports = class ChatServer {
         function getClientById(id, callback) {
             var set = false;
 
-            clients.forEach(client => {
-                if (set == false && client.id.toString() == id.toString()) {
+            clients.forEach(c => {
+                if (set == false && c.id.toString() == id.toString() && c.socket !== null && c.socket.connected) {
                     set = true;
-                    callback(client);
+                    callback(c);
                 }
             });
 
@@ -1205,10 +1082,10 @@ module.exports = class ChatServer {
         function getClientExistsById(id) {
             var set = false;
 
-            clients.forEach(client => {
-                if (set == false && client.id.toString() == id.toString()) {
+            clients.forEach(c => {
+                if (set == false && c.id.toString() == id.toString() && c.socket !== null && c.socket.connected) {
                     set = true;
-                    return client;
+                    return c;
                 }
             });
 
@@ -1219,18 +1096,19 @@ module.exports = class ChatServer {
         function setClientSocket(id, username, socket, callback) {
             var set = false;
 
-            clients.forEach(client => {
-                if (set == false && client.id == id) {
-                    client.socket = socket;
+            clients.forEach(c => {
+                if (set == false && c.id == id && c.socket !== null && c.socket.connected) {
+                    c.socket = socket;
                     set = true;
                     callback();
                 }
             });
 
             if (set == false) {
-                clients.push({ id: id, username: username, socket: socket, lastActivity:  Date.now()});
+                let cl = client.newClient(id, username, socket, Date.now());
+                clients.push(cl);
                 callback();
             }
         }
     }
-}
+};
