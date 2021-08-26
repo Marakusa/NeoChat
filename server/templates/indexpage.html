@@ -1,0 +1,591 @@
+<div class="header">
+    &HEADERLEFTBUTTON
+    <p class="headerTextLeft">&TITLEUSERNAME</p>
+</div>
+<div id="notifications"></div>
+<div id="sideMenu" class="headerSideList" style="margin-left: -100%;">
+    <div class="headerSideListButton">
+        <p class="headerSideListButtonText">Profile</p>
+    </div>
+    <div class="headerSideListButton">
+        <p class="headerSideListButtonText">Friends</p>
+    </div>
+    <div class="headerSideListButton">
+        <p class="headerSideListButtonText">Search</p>
+    </div>
+    <div class="headerSideListButton">
+        <p class="headerSideListButtonText">Settings</p>
+    </div>
+    <div onclick="logout();" class="headerSideListButton">
+        <p class="headerSideListButtonText">Log Out</p>
+    </div>
+</div>
+<div onclick="closeSideMenu();" id="headerSideListBackground" class="headerSideListBackground" style="transition: 0.4s;display: none;background-color: rgba(0, 0, 0, 0);"></div>
+
+<div id="chatScroll" class="chatLog">
+    <div id="chat" class="chatLogHistory">
+        <div id="chat" class="chatLogHistory">
+            <h2 id="welcomeText" style="color: white;text-align: center;display: none;">Welcome @&YOURUSERNAME</h2>
+            <p class="messageHistoryTitle">Message history with @&TITLEUSERNAME begins here.</p><hr>&MESSAGEHISTORYSTARTSHERE<div id="chatUsersList">&USERSLIST</div><p id="sendStatus" class="bubbleSent" style="display: none;">Sent</p>
+        </div>
+    </div>
+</div>
+
+<div id="emojiList" class="emojiList" style="display: none;">
+    <h2>Emoji</h2>
+    <div class="emojiListGrid">
+        <div id="emojiListContent" class="emojiListContent">
+            
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <div onclick="chatScroll.scrollTop = chatScroll.scrollHeight - chatScroll.clientHeight;" class="newMessage">
+        <span>You have unread messages</span>
+    </div>
+    <a onclick="emojiOpen();" class="footerLeftButton">
+        <div style="background-image: url(../img/Emojis.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div>
+    </a>
+    <textarea id="messageField" class="inputArea" placeholder="Message" maxlength="500"></textarea>
+    <a onclick="sendMessage();" class="footerSend buttonRound"><div style="background-image: url(../img/SendArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
+</div>
+
+<div id="contextList" class="contextList" style="transform: translate(0px, 0px);display: none;">
+    <p onclick="console.log('copy');">Copy</p>
+    <p onclick="console.log('share');">Share</p>
+    <hr>
+    <p onclick="console.log('profile');">User Profile</p>
+</div>
+
+<script>
+    var menuOpen = false;
+
+    function openSideMenu() {
+        var sideMenu = document.getElementById("sideMenu");
+
+        if (menuOpen == false)
+        {
+            sideMenu.style.marginLeft = "0";
+            document.getElementById("headerSideListBackground").style.display = "block";
+            setTimeout(() => {
+                document.getElementById("headerSideListBackground").style.backgroundColor = "#000000b3";
+            }, 10);
+            menuOpen = true;
+        }
+        else
+        {
+            sideMenu.style.marginLeft = "-300px";
+            document.getElementById("headerSideListBackground").style.backgroundColor = "#00000000";
+            menuOpen = false;
+            setTimeout(() => {
+                document.getElementById("headerSideListBackground").style.display = "none";
+            }, 200);
+        }
+    }
+    function closeSideMenu() {
+        var sideMenu = document.getElementById("sideMenu");
+
+        sideMenu.style.marginLeft = "-300px";
+        document.getElementById("headerSideListBackground").style.backgroundColor = "#00000000";
+        menuOpen = false;
+        setTimeout(() => {
+            document.getElementById("headerSideListBackground").style.display = "none";
+        }, 200);
+    }
+</script>
+
+<script>
+    const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+
+    document.body.addEventListener('click', function () { document.getElementById("contextList").style.display = "none"; }, true);
+    document.body.addEventListener('scroll', function () { document.getElementById("contextList").style.display = "none"; }, true);
+
+    function getMobileOperatingSystem() {
+        var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+        // Windows Phone must come first because its UA also contains "Android"
+        if (/windows phone/i.test(userAgent)) {
+            return "winphone";
+        }
+
+        if (/android/i.test(userAgent)) {
+            return "android";
+        }
+
+        // iOS detection from: http://stackoverflow.com/a/9039885/177710
+        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+            return "ios";
+        }
+
+        return "";
+    }
+
+    function applyAfterResize() {
+        if (getMobileOperatingSystem() != '') {
+            chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+        }
+    }
+
+    $(window).on('resize orientationchange', function(){
+        applyAfterResize();
+    });
+
+    function logout() {
+        document.cookie = "token=; path=/";
+        window.location.href = "../signin";
+    }
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    const userListButton = `<a href="@&USERNAMELINK" id="user&UID" class="users">
+        <div class="listUser">
+            <p id="listUserName&UID" class="listUserName">&USERNAME</p>
+        </div>
+    </a>`;
+
+    const notification = `<div id="notification&ID" class="notification">
+        <span style="user-select: none;float: right;color: grey;top: 0;margin: 5px;cursor: pointer;" onclick="document.getElementById('notification&ID').outerHTML = '';">Dismiss</span>
+        <a href="@&USERNAME">
+            <h3>New message from &USERNAME</h3>
+            <p>&MESSAGE</p>
+        </a>
+    </div>`;
+
+    const theyBubble = "<div id=\"bubble&ID\" class=\"bubble bubbleLeft\">&MESSAGE</div>";
+    const meBubble = "<div id=\"bubble&ID\" class=\"bubble bubbleRight\">&MESSAGE</div>";
+
+    var xhr = null;
+    var interval = null;
+
+    var chatusername = (document.documentURI).split("@")[1];
+    var token = getCookie("token");
+
+    var socket = io();
+    socket.emit('settoken', token);
+    socket.on('message', receiveMessage);
+
+    var allBubbles = document.getElementsByClassName('bubble');
+    for (var i=0, len=allBubbles.length|0; i<len; i=i+1|0) {
+        allBubbles[i].addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
+    }
+    
+    socket.on('userstatus', receiveUserStatus);
+    
+    function count(obj) {
+        var count=0;
+        for(var prop in obj) {
+            if (obj.hasOwnProperty(prop)) {
+                ++count;
+            }
+        }
+        return count;
+    }
+    
+    const mepage = (document.documentURI).endsWith("@me", document.documentURI.length);
+
+    if (mepage == true) {
+        document.getElementsByClassName("footer")[0].style.display = "none";
+        document.getElementById("welcomeText").style.display = "block";
+    }
+    else {
+        var allBubbles = document.getElementsByClassName('bubble');
+        for (var i=0, len=allBubbles.length|0; i<len; i=i+1|0) {
+            allBubbles[i].addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
+        }
+    }
+
+    var idleTime = 0;
+    $(document).ready(function () {
+        // Increment the idle time counter every minute.
+        var idleInterval = setInterval(timerIncrement, 60000); // 1 minute
+
+        $(this).mousemove(function (e) {
+            idleTime = 0;
+            socket.emit('setuserstatus', 1, token);
+        });
+        $(this).click(function (e) {
+            idleTime = 0;
+            socket.emit('setuserstatus', 1, token);
+        });
+        $(this).keypress(function (e) {
+            idleTime = 0;
+            socket.emit('setuserstatus', 1, token);
+        });
+    });
+
+    function timerIncrement() {
+        idleTime = idleTime + 1;
+        if (idleTime > 9) { // afk for over 10 minutes
+            socket.emit('setuserstatus', 2, token);
+        }
+    }
+
+    setInterval(function () {
+        if (socket.connected == false) {
+            document.getElementById("disconnected").style.display = "";
+            socket.emit('disconnect');
+            socket = null;
+        }
+    }, 10000);
+
+    function receiveUserStatus(data) {
+        if (document.getElementById('listUserName' + data.user)) {
+            var user = document.getElementById('listUserName' + data.user);
+            user.childNodes[0].classList.remove("userStatus1");
+            user.childNodes[0].classList.remove("userStatus2");
+            user.childNodes[0].classList.remove("userStatus3");
+            
+            if (user.childNodes[0].classList.contains("userStatus0") == true || data.status == "0") {
+                user.childNodes[0].classList.add("userStatus" + data.status);
+            }
+            //user.innerHTML = "<span class=\"userStatus" + data.status + "\"></span>" + user.innerHTML.split("</span>")[1];
+        }
+    }
+
+    document.getElementById("emojiList").style.display = "none";
+
+    var chatHeightEmoji = "calc(100% - 64px - 60px - 10px - 250px)";
+    var footerBottomEmoji = "250px";
+
+    var emojicontent = document.getElementById("emojiListContent");
+    var emoji = `<div onclick="emoji('_');" id="_" class="emoji">EMOJIICON</div>`;
+
+    function emojiclick(emojitag) {
+        document.getElementById("messageField").value += document.getElementById(emojitag).innerText;
+        document.getElementById("messageField").focus();
+    }
+
+    function emojiOpen() {
+        var emojis = document.getElementById("emojiList");
+        
+        if (emojis.style.display == "none") {
+            emojis.style.display = "";
+        }
+        else {
+            emojis.style.display = "none";
+        }
+
+        if (emojicontent.innerHTML.trim() == "") {
+            $.ajax({
+                url: "/emojis.txt",
+                success: function (data){
+                    emojicontent.innerHTML = data;
+                }
+            });
+        }
+    }
+    
+    var dateString = "<p id=\"timestamp\" name=\"timestamp\" class=\"bubbleSent\" style=\"display: block;\">&MESSAGE</p>";
+    var dateSplit = true;
+
+    $(function() {
+        $("#messageField").keypress(function (e) {
+            if(e.which == 13 && e.shiftKey == false) {
+                sendMessage();
+                $("#chatbox").append($(this).val() + "<br/>");
+                $(this).val("");
+                e.preventDefault();
+            }
+        });
+    });
+
+    var chatScroll = document.getElementById("chatScroll");
+    var newMessage = document.getElementsByClassName("newMessage")[0];
+    newMessage.style.display = "none";
+
+    if (mepage == false) {
+        setTimeout(() => {
+            chatScroll.scrollTop = chatScroll.scrollHeight - chatScroll.clientHeight;
+        }, 10);
+
+        setInterval(() => {
+            if (Math.round(chatScroll.scrollTop) >= Math.round(chatScroll.scrollHeight - chatScroll.clientHeight)) {
+                newMessage.style.display = "none";
+                document.title = "NeoChat";
+            }
+        }, 100);
+    }
+
+    function receiveMessage(data)
+    {
+        var chatScroll = document.getElementById("chatScroll");
+        var scroll = false;
+        
+        if (Math.round(chatScroll.scrollTop) >= Math.round(chatScroll.scrollHeight - chatScroll.clientHeight)) {
+            scroll = true;
+        }
+
+        if (data.from == chatusername) {
+            var sendStatus = document.getElementById("sendStatus");
+            sendStatus.innerText = "Seen";
+
+            message = "";
+
+            id = Math.floor((Math.random() * 999999) + 1);
+            var htmlCode = theyBubble.replace("&MESSAGE", data.message).replace("&ID", id);
+
+            document.getElementById("chat").innerHTML += htmlCode;
+
+            document.getElementById("bubble" + id).addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
+            
+            dateSplit = true;
+
+            if (mepage == false) {
+                setTimeout(() => {  
+                    if (scroll && document[hidden] == false) {
+                        chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                        document.title = "NeoChat";
+                    }
+                    else {
+                        playPing();
+                        newMessage.style.display = "";
+                    }
+                }, 100);
+            }
+            else {
+                playPing();
+            }
+        }
+        else {
+            playPing();
+
+            var msg = data.message;
+
+            if (data.message.length > 50) {
+                msg = data.message.substring(0, 50) + "...";
+            }
+
+            id = Math.floor((Math.random() * 999999) + 1);
+
+            var htmlCode = notification
+                            .replace(/&ID/g, id)
+                            .replace(/&USERNAME/g, data.from)
+                            .replace(/&MESSAGE/g, msg);
+                            
+            var notifications = document.getElementById("notifications");
+
+            const placeholder = document.createElement('div');
+            placeholder.innerHTML = htmlCode;
+            const node = placeholder.firstElementChild;
+
+            notifications.insertBefore(node, notifications.firstChild);
+
+            if (mepage == false) {
+                setTimeout(() => {  
+                    if (scroll) {
+                        chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                        document.title = "NeoChat";
+                    }
+                    else {
+                        newMessage.style.display = "";
+                    }
+                }, 100);
+            }
+
+            notificated("notification" + id);
+        }
+    }
+
+    function playPing() {
+        setTimeout(function () {
+            var mp3Source = '<source src="/sounds/ping.mp3" type="audio/mpeg">';
+            var embedSource = '<embed hidden="true" autostart="true" loop="false" src="/sounds/ping.mp3">';
+            document.getElementById("sound").innerHTML = '<audio autoplay="autoplay">' + mp3Source + embedSource + '</audio>';
+
+            var audio = document.getElementById("sound").childNodes[0];
+
+            if (getMobileOperatingSystem() == '') {
+                audio.volume = 0.2;
+            }
+
+            document.title = "(1) NeoChat";
+        }, 100);
+
+        /*var sound = new Audio({
+            src: ['/sounds/ping.wav'],
+            autoplay: true,
+            loop: false,
+            muted: true
+        });
+        sound.play();*/
+    }
+
+    function notificated(id) {
+        document.getElementById(id).style.transition = "0.2s";
+        document.getElementById(id).style.transform = "translateX(0px) translateY(-200px)";
+
+        setTimeout(() => {  
+            document.getElementById(id).style.transform = "translateX(0px) translateY(0px)";
+        }, 10);
+
+        setTimeout(() => {  
+            
+            document.getElementById(id).style.transform = "translateX(-350px) translateY(0px)";
+            
+            setTimeout(() => {  
+                document.getElementById(id).outerHTML = "";
+            }, 200);
+
+        }, 10000);
+    }
+    
+    function sendMessage()
+    {
+        document.getElementById("messageField").focus();
+
+        var sendStatus = document.getElementById("sendStatus");
+        sendStatus.innerText = "Seen";
+
+        message = "";
+
+        var chatScroll = document.getElementById("chatScroll");
+        var scroll = false;
+        if (Math.round(chatScroll.scrollTop) >= Math.round(chatScroll.scrollHeight - chatScroll.clientHeight)) {
+            scroll = true;
+        }
+
+        document.getElementById("emojiList").style.display = "none";
+        
+        var msg = document.getElementById("messageField").value;
+
+        messageField.value = "";
+
+        if (msg.trim() !== "") {
+            socket.emit('message', chatusername, token, msg);
+
+            id = Math.floor((Math.random() * 999999) + 1);
+            var htmlCode = meBubble.replace("&MESSAGE", msg).replace("&ID", id);
+            document.getElementById("chat").innerHTML += htmlCode;
+
+            document.getElementById("bubble" + id).addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
+            
+            setTimeout(() => {  
+                if (scroll) {
+                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                }
+            }, 100);
+        }
+    }
+
+    function messageSentConfirm(message) {
+        document.getElementById("sendStatus").style.display = "none";
+
+        var chatScroll = document.getElementById("chatScroll");
+        var scroll = false;
+        if (Math.round(chatScroll.scrollTop) >= Math.round(chatScroll.scrollHeight - chatScroll.clientHeight)) {
+            scroll = true;
+        }
+
+        id = Math.floor((Math.random() * 999999) + 1);
+        document.getElementById("chat").innerHTML += "<div id=\"chatBubble" + id + "\" class=\"bubble bubbleRight\">" + message + "</div>";
+        
+        var sendStatus = document.getElementById("sendStatus");
+        sendStatus.style.display = "block";
+        sendStatus.parentNode.appendChild(sendStatus);
+
+        if (dateSplit == false)
+        {
+            document.getElementsByName("timestamp").forEach(element => {
+                if (element.id != "")
+                {
+                    element.style.display = "none";
+                    element.id = "";
+                }
+            });
+        }
+        else
+        {
+            document.getElementsByName("timestamp").forEach(element => {
+                if (element.id != "")
+                {
+                    element.id = "";
+                }
+            });
+        }
+
+        dateSplit = false;
+
+        // DATE TIMESTAMP
+        const today = new Date();
+        var date = formatDate(today, 't');
+        document.getElementById("chat").innerHTML += dateString.replace("&MESSAGE", date);
+        
+        setTimeout(() => {  
+            if (scroll) {
+                chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+            }
+        }, 100);
+    }
+
+    function formatDate(date, format) {
+        const map = {
+            mm: date.getMonth() + 1,
+            dd: date.getDate(),
+            yy: date.getFullYear().toString().slice(-2),
+            yyyy: date.getFullYear(),
+            t: date.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+        }
+
+        return format.replace(/mm|dd|yy|yyyy|t/gi, matched => map[matched])
+    }
+
+    function contextList(event) {
+        event.preventDefault();
+
+        var pageX = event.pageX;
+        var pageY = event.pageY;
+        const contextListE = document.getElementById("contextList");
+
+        contextListE.style.display = "";
+    
+        pageX = clamp(pageX, 0, window.innerWidth - contextListE.offsetWidth);
+        pageY = clamp(pageY, 0, window.innerHeight - contextListE.offsetHeight);
+
+        contextListE.style.transform = "translate(" + pageX + "px, " + pageY + "px)";
+    }
+
+    var hidden = false;
+
+    (function() {
+        hidden = false;
+
+        // Standards:
+        if (hidden in document)
+            document.addEventListener("visibilitychange", onchange);
+        else if ((hidden = "mozHidden") in document)
+            document.addEventListener("mozvisibilitychange", onchange);
+        else if ((hidden = "webkitHidden") in document)
+            document.addEventListener("webkitvisibilitychange", onchange);
+        else if ((hidden = "msHidden") in document)
+            document.addEventListener("msvisibilitychange", onchange);
+        // IE 9 and lower:
+        else if ("onfocusin" in document)
+            document.onfocusin = document.onfocusout = onchange;
+        // All others:
+        else
+            window.onpageshow = window.onpagehide
+            = window.onfocus = window.onblur = onchange;
+
+        function onchange (evt) {
+            var v = "visible", h = "hidden",
+                evtMap = {
+                focus:v, focusin:v, pageshow:v, blur:h, focusout:h, pagehide:h
+                };
+
+            evt = evt || window.event;
+            if (evt.type in evtMap)
+            document.body.className = evtMap[evt.type];
+            else
+            document.body.className = this[hidden] ? "hidden" : "visible";
+        }
+
+        // set the initial state (but only if browser supports the Page Visibility API)
+        if( document[hidden] !== undefined )
+            onchange({type: document[hidden] ? "blur" : "focus"});
+        })();
+</script>

@@ -57,6 +57,7 @@
 <div onclick="emojiclick(':anguished:');" id=":anguished:" class="emoji">😧</div>
 <div onclick="emojiclick(':fearful:');" id=":fearful:" class="emoji">😨</div>
 <div onclick="emojiclick(':weary:');" id=":weary:" class="emoji">😩</div>
+<div onclick="emojiclick(':pleading_face:');" id=":pleading_face:" class="emoji">🥺</div>
 <div onclick="emojiclick(':grimacing:');" id=":grimacing:" class="emoji">😬</div>
 <div onclick="emojiclick(':cold_sweat:');" id=":cold_sweat:" class="emoji">😰</div>
 <div onclick="emojiclick(':scream:');" id=":scream:" class="emoji">😱</div>

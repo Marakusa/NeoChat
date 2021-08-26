@@ -6,7 +6,7 @@ var emojis;
 function loadEmojis() {
     emojis = new Array();
 
-    fs.readFile("server/data/full-emoji-list.json", "utf-8", function (emoji_error, emoji_pgres) {
+    fs.readFile("web/data/full-emoji-list.json", "utf-8", function (emoji_error, emoji_pgres) {
         if (emoji_error) {
             console.error("Failed to load emojis: " + emoji_error.message);
         }

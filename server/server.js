@@ -28,6 +28,9 @@ const headerBackButton = "<a href=\"@me\" class=\"headerBack buttonRound\"><div 
 const headerMenuButton = "<a onclick=\"openSideMenu();\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/MenuLines.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
 const theyBubble = "<div class=\"bubble bubbleLeft\">&MESSAGE</div>";
 const meBubble = "<div class=\"bubble bubbleRight\">&MESSAGE</div>";
+const indexContent = "<h2 id=\"welcomeText\" style=\"color: white;text-align: center;display: none;\">Welcome @&YOURUSERNAME</h2><p class=\"messageHistoryTitle\">&HISTORY</p><hr>&MESSAGEHISTORYSTARTSHERE<div id=\"chatUsersList\">&USERSLIST</div><p id=\"sendStatus\" class=\"bubbleSent\" style=\"display: none;\">Sent</p>";
+const chatHistoryText = "Your message history with @&TITLEUSERNAME begins here.";
+const meHistoryText = "Here is your friends list.";
 
 var token = "";
 
@@ -147,12 +150,21 @@ function redirect(url, res) {
     res.end();
 }
 function getHeader(file) {
-    return {
-        "Access-Control-Allow-Origin": "http://localhost",
+    var mime = getMIMEType(path.extname(file));
+    var headers = {"Access-Control-Allow-Origin": "http://localhost",
         "Access-Control-Allow-Methods": "POST, GET",
         "Access-Control-Max-Age": 2592000,
-        "Content-Type": getMIMEType(path.extname(file)) + "; charset=UTF-8",
+        "Content-Type": mime + "; charset=UTF-8",
     };
+
+    if (mime == "text/html") {
+        headers["Cache-Control"] = "max-age=0";
+    }
+    else {
+        headers["Cache-Control"] = "max-age=86400";
+    }
+
+    return headers;
 }
 function sendLoginStatus(res, status, message) {
     res.writeHead(200, getHeader(".json"));
@@ -392,8 +404,6 @@ function requestListener(req, res) {
                                                                                             .replace(/&TITLEUSERNAME/g, "NeoChat")
                                                                                             .replace(/&YOURUSERNAME/g, userdata["username"])
                                                                                             .replace(/&HEADERLEFTBUTTON/g, headerMenuButton)
-                                                                                            .replace("&MESSAGEHISTORYSTARTSHERE", "")
-                                                                                            .replace("&USERSLIST", msghistory)
                                                                                         );
                                                                                         res.end();
                                                                                     }
@@ -507,8 +517,6 @@ function requestListener(req, res) {
                                                                                                     .replace(/&TITLEUSERNAME/g, chatUser)
                                                                                                     .replace(/&YOURUSERNAME/g, userdata["username"])
                                                                                                     .replace(/&HEADERLEFTBUTTON/g, headerBackButton)
-                                                                                                    .replace("&MESSAGEHISTORYSTARTSHERE", msghistory)
-                                                                                                    .replace("&USERSLIST", "")
                                                                                                 );
                                                                                                 res.end();
 
@@ -838,7 +846,7 @@ module.exports = class ChatServer {
                     }
 
                     if (msg.length <= 500 && msg.trim() != "") {
-                                        
+                        
                         var post_message = entities.encode(msg).replace(/\n/g, "<br>");
                         var post_time = Date.now();
         
@@ -848,7 +856,7 @@ module.exports = class ChatServer {
                                 post_message = post_message.replace(emojiarray[0][i], emojis.findEmoji(emojiarray[0][i]));
                             }
                         }
-        
+                        
                         r.db("chatapp").table("users").filter(r.row("username").match("(?i)^" + username.toLowerCase() + "$")).run(conn, function(err, dbres) {
                         
                             if(err) {
@@ -929,37 +937,16 @@ module.exports = class ChatServer {
                         
                         // User data request success
                         else {
+
                             var clientid = userdata["id"];
                             var clientname = userdata["username"];
                             setClientSocket(clientid, clientname, socket, function () {
 
-                                getClientBySocket(socket, function (client) {
-                                    
-                                    if (client !== null) {
-                                        r.db("chatapp").table("users").filter(r.row("id").match(client.id.toString())).run(conn, function(err, cursor) {
-                                            if (err) {
-                                                console.log(err.message);
-                                            }
-                                            else {
-                                                cursor.toArray(function(err, result) {
-                                                    if (err) {
-                                                        console.log(err.message);
-                                                    }
-                                                    else {
-                                                        if (result.length > 0) {
-                                                            clients.forEach(c => {
-                                                                if (c.id !== clientid && c.socket !== null && c.socket.connected) {
-                                                                    c.socket.emit("userstatus", { user: result[0]["username"].toLowerCase(), status: 1 });
-                                                                    socket.emit("userstatus", { user: c.username.toLowerCase(), status: 1 });
-                                                                }
-                                                            });
-                                                        }
-                                                    }
-                                                });
-                                            }
-                                        });
+                                clients.forEach(c => {
+                                    if (c.id !== clientid && c.socket !== null && c.socket.connected) {
+                                        c.socket.emit("userstatus", { user: clientname.toLowerCase(), status: 1 });
+                                        socket.emit("userstatus", { user: c.username.toLowerCase(), status: 1 });
                                     }
-                
                                 });
 
                             });
@@ -1049,6 +1036,228 @@ module.exports = class ChatServer {
                     });
 
                 });
+
+                socket.on("getpage", (url, token) => {
+                    
+                    // Check if url is correct (/channel/@...)
+                    if (url.startsWith("/channel/@")) {
+
+                        // Get user data
+                        getUserData(token.toString(), function(userdataError, userdata) {
+                            
+                            if (userdataError) {
+                                socket.emit("page", 500, "Failed to request user data: " + userdataError);
+                            }
+                            
+                            // User data request success
+                            else {
+
+                                var clientid = userdata["id"];
+                                var clientname = userdata["username"];
+
+                                // Load page
+                                r.db("chatapp").table("users").filter(r.row("username").match("(?i)^" + (url.slice(("/channel/@").length)).toLowerCase() + "$")).run(conn, function(err, dbres) {
+                                    if(err) {
+                                        socket.emit("page", 500, err.message);
+                                    }
+                                    else {
+                                        dbres.toArray(function(err, result) {
+                                            if(err) {
+                                                socket.emit("page", 500, err.message);
+                                            }
+                                            else {
+                                                var chatUserId = 0;
+                                                var chatUser = "";
+                
+                                                // User exists
+                                                if (result.length > 0) {
+                                                    chatUserId = result[0]["id"];
+                                                    chatUser = result[0]["username"];
+                                                }
+
+                                                // User doesn't exist redirecting to @me
+                                                else {
+                                                    chatUserId = 0;
+                                                    chatUser = "me";
+                                                }
+
+                                                url = "/index.html";
+
+                                                // Load users page
+                                                if (chatUserId == 0) {
+                                                    r.db("chatapp").table("users").run(conn, function(err, dbres) {
+                                                        if(err) {
+                                                            socket.emit("page", 500, err.message);
+                                                        }
+                                                        else {
+                                                            var msghistory = "";
+
+                                                            dbres.toArray(function(err, aresult) {
+                                                                if(err) {
+                                                                    socket.emit("page", 500, err.message);
+                                                                }
+                                                                else {
+                                                                    var doneIndex = 0;
+                                                                    
+                                                                    aresult.forEach(user => {
+                                                                        doneIndex++;
+
+                                                                        if (user["id"].toString() != userdata["id"]) {
+                                                                            if (user["username"] != undefined) {
+                                                                                msghistory += userListButton
+                                                                                    .replace(/&USERNAMELINK/g, user["username"].toLowerCase())
+                                                                                    .replace(/&USERNAME/g, user["username"])
+                                                                                    .replace(/&ONLINESTATUS/g, 0);
+                                                                            }
+                                                                        }
+                                                                        
+                                                                        if (aresult.length == doneIndex) {
+                                                                            socket.emit("page", 200, indexContent
+                                                                                .replace(/&YOURUSERNAME/g, userdata["username"])
+                                                                                .replace("&MESSAGEHISTORYSTARTSHERE", "")
+                                                                                .replace("&USERSLIST", msghistory)
+                                                                                .replace("&HISTORY", meHistoryText)
+                                                                            , chatUserId, chatUser);
+
+                                                                            clients.forEach(c => {
+                                                                                if (c.id !== clientid && c.socket !== null && c.socket.connected) {
+                                                                                    c.socket.emit("userstatus", { user: clientname.toLowerCase(), status: 1 });
+                                                                                    socket.emit("userstatus", { user: c.username.toLowerCase(), status: 1 });
+                                                                                }
+                                                                            });
+                                                                        }
+                                                                    });
+                                                                }
+                                                            });
+                                                        }
+                                                    });
+                                                }
+
+                                                // Load chat
+                                                else {
+                                                    
+                                                    var chatMessages = new Array();
+                                                    var msghistory = "";
+                                                    
+                                                    // Get sent messages
+                                                    r.db("chatapp").table("messages").filter({userfrom: userdata["id"], userto: chatUserId}).run(conn, function(err, dbres) {
+                                                        
+                                                        if(err) {
+                                                            socket.emit("page", 500, err.message);
+                                                        }
+                                                        
+                                                        else {
+
+                                                            dbres.toArray(function(err, result) {
+
+                                                                if(err) {
+                                                                    socket.emit("page", 500, err.message);
+                                                                }
+                                                                
+                                                                else {
+
+                                                                    // Add messages to chat array
+                                                                    result.forEach(element => {
+                                                                        chatMessages.push(element);
+                                                                    });
+                                                                    
+                                                                    // Get received messages
+                                                                    r.db("chatapp").table("messages").filter({userto: userdata["id"], userfrom: chatUserId}).run(conn, function(err, dbres) {
+                                                                        
+                                                                        if(err) {
+                                                                            socket.emit("page", 500, err.message);
+                                                                        }
+
+                                                                        else {
+
+                                                                            dbres.toArray(function(err, result) {
+                                                                                
+                                                                                if(err) {
+                                                                                    socket.emit("page", 500, err.message);
+                                                                                }
+
+                                                                                else {
+                                                                                    
+                                                                                    // Add messages to chat array
+                                                                                    result.forEach(element => {
+                                                                                        chatMessages.push(element);
+                                                                                    });
+                                                                                    
+                                                                                    // Sort chat messages by time
+                                                                                    chatMessages = chatMessages.sort(function (a, b) {
+                                                                                        return a.time - b.time;
+                                                                                    });
+                                                                                    
+                                                                                    // Loop through messages and add them to display on webpage
+                                                                                    chatMessages.forEach(element => {
+
+                                                                                        var m_userfrom = element["userfrom"];
+                                                                                        var m_message = element["message"];
+                                                                                        
+                                                                                        // Message is sent by client
+                                                                                        if (m_userfrom == userdata["id"]) {
+                                                                                            msghistory += meBubble.replace("&MESSAGE", m_message);
+                                                                                        }
+                                                                                        // Client has received the message
+                                                                                        else {
+                                                                                            msghistory += theyBubble.replace("&MESSAGE", m_message);
+                                                                                        }
+
+                                                                                    });
+                                                                                    
+                                                                                    // Convert messages emoji tags to emojis
+                                                                                    var emojiarray = new Array(msghistory.match(/:[^:\s]*(?:::[^:\s])*:/g));
+                                                                                    if (emojiarray[0] != null)
+                                                                                    {
+                                                                                        for (var i = 0; i < emojiarray[0].length; i++) {
+                                                                                            msghistory = msghistory.replace(emojiarray[0][i], emojis.findEmoji(emojiarray[0][i]));
+                                                                                        }
+                                                                                    }
+                                                                                    
+                                                                                    // Write page for client
+                                                                                    socket.emit("page", 200, indexContent
+                                                                                        .replace("&MESSAGEHISTORYSTARTSHERE", msghistory)
+                                                                                        .replace("&USERSLIST", "")
+                                                                                        .replace("&HISTORY", chatHistoryText)
+                                                                                        .replace("&TITLEUSERNAME", chatUser)
+                                                                                    , chatUserId, chatUser);
+
+                                                                                    clients.forEach(c => {
+                                                                                        if (c.id !== clientid && c.socket !== null && c.socket.connected) {
+                                                                                            c.socket.emit("userstatus", { user: clientname.toLowerCase(), status: 1 });
+                                                                                            socket.emit("userstatus", { user: c.username.toLowerCase(), status: 1 });
+                                                                                        }
+                                                                                    });
+
+                                                                                }
+
+                                                                            });
+
+                                                                        }
+
+                                                                    });
+
+                                                                }
+
+                                                            });
+
+                                                        }
+
+                                                    });
+
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+
+                            }
+
+                        });
+
+                    }
+                });
+
             });
 
             if (server.listening == true) {
