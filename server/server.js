@@ -895,7 +895,7 @@ module.exports = class ChatServer {
 
                                                     r.db("chatapp").table("messages").insert({ userfrom: userdata["id"], userto: clientid, message: post_message, time: post_time }).run(conn, function(err) {
                                                         if(err) {
-                                                            //console.log("Failed to send message: " + err.message);
+                                                            console.log("Failed to send message: " + err.message);
                                                         }
                                                     });
                                                 }
