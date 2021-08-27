@@ -4,6 +4,31 @@ body {
     font-family: 'Quicksand', sans-serif;
     color: white;
 }
+p, span, h5, h4 {
+    color: white;
+}
+h3, h2, h1, a, a:visited {
+    color: #ffe264;
+}
+
+.copyBubble {
+    position: absolute;
+    background-color: rgb(65 165 67);
+    padding: 5px;
+    border-radius: 10px;
+    display: inline;
+    bottom: 60px;
+}
+.copyBubble::before {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 10px;
+    width: 0;
+    border-top: 7px solid rgb(65 165 67);
+    border-left: 7px solid rgb(0 0 0 / 0%);
+    border-right: 7px solid rgb(0 0 0 / 0%);
+}
 
 ::-webkit-scrollbar {
     width: 10px;
