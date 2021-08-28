@@ -24,7 +24,7 @@ var dbPort;
 
 // Template code snippets
 const userListButton = "<a href=\"@&USERNAMELINK\" id=\"user&UID\" name=\"user&UID\" class=\"users\"><div class=\"listUser\"><p id=\"listUserName&USERNAMELINK\" class=\"listUserName\"><span class=\"userStatus&ONLINESTATUS\"></span>&USERNAME</p></div></a>";
-const headerBackButton = "<a href=\"@me\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/back-arrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
+//const headerBackButton = "<a href=\"@me\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/back-arrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
 const headerMenuButton = "<a onclick=\"openSideMenu();\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/menu-lines.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
 const theyBubble = "<div class=\"bubble bubbleLeft\">&MESSAGE</div>";
 const meBubble = "<div class=\"bubble bubbleRight\">&MESSAGE</div>";
@@ -375,60 +375,27 @@ function requestListener(req, res) {
 
                                                     // Load users page
                                                     if (chatUserId == 0) {
-                                                        r.db("chatapp").table("users").run(conn, function(err, dbres) {
-                                                            if(err) {
-                                                                res.writeHead(500, err.message);
+
+                                                        getWebpage(function (pageerror, pageres) {
+                                    
+                                                            if (pageerror) {
+                                                                res.writeHead(404, { "message": "Page not found: " + url });
                                                                 res.end();
                                                             }
+                                    
                                                             else {
-                                                                var msghistory = "";
-    
-                                                                dbres.toArray(function(err, aresult) {
-                                                                    if(err) {
-                                                                        res.writeHead(500, err.message);
-                                                                        res.end();
-                                                                    }
-                                                                    else {
-                                                                        var doneIndex = 0;
-                                                                        
-                                                                        aresult.forEach(user => {
-                                                                            doneIndex++;
-        
-                                                                            if (user["id"].toString() != userdata["id"]) {
-                                                                                if (user["username"] != undefined) {
-                                                                                    msghistory += userListButton
-                                                                                        .replace(/&USERNAMELINK/g, user["username"].toLowerCase())
-                                                                                        .replace(/&USERNAME/g, user["username"])
-                                                                                        .replace(/&ONLINESTATUS/g, 0);
-                                                                                }
-                                                                            }
-                                                                            
-                                                                            if (aresult.length == doneIndex) {
-                                                                                getWebpage(function (pageerror, pageres) {
-                                                            
-                                                                                    if (pageerror) {
-                                                                                        res.writeHead(404, { "message": "Page not found: " + url });
-                                                                                        res.end();
-                                                                                    }
-                                                            
-                                                                                    else {
-                                                                                        res.writeHead(200, getHeader(url));
-                                                                                        res.write(mainpageTemplate
-                                                                                            .replace(/&TEMPLATE_BODY/, pageres)
-                                                                                            .replace(/&TITLEUSERNAME/g, "NeoChat")
-                                                                                            .replace(/&YOURUSERNAME/g, userdata["username"])
-                                                                                            .replace(/&HEADERLEFTBUTTON/g, headerMenuButton)
-                                                                                        );
-                                                                                        res.end();
-                                                                                    }
-                                                            
-                                                                                });
-                                                                            }
-                                                                        });
-                                                                    }
-                                                                });
+                                                                res.writeHead(200, getHeader(url));
+                                                                res.write(mainpageTemplate
+                                                                    .replace(/&TEMPLATE_BODY/, pageres)
+                                                                    .replace(/&TITLEUSERNAME/g, "NeoChat")
+                                                                    .replace(/&YOURUSERNAME/g, userdata["username"])
+                                                                    .replace(/&HEADERLEFTBUTTON/g, headerMenuButton)
+                                                                );
+                                                                res.end();
                                                             }
+                                    
                                                         });
+
                                                     }
 
                                                     // Load chat
@@ -442,113 +409,17 @@ function requestListener(req, res) {
                                                             }
                                     
                                                             else {
-                                                                var chatMessages = new Array();
-                                                                var msghistory = "";
                                                                 
-                                                                // Get sent messages
-                                                                r.db("chatapp").table("messages").filter({userfrom: userdata["id"], userto: chatUserId}).run(conn, function(err, dbres) {
-                                                                    
-                                                                    if(err) {
-                                                                        res.writeHead(500, err.message);
-                                                                        res.end();
-                                                                    }
-                                                                    
-                                                                    else {
+                                                                // Write page for client
+                                                                res.writeHead(200, getHeader(url));
+                                                                res.write(mainpageTemplate
+                                                                    .replace(/&TEMPLATE_BODY/, pageres)
+                                                                    .replace(/&TITLEUSERNAME/g, chatUser)
+                                                                    .replace(/&YOURUSERNAME/g, userdata["username"])
+                                                                    .replace(/&HEADERLEFTBUTTON/g, headerMenuButton)
+                                                                );
+                                                                res.end();
 
-                                                                        dbres.toArray(function(err, result) {
-
-                                                                            if(err) {
-                                                                                res.writeHead(500, err.message);
-                                                                                res.end();
-                                                                            }
-                                                                            
-                                                                            else {
-
-                                                                                // Add messages to chat array
-                                                                                result.forEach(element => {
-                                                                                    chatMessages.push(element);
-                                                                                });
-                                                                                
-                                                                                // Get received messages
-                                                                                r.db("chatapp").table("messages").filter({userto: userdata["id"], userfrom: chatUserId}).run(conn, function(err, dbres) {
-                                                                                    
-                                                                                    if(err) {
-                                                                                        res.writeHead(500, err.message);
-                                                                                        res.end();
-                                                                                    }
-
-                                                                                    else {
-
-                                                                                        dbres.toArray(function(err, result) {
-                                                                                            
-                                                                                            if(err) {
-                                                                                                res.writeHead(500, err.message);
-                                                                                                res.end();
-                                                                                            }
-
-                                                                                            else {
-                                                                                                
-                                                                                                // Add messages to chat array
-                                                                                                result.forEach(element => {
-                                                                                                    chatMessages.push(element);
-                                                                                                });
-                                                                                                
-                                                                                                // Sort chat messages by time
-                                                                                                chatMessages = chatMessages.sort(function (a, b) {
-                                                                                                    return a.time - b.time;
-                                                                                                });
-                                                                                                
-                                                                                                // Loop through messages and add them to display on webpage
-                                                                                                chatMessages.forEach(element => {
-
-                                                                                                    var m_userfrom = element["userfrom"];
-                                                                                                    var m_message = element["message"];
-                                                                                                    
-                                                                                                    // Message is sent by client
-                                                                                                    if (m_userfrom == userdata["id"]) {
-                                                                                                        msghistory += meBubble.replace("&MESSAGE", m_message);
-                                                                                                    }
-                                                                                                    // Client has received the message
-                                                                                                    else {
-                                                                                                        msghistory += theyBubble.replace("&MESSAGE", m_message);
-                                                                                                    }
-
-                                                                                                });
-                                                                                                
-                                                                                                // Convert messages emoji tags to emojis
-                                                                                                var emojiarray = new Array(msghistory.match(/:[^:\s]*(?:::[^:\s])*:/g));
-                                                                                                if (emojiarray[0] != null)
-                                                                                                {
-                                                                                                    for (var i = 0; i < emojiarray[0].length; i++) {
-                                                                                                        msghistory = msghistory.replace(emojiarray[0][i], emojis.findEmoji(emojiarray[0][i]));
-                                                                                                    }
-                                                                                                }
-                                                                                                
-                                                                                                // Write page for client
-                                                                                                res.writeHead(200, getHeader(url));
-                                                                                                res.write(mainpageTemplate
-                                                                                                    .replace(/&TEMPLATE_BODY/, pageres)
-                                                                                                    .replace(/&TITLEUSERNAME/g, chatUser)
-                                                                                                    .replace(/&YOURUSERNAME/g, userdata["username"])
-                                                                                                    .replace(/&HEADERLEFTBUTTON/g, headerMenuButton)
-                                                                                                );
-                                                                                                res.end();
-
-                                                                                            }
-
-                                                                                        });
-
-                                                                                    }
-
-                                                                                });
-
-                                                                            }
-
-                                                                        });
-
-                                                                    }
-
-                                                                });
                                                             }
                                     
                                                         });
@@ -1441,7 +1312,7 @@ module.exports = class ChatServer {
             }
         });
         
-        function getClientBySocket(socket, callback) {
+        /*function getClientBySocket(socket, callback) {
             clients.forEach(c => {
                 if (c.socket == socket) {
                     callback(c);
@@ -1449,7 +1320,7 @@ module.exports = class ChatServer {
                 }
             });
             callback(null);
-        }
+        }*/
         function getClientById(id, callback) {
             var set = false;
 
@@ -1464,7 +1335,7 @@ module.exports = class ChatServer {
                 callback(null);
             }
         }
-        function getClientExistsById(id) {
+        /*function getClientExistsById(id) {
             var set = false;
 
             clients.forEach(c => {
@@ -1477,7 +1348,7 @@ module.exports = class ChatServer {
             if (set == false) {
                 return null;
             }
-        }
+        }*/
         function setClientSocket(id, username, socket, callback) {
             var set = false;
 
