@@ -12,28 +12,10 @@
    viewBox="0 0 128.0 128.0"
    version="1.1"
    id="SVGRoot"
-   sodipodi:docname="BackArrow.svg"
+   sodipodi:docname="send-arrow.svg"
    inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
   <defs
-     id="defs833">
-    <inkscape:path-effect
-       effect="fillet_chamfer"
-       id="path-effect836"
-       is_visible="true"
-       lpeversion="1"
-       satellites_param="F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1 @ F,0,0,1,0,9,0,1"
-       unit="px"
-       method="auto"
-       mode="F"
-       radius="9"
-       chamfer_steps="1"
-       flexible="false"
-       use_knot_distance="true"
-       apply_no_radius="true"
-       apply_with_radius="true"
-       only_selected="false"
-       hide_knots="false" />
-  </defs>
+     id="defs833" />
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -42,10 +24,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="5.6"
-     inkscape:cx="61.771967"
-     inkscape:cy="61.356099"
+     inkscape:cx="45.906778"
+     inkscape:cy="63.457495"
      inkscape:document-units="px"
-     inkscape:current-layer="g859"
+     inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
      showgrid="true"
      inkscape:window-width="1920"
@@ -65,6 +47,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -73,15 +56,15 @@
      inkscape:groupmode="layer"
      id="layer1">
     <g
-       aria-label="🡰"
-       id="text1412"
-       style="font-style:normal;font-weight:normal;font-size:119.392px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.24367" />
-    <g
-       id="g859">
+       aria-label="⮞"
+       id="text2387"
+       style="font-style:normal;font-weight:normal;font-size:122.532px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:3.06332"
+       transform="translate(4)">
       <path
-         id="rect838"
-         style="opacity:1;fill:#ffffff;fill-opacity:0.985915;stroke-width:0.81905"
-         d="m 86.405686,10.428077 c -4.010655,-4.0106549 -10.468243,-4.0106549 -14.478898,0 L 25.594315,56.76055 c -4.010655,4.010655 -4.010655,10.468243 0,14.478898 l 46.332473,46.332472 c 4.010655,4.01066 10.468243,4.01066 14.478898,0 4.010654,-4.01066 4.010654,-10.46824 0,-14.47889 L 47.312661,63.999999 86.405686,24.906975 c 4.010654,-4.010655 4.010654,-10.468243 0,-14.478898 z" />
+         d="M 25.64892,108.27425 102.35108,63.999989 25.64892,19.725732 35,60 70,65 35,70 Z"
+         style="stroke-width:3.06332"
+         id="path1991"
+         sodipodi:nodetypes="ccccccc" />
     </g>
   </g>
 </svg>

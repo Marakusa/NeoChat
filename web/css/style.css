@@ -1,5 +1,4 @@
 body {
-    /*background-color: rgb(20, 20, 20);*/
     background-color: rgb(20, 20, 20);
     font-family: 'Quicksand', sans-serif;
     color: white;
@@ -13,7 +12,7 @@ h3, h2, h1, a, a:visited {
 
 .copyBubble {
     position: absolute;
-    background-color: rgb(65 165 67);
+    background-color: #fc69bf;
     padding: 5px;
     border-radius: 10px;
     display: inline;
@@ -25,7 +24,7 @@ h3, h2, h1, a, a:visited {
     top: 100%;
     left: 10px;
     width: 0;
-    border-top: 7px solid rgb(65 165 67);
+    border-top: 7px solid #fc69bf;
     border-left: 7px solid rgb(0 0 0 / 0%);
     border-right: 7px solid rgb(0 0 0 / 0%);
 }
@@ -139,31 +138,45 @@ hr {
     left: 0;
     box-shadow: black 0px 0px 7px 0px;
     user-select: none;
-    z-index: 2;
+    z-index: 4;
 }
-.headerTextLeft {
-    padding: 18px 5px;
-    margin: auto 0;
-    float: left;
-    font-size: 22px;
-    font-weight: bold;
+@media screen and (min-width: 540px) {
+    .headerTextLeft {
+        padding: 18px 5px;
+        margin: auto 0 auto 10px;
+        float: left;
+        font-size: 22px;
+        font-weight: bold;
+    }
+    .headerBack {
+        display: none;
+    }
 }
-.headerBack {
-    float: left;
-    margin: 8px;
-    padding: 10px;
-    width: 28px;
-    height: 28px;
-    display: block;
-    text-align: center;
-    line-height: 1.0;
-    cursor: pointer;
-    transition: 0.2s;
-    border-radius: 15%;
+@media screen and (max-width: 539px) {
+    .headerTextLeft {
+        padding: 18px 5px;
+        margin: auto 0;
+        float: left;
+        font-size: 22px;
+        font-weight: bold;
+    }
+    .headerBack {
+        float: left;
+        margin: 8px;
+        padding: 10px;
+        width: 28px;
+        height: 28px;
+        display: block;
+        text-align: center;
+        line-height: 1.0;
+        cursor: pointer;
+        transition: 0.2s;
+        border-radius: 15%;
+    }
 }
 
 .headerSideListBackground {
-    z-index: 1;
+    z-index: 3;
     background-color: black;
     right: 0;
     bottom: 0;
@@ -177,7 +190,7 @@ hr {
     position: fixed;
     box-shadow: black 0px 0px 7px 0px;
     user-select: none;
-    z-index: 2;
+    z-index: 6;
     height: calc(100% - 64px);
     width: 240px;
     font-size: 22px;
@@ -284,9 +297,64 @@ hr {
     box-shadow: 0 0 10px #ffe264;
 }
 
+.mainContent {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+@media screen and (min-width: 540px) {
+    .userListContent {
+        width: 290px;
+        height: calc(100% - 64px - 10px);
+        float: left;
+        display: block;
+        font-size: 24px;
+        color: rgb(0 0 0);
+        position: absolute;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 5px;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        top: 64px;
+
+        background-color: rgb(28 28 28);
+        z-index: 5;
+    }
+}
+@media screen and (max-width: 539px) {
+    .userListContent {
+        display: none;
+    }
+}
+
+@media screen and (min-width: 540px) {
+    .footer {
+        left: 300px;
+        width: calc(100% - 300px);
+    }
+}
+@media screen and (min-width: 540px) {
+    .chatLogDevice {
+        width: calc(100% - 310px);
+        float: right;
+        left: 300px;
+    }
+}
+@media screen and (max-width: 539px) {
+    .chatLogDevice {
+        height: calc(100% - 64px - 60px - 10px);
+        width: calc(100% - 10px);
+        left: 0;
+    }
+}
 .chatLog {
-    height: calc(100% - 64px - 60px - 10px);
-    width: calc(100% - 10px);
     font-size: 24px;
     color: black;
     display: block;
@@ -294,9 +362,8 @@ hr {
     overflow-x: hidden;
     overflow-y: auto;
     padding: 5px;
-    bottom: 0;
+    bottom: 60px;
     right: 0;
-    left: 0;
     top: 64px;
 }
 .chatLogHistory {
@@ -406,6 +473,10 @@ hr {
     display: flex;
     color: white;
     text-decoration-line: none;
+}
+.selectedUser {
+    background-color: rgb(51 51 51);
+    border-radius: 5px;
 }
 .listUser {
     margin: 0;
@@ -633,4 +704,23 @@ input {
 .newMessage span {
     margin: 6px 0;
     display: block;
+}
+
+.friendsIcon {
+    width: 24px;
+    height: 24px;
+    float: left;
+    background-image: url(../img/icon-friends.svg);
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: 10px;
+}
+.profileIcon {
+    width: 24px;
+    height: 24px;
+    float: left;
+    background-image: url(../img/icon-profile.svg);
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: 10px;
 }

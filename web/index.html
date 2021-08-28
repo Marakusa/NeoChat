@@ -36,7 +36,7 @@
             -ms-transform: translateX(50%) translateY(-50%);
             transform: translateX(calc(50% - 170px)) translateY(-50%);
         ">
-            <img src="../img/App-Loading.gif" width="100">
+            <img src="../img/app-loading.gif" width="100" style="margin: 0 auto;display: block;" draggable="false">
             <h2 style="margin: 0;text-align: center;">
                 Connecting
             </h2>
@@ -65,49 +65,63 @@
     </div>
     <div id="notifications"></div>
     <div id="sideMenu" class="headerSideList" style="margin-left: -100%;">
-        <div class="headerSideListButton">
-            <p class="headerSideListButtonText">Profile</p>
-        </div>
-        <div class="headerSideListButton">
-            <p class="headerSideListButtonText">Friends</p>
-        </div>
-        <div class="headerSideListButton">
-            <p class="headerSideListButtonText">Search</p>
-        </div>
-        <div class="headerSideListButton">
-            <p class="headerSideListButtonText">Settings</p>
-        </div>
-        <div onclick="logout();" class="headerSideListButton">
-            <p class="headerSideListButtonText">Log Out</p>
+        <div class="userListContent" style="display: block;">
+            <div name="chatUsersList" style="
+                width: 230px;
+                height: calc(100% - 10px);
+                float: left;
+                display: block;
+                font-size: 24px;
+                color: rgb(0 0 0);
+                position: absolute;
+                overflow-x: hidden;
+                overflow-y: auto;
+                padding: 5px;
+                bottom: 0;
+                right: 0;
+                left: 0;
+                top: 0;
+                background-color: rgb(28 28 28);
+                z-index: 5;
+            ">
+
+            </div>
         </div>
     </div>
     <div onclick="closeSideMenu();" id="headerSideListBackground" class="headerSideListBackground" style="transition: 0.4s;display: none;background-color: rgba(0, 0, 0, 0);"></div>
     
-    <div id="chatScroll" class="chatLog">
-        <div id="chat" class="chatLogHistory">
-            
+    <div class="mainContent">
+        <div class="userListContent">
+            <div name="chatUsersList">
+
+            </div>
         </div>
-    </div>
-    
-    <div id="emojiList" class="emojiList" style="display: none;">
-        <h2>Emoji</h2>
-        <div class="emojiListGrid">
-            <div id="emojiListContent" class="emojiListContent">
+        <div id="chatScroll" class="chatLogDevice chatLog">
+            <div id="chat" class="chatLogHistory">
                 
             </div>
         </div>
     </div>
     
     <div class="footer">
+        <div id="emojiList" class="emojiList" style="display: none;">
+            <h2>Emoji</h2>
+            <div class="emojiListGrid">
+                <div id="emojiListContent" class="emojiListContent">
+                    
+                </div>
+            </div>
+        </div>
+        
         <div onclick="chatScroll.scrollTop = chatScroll.scrollHeight - chatScroll.clientHeight;" class="newMessage">
             <span>You have unread messages</span>
         </div>
         <a onclick="emojiOpen();" class="footerLeftButton">
-            <div style="background-image: url(../img/Emojis.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div>
+            <div style="background-image: url(../img/icon-emojis.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div>
         </a>
         <textarea id="messageField" class="inputArea" placeholder="Message" maxlength="500" hidden></textarea>
         <span aria-label="Message" aria-multiline="true" data-can-focus="true" data-slate-editor="true" contenteditable="true" autocorrect="off" spellcheck="true" role="textbox" data-gramm="false" id="messageFieldSpan" class="inputArea" for="messageField" contenteditable></span>
-        <a onclick="sendMessage();" class="footerSend buttonRound"><div style="background-image: url(../img/SendArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
+        <a onclick="sendMessage();" class="footerSend buttonRound"><div style="background-image: url(../img/send-arrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
     </div>
     
     <div id="contextList" class="contextList" style="transform: translate(0px, 0px);display: none;">
@@ -157,8 +171,8 @@
     <script>
         setTimeout(function () {
             document.getElementById("connectionProblems").style.display = "block";
-        }, 1000);
-
+        }, 10000);
+        
         function CopyToClipboard(containerid) {
             if (document.selection) {
                 var range = document.body.createTextRange();
@@ -270,6 +284,7 @@
         socket.emit('getpage', document.documentURI.replace(/^[^#]*?:\/\/.*?\//, "/"), token);
         socket.on('message', receiveMessage);
         socket.on('page', pageLoad);
+        socket.on('userlist', getUserList);
     
         socket.on('userstatus', receiveUserStatus);
         
@@ -375,11 +390,11 @@
         //const twemoji = "<span contenteditable=\"false\"><span class=\"twa twa-&ID\" src=\"\" aria-label=\"&ID\" draggable=\"false\" contenteditable=\"false\"></span></span> ";
 
         $("#messageFieldSpan").on('keyup paste', function(e) {
-            var newText = twemoji.parse(document.getElementById("messageFieldSpan").innerHTML);
+            /*var newText = twemoji.parse(document.getElementById("messageFieldSpan").innerHTML);
             console.log(newText);
             document.getElementById("messageFieldSpan").innerHTML = newText;
 
-            /*if (e.target.innerHTML.length > 500) {
+            if (e.target.innerHTML.length > 500) {
                 e.target.innerHTML = e.target.innerHTML.substring(0, 500);
             }
 
@@ -394,29 +409,66 @@
         var chatScroll = null;
         var newMessage = null;
 
-        const headerBackButton = "<a href=\"@me\" id=\"headerBack\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/BackArrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
-        const headerMenuButton = "<a onclick=\"openSideMenu();\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/MenuLines.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
+        const headerBackButton = "<a href=\"@me\" id=\"headerBack\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/back-arrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
+        const headerMenuButton = "<a onclick=\"openSideMenu();\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/menu-lines.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
         const headerText = "<p class=\"headerTextLeft\">&TITLE</p>";
+
+        var lastchatusername = "";
+
+        setInterval(function () {
+            
+            var last = document.getElementsByName("user" + lastchatusername.toLowerCase());
+            var recent = document.getElementsByName("user" + (document.documentURI).split("@")[1].toLowerCase());
+
+            if (last.length > 0) {
+                if (last[0].classList.contains("selectedUser") == true) {
+                    last[0].classList.remove("selectedUser");
+                }
+                if (last[1].classList.contains("selectedUser") == true) {
+                    last[1].classList.remove("selectedUser");
+                }
+            }
+            if (recent.length > 0) {
+                if (recent[0].classList.contains("selectedUser") == false) {
+                    recent[0].classList.add("selectedUser");
+                }
+                if (recent[1].classList.contains("selectedUser") == false) {
+                    recent[1].classList.add("selectedUser");
+                }
+            }
+
+            lastchatusername = (document.documentURI).split("@")[1].toLowerCase();
+            
+        }, 100);
 
         // Load page
         function pageLoad(code, data, chatUserId, chatUser) {
+            console.log(data);
             document.getElementById("chat").innerHTML = data;
 
             chatusername = (document.documentURI).split("@")[1];
 
             mepage = (document.documentURI).endsWith("@me", document.documentURI.length);
+            ppage = (document.documentURI).endsWith("@p", document.documentURI.length);
 
             var header = document.getElementsByClassName("header")[0];
         
             if (mepage == true) {
                 document.getElementsByClassName("footer")[0].style.display = "none";
-                document.getElementById("welcomeText").style.display = "block";
+                //document.getElementById("welcomeText").style.display = "block";
                 header.innerHTML = headerMenuButton + headerText.replace(/&TITLE/g, "NeoChat");
+                //if (document.getElementById("messageHistoryTitle")) {
+                //    document.getElementById("messageHistoryTitle").innerText = "Here is your friends list.";
+                //}
+            }
+            else if (ppage == true) {
+                document.getElementsByClassName("footer")[0].style.display = "";
+                //header.innerHTML = headerMenuButton + headerText.replace(/&TITLE/g, "NeoChat");
             }
             else {
                 document.getElementsByClassName("footer")[0].style.display = "";
-                document.getElementById("welcomeText").style.display = "none";
-                header.innerHTML = headerBackButton + headerText.replace(/&TITLE/g, chatUser);
+                //document.getElementById("welcomeText").style.display = "none";
+                header.innerHTML = headerMenuButton + headerText.replace(/&TITLE/g, chatUser);
 
                 var allBubbles = document.getElementsByClassName('bubble');
                 for (var i=0, len=allBubbles.length|0; i<len; i=i+1|0) {
@@ -459,15 +511,37 @@
                 }
             }, 1000);
 
+            socket.emit('getuserlist', token);
+        }
+        function getUserList(code, data) {
+            document.getElementsByName("chatUsersList")[0].innerHTML = data;
+            document.getElementsByName("chatUsersList")[1].innerHTML = data;
+            
             $(document).ready(function() {
+                $('.users').off();
+                $('#headerBack').off();
                 $('.users').click(function() {
+                    console.log("click");
+                    sideMenu.style.marginLeft = "-300px";
+                    document.getElementById("headerSideListBackground").style.backgroundColor = "#00000000";
+                    menuOpen = false;
+                    setTimeout(() => {
+                        document.getElementById("headerSideListBackground").style.display = "none";
+                    }, 200);
+
                     socket.emit('getpage', $(this)[0].href.replace(/^[^#]*?:\/\/.*?\//, "/"), token);
                     window.history.pushState({"html": document.outerHTML, "pageTitle": document.title},"", $(this)[0].href);
+
+                    clickAssigned = true;
+
                     return false;
                 });
                 $('#headerBack').click(function() {
                     socket.emit('getpage', $(this)[0].href.replace(/^[^#]*?:\/\/.*?\//, "/"), token);
                     window.history.pushState({"html": document.outerHTML, "pageTitle": document.title},"", $(this)[0].href);
+
+                    clickAssigned = true;
+
                     return false;
                 });
             });
@@ -619,12 +693,12 @@
             if (msg.length <= 500 && msg.trim() !== "") {
                 socket.emit('message', chatusername, token, msg);
                 
-                var emojiarray = new Array(msg.match(/:[^:\s]*(?:::[^:\s])*:/g));
+                /*var emojiarray = new Array(msg.match(/:[^:\s]*(?:::[^:\s])*:/g));
                 if (emojiarray[0] != null) {
                     for (var i = 0; i < emojiarray[0].length; i++) {
                         msg = msg.replace(emojiarray[0][i], findEmoji(emojiarray[0][i]));
                     }
-                }
+                }*/
                 
                 id = Math.floor((Math.random() * 999999) + 1);
                 var htmlCode = meBubble.replace("&MESSAGE", msg).replace("&ID", id);
@@ -638,6 +712,9 @@
                     }
                 }, 100);
             }
+
+            document.getElementById("messageField").value = "";
+            document.getElementById("messageFieldSpan").innerHTML = "";
         }
     
         function messageSentConfirm(message) {

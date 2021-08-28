@@ -13,7 +13,7 @@
    viewBox="0 0 128.0 128.0"
    version="1.1"
    id="SVGRoot"
-   sodipodi:docname="AppIcon.svg"
+   sodipodi:docname="default-6.svg"
    inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
   <defs
      id="defs833">
@@ -61,32 +61,6 @@
        y2="40"
        gradientUnits="userSpaceOnUse"
        gradientTransform="translate(10,-15)" />
-    <filter
-       inkscape:collect="always"
-       style="color-interpolation-filters:sRGB"
-       id="filter1897"
-       x="-0.037589412"
-       width="1.0751788"
-       y="-0.047599251"
-       height="1.0951985">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="1.4599629"
-         id="feGaussianBlur1899" />
-    </filter>
-    <filter
-       inkscape:collect="always"
-       style="color-interpolation-filters:sRGB"
-       id="filter1897-5"
-       x="-0.037589412"
-       width="1.0751787"
-       y="-0.047599252"
-       height="1.0951985">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="1.4599629"
-         id="feGaussianBlur1899-7" />
-    </filter>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -95,9 +69,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="6.5390625"
-     inkscape:cx="85.203942"
-     inkscape:cy="70.685864"
+     inkscape:zoom="4.6238154"
+     inkscape:cx="51.099465"
+     inkscape:cy="65.534622"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
@@ -119,6 +93,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -126,27 +101,28 @@
      inkscape:label="Taso 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <rect
+       style="fill:#6992fc;stroke-width:1.02403;fill-opacity:1"
+       id="rect842"
+       width="128"
+       height="128"
+       x="0"
+       y="0"
+       ry="0" />
     <g
-       id="g853">
+       id="g880"
+       transform="translate(3.666996,6.05859)"
+       style="fill:#ffffff;fill-opacity:1">
       <path
-         id="rect1410-0-1"
-         style="opacity:0.3;mix-blend-mode:normal;fill:#000000;fill-opacity:1;stroke-width:1.09665;filter:url(#filter1897-5)"
-         d="m 38.235558,20.044566 c -6.075448,0 -10.966514,4.891065 -10.966514,10.966514 V 67.063495 69.39388 93.6573 L 50.298724,80.36039 H 109.5179 c 6.07545,0 10.96651,-4.89106 10.96651,-10.96651 v -38.3828 c 0,-6.075449 -4.89106,-10.966514 -10.96651,-10.966514 z" />
-      <path
-         id="rect1410-8"
-         style="fill:#fc69bf;fill-opacity:1;stroke-width:1.09665"
-         d="m 37.132041,18.968752 c -6.075449,0 -10.966514,4.891065 -10.966514,10.966514 v 36.052415 2.330384 24.263412 L 49.195206,79.284579 h 59.219174 c 6.07545,0 10.96652,-4.891065 10.96652,-10.966514 V 29.935266 c 0,-6.075449 -4.89107,-10.966514 -10.96652,-10.966514 z" />
-    </g>
-    <g
-       id="g849">
-      <path
-         id="rect1410-0"
-         style="opacity:0.3;mix-blend-mode:normal;fill:#000000;fill-opacity:1;stroke-width:1.09665;filter:url(#filter1897)"
-         d="m 20.915367,36.394628 c -6.075448,0 -10.9665139,4.891065 -10.9665139,10.966514 v 36.052415 2.330384 24.263419 L 32.978533,96.710455 h 59.219176 c 6.07545,0 10.966511,-4.891065 10.966511,-10.966514 V 47.361142 c 0,-6.075449 -4.891061,-10.966514 -10.966511,-10.966514 z" />
-      <path
-         id="rect1410"
-         style="fill:#ffe264;fill-opacity:1;stroke-width:1.09665"
-         d="m 19.585618,35.418523 c -6.075448,0 -10.9665137,4.891065 -10.9665137,10.966514 v 36.052415 2.330384 24.263414 L 31.648784,95.73435 h 59.219175 c 6.075449,0 10.966511,-4.891065 10.966511,-10.966514 V 46.385037 c 0,-6.075449 -4.891062,-10.966514 -10.966511,-10.966514 z" />
+         id="path869"
+         style="fill:#ffffff;fill-opacity:1"
+         d="M 60,70 A 55,55 0 0 0 5.417968,121.94141 H 115.24804 A 55,55 0 0 0 60.333984,70 55,55 0 0 0 60,70 Z" />
+      <circle
+         style="fill:#ffffff;fill-opacity:1"
+         id="path876"
+         cx="60.344437"
+         cy="37.9986"
+         r="30" />
     </g>
   </g>
 </svg>
