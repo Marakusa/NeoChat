@@ -441,6 +441,7 @@ hr {
     padding: 5px;
     border-radius: 5px;
     cursor: pointer;
+    color: rgb(0 0 0);
 }
 @media screen and (min-width: 540px) {
     .contextList p:hover {
@@ -710,7 +711,7 @@ input {
     width: 24px;
     height: 24px;
     float: left;
-    background-image: url(../img/icon-friends.svg);
+    background-image: url(../../img/icon-friends.svg);
     background-size: contain;
     background-repeat: no-repeat;
     margin-right: 10px;
@@ -719,7 +720,7 @@ input {
     width: 24px;
     height: 24px;
     float: left;
-    background-image: url(../img/icon-profile.svg);
+    background-image: url(../../img/icon-profile.svg);
     background-size: contain;
     background-repeat: no-repeat;
     margin-right: 10px;

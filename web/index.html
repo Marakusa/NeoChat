@@ -36,7 +36,7 @@
             -ms-transform: translateX(50%) translateY(-50%);
             transform: translateX(calc(50% - 170px)) translateY(-50%);
         ">
-            <img src="../img/app-loading.gif" width="100" style="margin: 0 auto;display: block;" draggable="false">
+            <img src="../../img/app-loading.gif" width="100" style="margin: 0 auto;display: block;" draggable="false">
             <h2 style="margin: 0;text-align: center;">
                 Connecting
             </h2>
@@ -117,11 +117,11 @@
             <span>You have unread messages</span>
         </div>
         <a onclick="emojiOpen();" class="footerLeftButton">
-            <div style="background-image: url(../img/icon-emojis.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div>
+            <div style="background-image: url(../../img/icon-emojis.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div>
         </a>
         <textarea id="messageField" class="inputArea" placeholder="Message" maxlength="500" hidden></textarea>
         <span aria-label="Message" aria-multiline="true" data-can-focus="true" data-slate-editor="true" contenteditable="true" autocorrect="off" spellcheck="true" role="textbox" data-gramm="false" id="messageFieldSpan" class="inputArea" for="messageField" contenteditable></span>
-        <a onclick="sendMessage();" class="footerSend buttonRound"><div style="background-image: url(../img/send-arrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
+        <a onclick="sendMessage();" class="footerSend buttonRound"><div style="background-image: url(../../img/send-arrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;"></div></a>
     </div>
     
     <div id="contextList" class="contextList" style="transform: translate(0px, 0px);display: none;">
@@ -129,6 +129,12 @@
         <p onclick="console.log('share');">Share</p>
         <hr>
         <p onclick="console.log('profile');">User Profile</p>
+    </div>
+    <div id="contextListP" class="contextList" style="transform: translate(0px, 0px);display: none;">
+        <p onclick="goToProfile();">Profile</p>
+        <hr>
+        <p onclick="console.log('share');">Remove Friend</p>
+        <p onclick="console.log('profile');">Block</p>
     </div>
     
     <script>
@@ -212,8 +218,8 @@
 
         const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
     
-        document.body.addEventListener('click', function () { document.getElementById("contextList").style.display = "none"; }, true);
-        document.body.addEventListener('scroll', function () { document.getElementById("contextList").style.display = "none"; }, true);
+        document.body.addEventListener('click', function () { document.getElementById("contextList").style.display = "none"; document.getElementById("contextListP").style.display = "none"; }, true);
+        document.body.addEventListener('scroll', function () { document.getElementById("contextList").style.display = "none"; document.getElementById("contextListP").style.display = "none"; }, true);
 
         function getMobileOperatingSystem() {
             var userAgent = navigator.userAgent || navigator.vendor || window.opera;
@@ -247,7 +253,7 @@
     
         function logout() {
             document.cookie = "token=; path=/";
-            window.location.href = "../signin";
+            window.location.href = "../../signin";
         }
     
         function getCookie(name) {
@@ -512,10 +518,23 @@
 
             socket.emit('getuserlist', token);
         }
+        function goToProfile() {
+            goTo("@" + selectedUsername);
+        }
+        function goTo(url) {
+            socket.emit('getpage', url.replace(/^[^#]*?:\/\/.*?\//, "/"), token);
+            window.history.pushState({"html": document.outerHTML, "pageTitle": document.title},"", url);
+        }
         function getUserList(code, data) {
             document.getElementsByName("chatUsersList")[0].innerHTML = data;
             document.getElementsByName("chatUsersList")[1].innerHTML = data;
             
+            for (var i = 0; i < document.getElementsByClassName("users").length; i++) {
+                var e = document.getElementsByClassName("users")[i];
+                console.log(e.href);
+                e.addEventListener('contextmenu', function (ev) { contextListP(ev, e.href.split("@")[1]); }, false);
+            }
+
             $(document).ready(function() {
                 $('.users').off();
                 $('#headerBack').off();
@@ -779,10 +798,28 @@
     
         function contextList(event) {
             event.preventDefault();
-    
+
             var pageX = event.pageX;
             var pageY = event.pageY;
             const contextListE = document.getElementById("contextList");
+
+            contextListE.style.display = "";
+        
+            pageX = clamp(pageX, 0, window.innerWidth - contextListE.offsetWidth);
+            pageY = clamp(pageY, 0, window.innerHeight - contextListE.offsetHeight);
+
+            contextListE.style.transform = "translate(" + pageX + "px, " + pageY + "px)";
+        }
+    
+        function contextListP(event, username) {
+            selectedUsername = username;
+            console.log(username);
+
+            event.preventDefault();
+    
+            var pageX = event.pageX;
+            var pageY = event.pageY;
+            const contextListE = document.getElementById("contextListP");
     
             contextListE.style.display = "";
         
