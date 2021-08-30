@@ -371,28 +371,37 @@ hr {
     height: auto;
     display: flow-root;
 }
-.bubble {
+.message {
     margin-bottom: 5px;
     height: auto;
-    display: block;
-    max-width: 220px;
-    width: max-content;
-    padding: 10px 14px;
-    border-radius: 22px;
+    display: flow-root;
+    width: 100%;
     font-size: 18px;
     font-weight: 500;
     user-select: none;
     overflow-wrap: break-word;
 }
-.bubbleLeft {
-    background-color: #fc69bf;
+.messageAvatar {
     float: left;
-    margin-right: 100%;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
 }
-.bubbleRight {
-    background-color: #ffe264;
-    float: right;
-    margin-left: 100%;
+.messageContent {
+    width: calc(100% - 104px);
+    height: auto;
+    min-height: 64px;
+    margin: 10px;
+    display: flow-root;
+    float: left;
+}
+.messageUsername {
+    margin: 0;
+    font-size: 20px;
+    color: #ffe264;
+}
+.messageText {
+    color: white;
 }
 .bubbleSent {
     color: #838383;
@@ -721,6 +730,15 @@ input {
     height: 24px;
     float: left;
     background-image: url(../../img/icon-profile.svg);
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: 10px;
+}
+.generalIcon {
+    width: 24px;
+    height: 24px;
+    float: left;
+    background-image: url(../../img/icon-channel.svg);
     background-size: contain;
     background-repeat: no-repeat;
     margin-right: 10px;

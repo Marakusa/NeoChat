@@ -282,6 +282,7 @@
         var xhr = null;
         var interval = null;
     
+        var myusername = "";
         var chatusername = "";
         var token = getCookie("token");
     
@@ -291,6 +292,7 @@
         socket.on('message', receiveMessage);
         socket.on('page', pageLoad);
         socket.on('userlist', getUserList);
+        socket.on('setusername', setUsername);
     
         socket.on('userstatus', receiveUserStatus);
         
@@ -447,6 +449,10 @@
             
         }, 100);
 
+        function setUsername(username) {
+            myusername = username;
+        }
+
         // Load page
         function pageLoad(code, data, chatUserId, chatUser) {
             document.getElementById("chat").innerHTML = data;
@@ -570,75 +576,77 @@
             if (Math.round(chatScroll.scrollTop) >= Math.round(chatScroll.scrollHeight - chatScroll.clientHeight)) {
                 scroll = true;
             }
-    
-            if (data.from == chatusername) {
-                var sendStatus = document.getElementById("sendStatus");
-                sendStatus.innerText = "Seen";
-    
-                message = "";
-    
-                id = Math.floor((Math.random() * 999999) + 1);
-                var htmlCode = theyBubble.replace("&MESSAGE", data.message).replace("&ID", id);
-    
-                document.getElementById("chat").innerHTML += htmlCode;
-    
-                document.getElementById("bubble" + id).addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
-                
-                dateSplit = true;
-    
-                if (mepage == false) {
-                    setTimeout(() => {  
-                        if (scroll && document[hidden] == false) {
-                            chatScroll.scrollTop = chatScroll.scrollHeight + 10;
-                            document.title = "NeoChat";
-                        }
-                        else {
-                            playPing();
-                            newMessage.style.display = "";
-                        }
-                    }, 100);
+            
+            if (data.from.toLowerCase() !== myusername.toLowerCase()) {
+                if (data.from.toLowerCase() == chatusername.toLowerCase() || data.general !== undefined || data.general == true) {
+                    var sendStatus = document.getElementById("sendStatus");
+                    sendStatus.innerText = "Seen";
+        
+                    message = "";
+        
+                    id = Math.floor((Math.random() * 999999) + 1);
+                    var htmlCode = theyBubble.replace("&MESSAGE", data.message).replace("&ID", id);
+        
+                    document.getElementById("chat").innerHTML += htmlCode;
+        
+                    document.getElementById("bubble" + id).addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
+                    
+                    dateSplit = true;
+        
+                    if (mepage == false) {
+                        setTimeout(() => {  
+                            if (scroll && document[hidden] == false) {
+                                chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                                document.title = "NeoChat";
+                            }
+                            else {
+                                playPing();
+                                newMessage.style.display = "";
+                            }
+                        }, 100);
+                    }
+                    else {
+                        playPing();
+                    }
                 }
                 else {
                     playPing();
+        
+                    var msg = data.message;
+        
+                    if (data.message.length > 50) {
+                        msg = data.message.substring(0, 50) + "...";
+                    }
+        
+                    id = Math.floor((Math.random() * 999999) + 1);
+        
+                    var htmlCode = notification
+                                    .replace(/&ID/g, id)
+                                    .replace(/&USERNAME/g, data.from)
+                                    .replace(/&MESSAGE/g, msg);
+                                    
+                    var notifications = document.getElementById("notifications");
+        
+                    const placeholder = document.createElement('div');
+                    placeholder.innerHTML = htmlCode;
+                    const node = placeholder.firstElementChild;
+        
+                    notifications.insertBefore(node, notifications.firstChild);
+        
+                    if (mepage == false) {
+                        setTimeout(() => {  
+                            if (scroll) {
+                                chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                                document.title = "NeoChat";
+                            }
+                            else {
+                                newMessage.style.display = "";
+                            }
+                        }, 100);
+                    }
+        
+                    notificated("notification" + id);
                 }
-            }
-            else {
-                playPing();
-    
-                var msg = data.message;
-    
-                if (data.message.length > 50) {
-                    msg = data.message.substring(0, 50) + "...";
-                }
-    
-                id = Math.floor((Math.random() * 999999) + 1);
-    
-                var htmlCode = notification
-                                .replace(/&ID/g, id)
-                                .replace(/&USERNAME/g, data.from)
-                                .replace(/&MESSAGE/g, msg);
-                                
-                var notifications = document.getElementById("notifications");
-    
-                const placeholder = document.createElement('div');
-                placeholder.innerHTML = htmlCode;
-                const node = placeholder.firstElementChild;
-    
-                notifications.insertBefore(node, notifications.firstChild);
-    
-                if (mepage == false) {
-                    setTimeout(() => {  
-                        if (scroll) {
-                            chatScroll.scrollTop = chatScroll.scrollHeight + 10;
-                            document.title = "NeoChat";
-                        }
-                        else {
-                            newMessage.style.display = "";
-                        }
-                    }, 100);
-                }
-    
-                notificated("notification" + id);
             }
         }
     
