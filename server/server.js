@@ -182,6 +182,7 @@ function sendLoginStatus(res, status, message) {
     res.end();
 }
 function sendRegisterStatus(res, status, message) {
+    console.log("Error: " + message);
     res.writeHead(200, getHeader(".json"));
     res.write("{\"registerstatus\": " + status + ", \"message\": \"" + message + "\"}");
     res.end();
@@ -486,167 +487,152 @@ function requestListener(req, res) {
 
                 // Request method is POST
                 else {
-
-                    // Get user data
-                    getUserData(token.toString(), function(userdataError) {
-                        
-                        if (userdataError) {
-                            res.writeHead(500, { "message": "Failed to request user data: " + userdataError });
-                            res.end();
-                        }
-                        
-                        // User data request success
-                        else {
-
-                            // Get POST data
-                            req.on("data", function (chunk) {
-                                var body = "";
-                                body += chunk;
                     
-                                const post = qs.parse(body);
-                    
-                                var new_username = "";
-                                var new_email = "";
-                                var new_password = "";
-                                var new_password2 = "";
-                    
-                                // Client log in
-                                if (url == "/login") {
-                                    new_username = post["username"];
-                                    new_password = post["password"];
-                        
-                                    if (new_username == null) new_username = "";
-                                    if (new_password == null) new_password = "";
-                                    
-                                    const usernameLengthCheck = (new_username.length <= 20 && new_username.length >= 3);
-                                    const passwordLengthCheck = (new_password.length <= 50 && new_password.length >= 8);
-                                    const usernameMatch = (new_username.match(/[^a-zA-Z0-9_]/g) == null);
-                        
-                                    const new_hash = hash(new_password);
+                    // Get POST data
+                    req.on("data", function (chunk) {
+                        var body = "";
+                        body += chunk;
+            
+                        const post = qs.parse(body);
+            
+                        var new_username = "";
+                        var new_email = "";
+                        var new_password = "";
+                        var new_password2 = "";
+            
+                        // Client log in
+                        if (url == "/login") {
+                            new_username = post["username"];
+                            new_password = post["password"];
                 
-                                    if (usernameLengthCheck && usernameMatch) {
-                                        if (passwordLengthCheck) {
-                                            r.db("chatapp").table("users").filter(r.row("username").match("(?i)^" + new_username.toLowerCase() + "$")).run(conn, function(err, cursor) {
+                            if (new_username == null) new_username = "";
+                            if (new_password == null) new_password = "";
+                            
+                            const usernameLengthCheck = (new_username.length <= 20 && new_username.length >= 3);
+                            const passwordLengthCheck = (new_password.length <= 50 && new_password.length >= 8);
+                            const usernameMatch = (new_username.match(/[^a-zA-Z0-9_]/g) == null);
+                
+                            const new_hash = hash(new_password);
+        
+                            if (usernameLengthCheck && usernameMatch) {
+                                if (passwordLengthCheck) {
+                                    r.db("chatapp").table("users").filter(r.row("username").match("(?i)^" + new_username.toLowerCase() + "$")).run(conn, function(err, cursor) {
+                                        if (err) {
+                                            res.writeHead(500, err.message);
+                                            res.end();
+                                        }
+                                        else {
+                                            cursor.toArray(function(err, result) {
                                                 if (err) {
                                                     res.writeHead(500, err.message);
                                                     res.end();
                                                 }
                                                 else {
-                                                    cursor.toArray(function(err, result) {
-                                                        if (err) {
-                                                            res.writeHead(500, err.message);
-                                                            res.end();
-                                                        }
-                                                        else {
-                                                            if (result.length > 0) {
-                                                                if (new_hash == result[0]["hash"]) {
-                                                                    res.writeHead(200, getHeader(".json"));
+                                                    if (result.length > 0) {
+                                                        if (new_hash == result[0]["hash"]) {
+                                                            res.writeHead(200, getHeader(".json"));
 
-                                                                    var token = generateToken();
-                                                                    
-                                                                    r.db("chatapp").table("users").filter(r.row("username").match("(?i)^" + new_username.toLowerCase() + "$")).update({token: token}).run(conn, function() {
-                                                                        if (err) {
-                                                                            res.write("{\"loginstatus\": 1, \"message\": \"Generating a token failed\"}");
-                                                                            res.end();
-                                                                        }
-                                                                        else {
-                                                                            res.write("{\"loginstatus\": 0, \"message\": \"Log in successful\", \"id\": \"" + result[0]["id"] + "\", \"username\": \"" + result[0]["username"] + "\", \"token\": \"" + token + "\"}");
-                                                                            res.end();
-                                                                        }
-                                                                    });
+                                                            var token = generateToken();
+                                                            
+                                                            r.db("chatapp").table("users").filter(r.row("username").match("(?i)^" + new_username.toLowerCase() + "$")).update({token: token}).run(conn, function() {
+                                                                if (err) {
+                                                                    res.write("{\"loginstatus\": 1, \"message\": \"Generating a token failed\"}");
+                                                                    res.end();
                                                                 }
                                                                 else {
-                                                                    sendLoginStatus(res, 1, "Wrong username or password");
+                                                                    res.write("{\"loginstatus\": 0, \"message\": \"Log in successful\", \"id\": \"" + result[0]["id"] + "\", \"username\": \"" + result[0]["username"] + "\", \"token\": \"" + token + "\"}");
+                                                                    res.end();
                                                                 }
-                                                            }
-                                                            else {
-                                                                sendLoginStatus(res, 1, "Wrong username or password");
-                                                            }
+                                                            });
                                                         }
-                                                    });
+                                                        else {
+                                                            sendLoginStatus(res, 1, "Wrong username or password");
+                                                        }
+                                                    }
+                                                    else {
+                                                        sendLoginStatus(res, 1, "Wrong username or password");
+                                                    }
                                                 }
                                             });
                                         }
+                                    });
+                                }
+                                else {
+                                    sendLoginStatus(res, 1, "Password contains invalid amount of characters (8-50)");
+                                }
+                            }
+                            else {
+                                if (usernameLengthCheck) {
+                                    sendLoginStatus(res, 1, "Username contains invalid characters (Letters, numbers and _ only allowed)");
+                                }
+                                else {
+                                    sendLoginStatus(res, 1, "Username contains invalid amount of characters (3-20)");
+                                }
+                            }
+                        }
+
+                        // Create a new user
+                        else if (url == "/register") {
+                            new_username = post["username"];
+                            new_email = post["email"];
+                            new_password = post["password"];
+                            new_password2 = post["password2"];
+                
+                            // Do this so null exception wont occur
+                            if (new_username == null) new_username = "";
+                            if (new_email == null) new_email = "";
+                            if (new_password == null) new_password = "";
+                            if (new_password2 == null) new_password2 = "";
+                            
+                            try {
+                                // Credentials checks
+                                const usernameLengthCheck = (new_username.length <= 20 && new_username.length >= 3);
+                                const emailLengthCheck = (new_email.length <= 200 && new_email.length >= 5);
+                                const passwordLengthCheck = (new_password.length <= 50 && new_password.length >= 8);
+                                const usernameMatch = (new_username.match(/[^a-zA-Z0-9_]/g) == null);
+                                const emailMatch = (new_email.match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/g) !== null);
+                    
+                                const new_hash = hash(new_password);
+            
+                                if (usernameLengthCheck && usernameMatch) {
+                                    if (emailLengthCheck && emailMatch) {
+                                        if (passwordLengthCheck) {
+                                            if (new_password == new_password2)
+                                            {
+                                                registerUser(res, new_username, new_email, new_hash);
+                                            }
+                                            else {
+                                                sendRegisterStatus(res,1, "Passwords must match");
+                                            }
+                                        }
                                         else {
-                                            sendLoginStatus(res, 1, "Password contains invalid amount of characters (8-50)");
+                                            sendRegisterStatus(res, 1, "Password contains invalid amount of characters (8-50)");
                                         }
                                     }
                                     else {
-                                        if (usernameLengthCheck) {
-                                            sendLoginStatus(res, 1, "Username contains invalid characters (Letters, numbers and _ only allowed)");
+                                        if (emailLengthCheck) {
+                                            sendRegisterStatus(res, 1, "Email is invalid");
                                         }
                                         else {
-                                            sendLoginStatus(res, 1, "Username contains invalid amount of characters (3-20)");
+                                            sendRegisterStatus(res, 1, "Email contains invalid amount of characters (5-200)");
                                         }
                                     }
                                 }
-
-                                // Create a new user
-                                else if (url == "/register") {
-                                    new_username = post["username"];
-                                    new_email = post["email"];
-                                    new_password = post["password"];
-                                    new_password2 = post["password2"];
-                        
-                                    // Do this so null exception wont occur
-                                    if (new_username == null) new_username = "";
-                                    if (new_email == null) new_email = "";
-                                    if (new_password == null) new_password = "";
-                                    if (new_password2 == null) new_password2 = "";
-                                    
-                                    try {
-                                        // Credentials checks
-                                        const usernameLengthCheck = (new_username.length <= 20 && new_username.length >= 3);
-                                        const emailLengthCheck = (new_email.length <= 200 && new_email.length >= 5);
-                                        const passwordLengthCheck = (new_password.length <= 50 && new_password.length >= 8);
-                                        const usernameMatch = (new_username.match(/[^a-zA-Z0-9_]/g) == null);
-                                        const emailMatch = (new_email.match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/g) !== null);
-                            
-                                        const new_hash = hash(new_password);
-                    
-                                        if (usernameLengthCheck && usernameMatch) {
-                                            if (emailLengthCheck && emailMatch) {
-                                                if (passwordLengthCheck) {
-                                                    if (new_password == new_password2)
-                                                    {
-                                                        registerUser(res, new_username, new_email, new_hash);
-                                                    }
-                                                    else {
-                                                        sendRegisterStatus(res,1, "Passwords must match");
-                                                    }
-                                                }
-                                                else {
-                                                    sendRegisterStatus(res, 1, "Password contains invalid amount of characters (8-50)");
-                                                }
-                                            }
-                                            else {
-                                                if (emailLengthCheck) {
-                                                    sendRegisterStatus(res, 1, "Email is invalid");
-                                                }
-                                                else {
-                                                    sendRegisterStatus(res, 1, "Email contains invalid amount of characters (5-200)");
-                                                }
-                                            }
-                                        }
-                                        else {
-                                            if (usernameLengthCheck) {
-                                                sendRegisterStatus(res, 1, "Username contains invalid characters (Letters, numbers and _ only allowed)");
-                                            }
-                                            else {
-                                                sendRegisterStatus(res, 1, "Username contains invalid amount of characters (3-20)");
-                                            }
-                                        }
+                                else {
+                                    if (usernameLengthCheck) {
+                                        sendRegisterStatus(res, 1, "Username contains invalid characters (Letters, numbers and _ only allowed)");
                                     }
-                                    catch (ex) {
-                                        console.log("Error: " + ex.message);
-                                        sendRegisterStatus(res, 1, "Error: " + ex.message);
+                                    else {
+                                        sendRegisterStatus(res, 1, "Username contains invalid amount of characters (3-20)");
                                     }
                                 }
-                                
-                            });
-
+                            }
+                            catch (ex) {
+                                console.log("Error: " + ex.message);
+                                sendRegisterStatus(res, 1, "Error: " + ex.message);
+                            }
                         }
-
+                        
                     });
 
                 }

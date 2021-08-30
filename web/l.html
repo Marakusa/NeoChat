@@ -186,17 +186,19 @@
                         data: {username: l_username, password: l_password},
                         timeout: 10000,
                         error: function (error, response, data) {
-                            showpanel(0);
+                            setTimeout(function() {
+                                showpanel(0);
 
-                            console.error(error);
-                            console.error(response);
-                            console.error(data);
-                            done = true;
-                            error = true;
-                            submitting = false;
+                                console.error(error);
+                                console.error(response);
+                                console.error(data);
+                                done = true;
+                                error = true;
+                                submitting = false;
 
-                            loginError.style.display = "block";
-                            loginError.lastChild.innerText = response.substring(0, 1).toUpperCase() + response.substring(1, response.length);
+                                loginError.style.display = "block";
+                                loginError.lastChild.innerText = response.substring(0, 1).toUpperCase() + response.substring(1, response.length);
+                            }, 1000);
                         },
                         success: function (data) {
                             done = true;
@@ -241,37 +243,43 @@
                         data: {username: new_username, email: new_email, password: new_password, password2: new_password2},
                         timeout: 10000,
                         error: function (error, response, data) {
-                            showpanel(2);
+                            setTimeout(function() {
+                                showpanel(2);
 
-                            console.error(error);
-                            console.error(response);
-                            console.error(data);
-                            done = true;
-                            error = true;
-                            submitting = false;
+                                console.error(error);
+                                console.error(response);
+                                console.error(data);
+                                done = true;
+                                error = true;
+                                submitting = false;
 
-                            registerError.style.display = "block";
-                            registerError.lastChild.innerText = response.substring(0, 1).toUpperCase() + response.substring(1, response.length);
+                                registerError.style.display = "block";
+                                registerError.lastChild.innerText = response.substring(0, 1).toUpperCase() + response.substring(1, response.length);
+                            }, 1000);
                         },
                         success: function (data) {
-                            done = true;
-                            error = false;
-                            submitting = false;
-                            
-                            if (data["registerstatus"] == "0") {
-                                console.log(data["message"]);
-                                document.cookie = "token=" + data["token"] + "; path=/";
-                                window.location.href = "/";
-                            }
-                            else {
-                                setTimeout(function () {
-                                    console.log(data["registerstatus"] + ": " + data["message"]);
-                                    showpanel(2);
-                                    
-                                    registerError.style.display = "block";
-                                    registerError.lastChild.innerText = data["message"];
-                                }, 1000);
-                            }
+                            setTimeout(function() {
+                                done = true;
+                                error = false;
+                                submitting = false;
+                                
+                                if (data["registerstatus"] == "0") {
+                                    console.log(data["message"]);
+                                    document.cookie = "token=" + data["token"] + "; path=/";
+                                    setTimeout(function () {
+                                        window.location.href = "/";
+                                    }, 1000);
+                                }
+                                else {
+                                    setTimeout(function () {
+                                        console.log(data["registerstatus"] + ": " + data["message"]);
+                                        showpanel(2);
+                                        
+                                        registerError.style.display = "block";
+                                        registerError.lastChild.innerText = data["message"];
+                                    }, 1000);
+                                }
+                            }, 1000);
                         }
                     });
                 }
