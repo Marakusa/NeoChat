@@ -1,4 +1,6 @@
 <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
 
 <body>
     <div id="disconnected" class="headerSideListBackground" style="display: none;transition: all 0.4s ease 0s;background-color: rgba(0, 0, 0, 0.7);z-index: 1000000;">
@@ -36,7 +38,7 @@
             -ms-transform: translateX(50%) translateY(-50%);
             transform: translateX(calc(50% - 170px)) translateY(-50%);
         ">
-            <img src="../../img/app-loading.gif" width="100" style="margin: 0 auto;display: block;" draggable="false">
+            <img src="../img/loading.gif" width="100" style="margin: 0 auto;display: block;" draggable="false">
             <h2 style="margin: 0;text-align: center;">
                 Connecting
             </h2>
@@ -270,11 +272,155 @@
     
         const notification = `<div id="notification&ID" class="notification">
             <span style="user-select: none;float: right;color: grey;top: 0;margin: 5px;cursor: pointer;" onclick="document.getElementById('notification&ID').outerHTML = '';">Dismiss</span>
-            <a href="@&USERNAME">
+            <a class="notiflink" href="@&LINKUSERNAME">
                 <h3>New message from &USERNAME</h3>
                 <p>&MESSAGE</p>
             </a>
         </div>`;
+
+        const chatplaceholder = `<div style="
+    height: 100px;
+    width: calc(100% - 310px);
+    display: block;
+    position: fixed;
+    filter: opacity(0.5);
+"><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div><hr></div><div class="message"><div style="
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background-color: #fc69bf;
+"></div><div class="messageContent"><p class="messageUsername" style="width: 100px;height: 20px;background-color: #ffe264;border-radius: 10px;"></p><div class="messageText" style="width: 240px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div><div class="messageText" style="width: 190px;height: 20px;background-color: #ffffff;border-radius: 10px;margin-top: 5px;"></div></div></div><hr></div>`;
     
         const theyBubble = "<div id=\"bubble&ID\" class=\"bubble bubbleLeft\">&MESSAGE</div>";
         const meBubble = "<div id=\"bubble&ID\" class=\"bubble bubbleRight\">&MESSAGE</div>";
@@ -284,12 +430,14 @@
     
         var myusername = "";
         var chatusername = "";
+        var chatuserid = "";
         var token = getCookie("token");
     
         var socket = io();
         socket.emit('settoken', token);
         socket.emit('getpage', document.documentURI.replace(/^[^#]*?:\/\/.*?\//, "/"), token);
         socket.on('message', receiveMessage);
+        socket.on('addhistory', addHistory);
         socket.on('page', pageLoad);
         socket.on('userlist', getUserList);
         socket.on('setusername', setUsername);
@@ -307,12 +455,12 @@
         }
         
         var mepage = false;
-    
+
         var idleTime = 0;
         $(document).ready(function () {
             // Increment the idle time counter every minute.
             var idleInterval = setInterval(timerIncrement, 60000); // 1 minute
-    
+            
             $(this).mousemove(function (e) {
                 idleTime = 0;
                 socket.emit('setuserstatus', 1, token);
@@ -417,9 +565,13 @@
         var chatScroll = null;
         var newMessage = null;
 
+        var lastMessage = "";
+
         const headerBackButton = "<a href=\"@me\" id=\"headerBack\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/back-arrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
         const headerMenuButton = "<a onclick=\"openSideMenu();\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/menu-lines.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
         const headerText = "<p class=\"headerTextLeft\">&TITLE</p>";
+
+        const loadMore = "<div id=\"loadinghistory\" style=\"width: 100%;height: 100px;display: inline-block;\"><img src=\"../img/loading.gif\" height=\"100\" style=\"margin: 0 auto;display: block;\"></div>";
 
         var lastchatusername = "";
 
@@ -453,14 +605,34 @@
             myusername = username;
         }
 
+        var loadedhistory = [];
+
+        var historyPending = false;
+
+        var historyTopInterval;
+
         // Load page
-        function pageLoad(code, data, chatUserId, chatUser) {
-            document.getElementById("chat").innerHTML = data;
+        function pageLoad(code, data, chatUserId, chatUser, lastmsg) {
+            historyTopInterval = null;
+
+            loadedhistory = [];
+            historyPending = false;
+
+            if (lastmsg !== undefined) {
+                lastMessage = lastmsg;
+            }
+
+            document.getElementById("chat").innerHTML = loadMore + data;
+
+            chatScroll = document.getElementById("chatScroll");
+            chatScroll.scrollTop = chatScroll.scrollHeight - chatScroll.clientHeight;
 
             chatusername = (document.documentURI).split("@")[1];
+            chatuserid = chatUserId;
 
             mepage = (document.documentURI).endsWith("@me", document.documentURI.length);
             ppage = (document.documentURI).endsWith("@p", document.documentURI.length);
+            gpage = (document.documentURI).endsWith("@g", document.documentURI.length);
 
             var header = document.getElementsByClassName("header")[0];
         
@@ -474,20 +646,23 @@
             }
             else if (ppage == true) {
                 document.getElementsByClassName("footer")[0].style.display = "";
-                //header.innerHTML = headerMenuButton + headerText.replace(/&TITLE/g, "NeoChat");
+                header.innerHTML = headerMenuButton + headerText.replace(/&TITLE/g, "Profile");
+            }
+            else if (gpage == true) {
+                document.getElementsByClassName("footer")[0].style.display = "";
+                header.innerHTML = headerMenuButton + headerText.replace(/&TITLE/g, "#general");
             }
             else {
                 document.getElementsByClassName("footer")[0].style.display = "";
                 //document.getElementById("welcomeText").style.display = "none";
                 header.innerHTML = headerMenuButton + headerText.replace(/&TITLE/g, chatUser);
 
-                var allBubbles = document.getElementsByClassName('bubble');
+                var allBubbles = document.getElementsByClassName('message');
                 for (var i=0, len=allBubbles.length|0; i<len; i=i+1|0) {
                     allBubbles[i].addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
                 }
             }
             
-            chatScroll = document.getElementById("chatScroll");
             newMessage = document.getElementsByClassName("newMessage")[0];
             newMessage.style.display = "none";
         
@@ -509,7 +684,7 @@
                 document.getElementById("conencting").style.display = "none";
             }, 500);
             
-            var allBubbles = document.getElementsByClassName('bubble');
+            var allBubbles = document.getElementsByClassName('message');
             for (var i=0, len=allBubbles.length|0; i<len; i=i+1|0) {
                 allBubbles[i].addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
             }
@@ -517,10 +692,16 @@
             setInterval(function () {
                 if (socket.connected == false) {
                     document.getElementById("disconnected").style.display = "";
-                    socket.emit('disconnect');
                     socket = null;
                 }
             }, 1000);
+            
+            historyTopInterval = setInterval(() => {
+                if (document.getElementById("chatScroll").scrollTop < 100 && !historyPending) {
+                    historyPending = true;
+                    socket.emit("loadmoremsg", chatuserid, token, lastMessage);
+                }
+            }, 100);
 
             socket.emit('getuserlist', token);
         }
@@ -528,6 +709,7 @@
             goTo("@" + selectedUsername);
         }
         function goTo(url) {
+            document.getElementById("chat").innerHTML = chatplaceholder;
             socket.emit('getpage', url.replace(/^[^#]*?:\/\/.*?\//, "/"), token);
             window.history.pushState({"html": document.outerHTML, "pageTitle": document.title},"", url);
         }
@@ -537,10 +719,9 @@
             
             for (var i = 0; i < document.getElementsByClassName("users").length; i++) {
                 var e = document.getElementsByClassName("users")[i];
-                console.log(e.href);
                 e.addEventListener('contextmenu', function (ev) { contextListP(ev, e.href.split("@")[1]); }, false);
             }
-
+            
             $(document).ready(function() {
                 $('.users').off();
                 $('#headerBack').off();
@@ -552,6 +733,7 @@
                         document.getElementById("headerSideListBackground").style.display = "none";
                     }, 200);
 
+                    document.getElementById("chat").innerHTML = chatplaceholder;
                     socket.emit('getpage', $(this)[0].href.replace(/^[^#]*?:\/\/.*?\//, "/"), token);
                     window.history.pushState({"html": document.outerHTML, "pageTitle": document.title},"", $(this)[0].href);
 
@@ -560,6 +742,7 @@
                     return false;
                 });
                 $('#headerBack').click(function() {
+                    document.getElementById("chat").innerHTML = chatplaceholder;
                     socket.emit('getpage', $(this)[0].href.replace(/^[^#]*?:\/\/.*?\//, "/"), token);
                     window.history.pushState({"html": document.outerHTML, "pageTitle": document.title},"", $(this)[0].href);
 
@@ -567,8 +750,43 @@
 
                     return false;
                 });
+
+                $(document).on("swiperight", ".mainContent", function(e) {
+                    if (e.type === "swiperight") {
+                        openSideMenu();
+                    }
+                });
+                $(document).on("swipeleft", ".headerSideListBackground .sideMenu", function(e) {
+                    if (e.type === "swipeleft") {
+                        closeSideMenu();
+                    }
+                });
             });
         }
+        function addHistory(data, lastId) {
+            historyPending = false;
+            var oldheight = chatScroll.scrollHeight - chatScroll.clientHeight;
+            
+            if (!loadedhistory.includes(data)) {
+                loadedhistory.push(data);
+
+                lastMessage = lastId;
+
+                if (document.getElementById("messagehistory")) {
+                    document.getElementById("messagehistory").innerHTML = data + document.getElementById("messagehistory").innerHTML;
+                }
+            }
+
+            var newheight = chatScroll.scrollHeight - chatScroll.clientHeight;
+
+            chatScroll.scrollTop = chatScroll.scrollTop + newheight - oldheight;
+        }
+        socket.on("nomorehistory", function () {
+            historyPending = false;
+            if (document.getElementById("loadinghistory")) {
+                document.getElementById("loadinghistory").style.display = "none";
+            }
+        });
         function receiveMessage(data) {
             var chatScroll = document.getElementById("chatScroll");
             var scroll = false;
@@ -577,23 +795,36 @@
                 scroll = true;
             }
             
+            console.log(chatusername);
+            console.log(lastchatusername);
+            console.log(data.from);
+            console.log(myusername);
+
             if (data.from.toLowerCase() !== myusername.toLowerCase()) {
-                if (data.from.toLowerCase() == chatusername.toLowerCase() || data.general !== undefined || data.general == true) {
+                if (data.from.toLowerCase() == chatusername.toLowerCase() && ((data.general !== undefined && data.general == true && gpage == true) || ((data.general === undefined || data.general == false) && gpage == false))) {
                     var sendStatus = document.getElementById("sendStatus");
                     sendStatus.innerText = "Seen";
         
                     message = "";
         
-                    id = Math.floor((Math.random() * 999999) + 1);
-                    var htmlCode = theyBubble.replace("&MESSAGE", data.message).replace("&ID", id);
+                    var htmlCode = data.element.replace(/&lt;br&gt;/g, "<br>");
+
+                    var parser = new DOMParser();
+	                var doc = parser.parseFromString(htmlCode, 'text/html').childNodes[0].childNodes[1].childNodes[0];
+                    var id = doc.id.substring(("message").length);
+                    console.log(id);
         
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(htmlCode, 'text/html').childNodes[0].childNodes[1].childNodes[0];
+                    var id = doc.id.substring(("message").length);
+
                     document.getElementById("chat").innerHTML += htmlCode;
         
-                    document.getElementById("bubble" + id).addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
+                    document.getElementById("message" + id).addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
                     
                     dateSplit = true;
         
-                    if (mepage == false) {
+                    if (mepage == false && ppage == false && gpage == false) {
                         setTimeout(() => {  
                             if (scroll && document[hidden] == false) {
                                 chatScroll.scrollTop = chatScroll.scrollHeight + 10;
@@ -608,6 +839,58 @@
                     else {
                         playPing();
                     }
+                }
+                else if (chatusername.toLowerCase() == "g" && data.general !== undefined && data.general == true) {
+                    var htmlCode = data.element.replace(/&lt;br&gt;/g, "<br>");
+                    
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(htmlCode, 'text/html').childNodes[0].childNodes[1].childNodes[0];
+                    var id = doc.id.substring(("message").length);
+
+                    document.getElementById("chat").innerHTML += htmlCode;
+                
+                    document.getElementById("message" + id).addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
+                }
+                else if (chatusername.toLowerCase() !== "g" && data.general !== undefined && data.general == true) {
+                    playPing();
+        
+                    var msg = data.message;
+        
+                    if (data.message.length > 50) {
+                        msg = data.message.substring(0, 50) + "...";
+                    }
+        
+                    id = Math.floor((Math.random() * 999999) + 1);
+        
+                    var htmlCode = notification
+                                    .replace(/&ID/g, id)
+                                    .replace(/&LINKUSERNAME/g, "g")
+                                    .replace(/&USERNAME/g, data.from + " in #general")
+                                    .replace(/&MESSAGE/g, msg);
+                                    
+                    var notifications = document.getElementById("notifications");
+        
+                    const placeholder = document.createElement('div');
+                    placeholder.innerHTML = htmlCode;
+                    const node = placeholder.firstElementChild;
+        
+                    notifications.insertBefore(node, notifications.firstChild);
+        
+                    if (mepage == false && ppage == false && gpage == false) {
+                        setTimeout(() => {  
+                            if (scroll) {
+                                chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                                document.title = "NeoChat";
+                            }
+                            else {
+                                newMessage.style.display = "";
+                            }
+                        }, 100);
+                    }
+        
+                    notificated("notification" + id);
+
+                    return;
                 }
                 else {
                     playPing();
@@ -633,7 +916,7 @@
         
                     notifications.insertBefore(node, notifications.firstChild);
         
-                    if (mepage == false) {
+                    if (mepage == false && ppage == false && gpage == false) {
                         setTimeout(() => {  
                             if (scroll) {
                                 chatScroll.scrollTop = chatScroll.scrollHeight + 10;
@@ -646,8 +929,27 @@
                     }
         
                     notificated("notification" + id);
+
+                    return;
                 }
             }
+            else if (chatusername.toLowerCase() == "g") {
+                var htmlCode = data.element.replace(/&lt;br&gt;/g, "<br>");
+                
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(htmlCode, 'text/html').childNodes[0].childNodes[1].childNodes[0];
+                var id = doc.id.substring(("message").length);
+
+                document.getElementById("chat").innerHTML += htmlCode;
+            
+                document.getElementById("message" + id).addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
+            }
+            
+            setTimeout(() => {  
+                if (scroll) {
+                    chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                }
+            }, 100);
         }
     
         function playPing() {
@@ -675,6 +977,24 @@
         }
     
         function notificated(id) {
+            
+            $(document).ready(function() {
+                $('.notiflink').off();
+                $('.notiflink').click(function() {
+                    document.getElementById("chat").innerHTML = chatplaceholder;
+                    socket.emit('getpage', $(this)[0].href.replace(/^[^#]*?:\/\/.*?\//, "/"), token);
+                    window.history.pushState({"html": document.outerHTML, "pageTitle": document.title},"", $(this)[0].href);
+
+                    document.getElementById(id).style.transform = "translateX(-350px) translateY(0px)";
+                
+                    setTimeout(() => {  
+                        document.getElementById(id).outerHTML = "";
+                    }, 200);
+                    
+                    return false;
+                });
+            });
+
             document.getElementById(id).style.transition = "0.2s";
             document.getElementById(id).style.transform = "translateX(0px) translateY(-200px)";
     
@@ -726,16 +1046,8 @@
                 }*/
                 
                 id = Math.floor((Math.random() * 999999) + 1);
-                var htmlCode = meBubble.replace("&MESSAGE", msg).replace("&ID", id);
-                document.getElementById("chat").innerHTML += htmlCode;
-    
-                document.getElementById("bubble" + id).addEventListener('contextmenu', function (ev) { contextList(ev); }, false);
-                
-                setTimeout(() => {  
-                    if (scroll) {
-                        chatScroll.scrollTop = chatScroll.scrollHeight + 10;
-                    }
-                }, 100);
+                //var htmlCode = meBubble.replace("&MESSAGE", msg).replace("&ID", id);
+                //document.getElementById("chat").innerHTML += htmlCode;
             }
 
             document.getElementById("messageField").value = "";

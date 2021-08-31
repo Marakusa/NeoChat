@@ -10,6 +10,10 @@ h3, h2, h1, a, a:visited {
     color: #ffe264;
 }
 
+#messagehistory {
+    display: fixed;
+}
+
 .copyBubble {
     position: absolute;
     background-color: #fc69bf;
@@ -380,6 +384,15 @@ hr {
     font-weight: 500;
     user-select: none;
     overflow-wrap: break-word;
+    background-color: transparent;
+    transition: 0.2s;
+    border-bottom: solid;
+    border-width: 1px;
+    border-color: #fdfdfd40;
+}
+.message:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: 0.2s;
 }
 .messageAvatar {
     float: left;
@@ -742,4 +755,8 @@ input {
     background-size: contain;
     background-repeat: no-repeat;
     margin-right: 10px;
+}
+
+.ui-loader {
+    display:none !important;
 }
