@@ -1,0 +1,43 @@
+<script src="../qr/html5-qrcode.min.js"></script>
+
+<h2 id="welcomeText" style="color: white;text-align: center;">User Settings</h2>
+<p class="messageHistoryTitle">Logged in as &YOURUSERNAME</p>
+<hr>
+
+<div id="messagehistory">
+    <div class="settingsPanel">
+        <h3 style="margin: 0;">Account</h3>
+        <hr>
+        <div class="setting">
+            <div class="settingLeft">
+                <span class="settingTitle">Username</span>
+                <span style="font-size: 20px;">&YOURUSERNAME</span>
+            </div>
+            <button onclick="changeUsername();">Change</button>
+        </div>
+        <div class="setting">
+            <div class="settingLeft">
+                <span class="settingTitle">Password</span>
+                <span style="font-size: 20px;">●●●●●●●●</span>
+            </div>
+            <button onclick="changePassword();">Change</button>
+        </div>
+        <div class="setting">
+            <div class="settingLeft">
+                <span class="settingTitle">Email</span>
+                <span style="font-size: 20px;">&YOUREMAIL</span>
+            </div>
+            <button onclick="changeEmail();">Change</button>
+        </div>
+        <hr>
+        <div class="setting">
+            <span class="settingTitle">Scan QR code</span>
+            <button onclick="getQr();" style="float: left;">QR Code Login</button>
+            <div style="width: 500px" id="reader"></div>
+            <img src="" alt="" id="qrimage" style="z-index: 4;display: block;float: right;" width="200" draggable="false">
+        </div>
+    </div>
+</div>
+
+<div id="chatUsersList">&USERSLIST</div>
+<p id="sendStatus" class="bubbleSent" style="display: none;">Sent</p>

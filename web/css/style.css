@@ -81,6 +81,37 @@ hr {
     color: #ffe264;
 }
 
+button {
+    width: fit-content;
+    height: auto;
+    margin-top: 15px;
+    margin-right: 5px;
+    padding: 8px 16px 8px;
+    display: block;
+    background-color: #242424;
+    color: #ffe264;
+    border-color: #ffe264;
+    border: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    user-select: none;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.2s;
+}
+button:hover {
+    background-color: #363636;
+    color: #ffffff;
+    border-color: #ffffff;
+    transition: 0.2s;
+}
+button:active {
+    background-color: #1b1b1b;
+    color: #5a5a5a;
+    border-color: #5a5a5a;
+    transition: 0.2s;
+}
+
 .disconnectedD {
     width: 300px;
     padding: 20px;
@@ -757,6 +788,76 @@ input {
     margin-right: 10px;
 }
 
+.ui-page {
+    min-height: 50px !important;
+}
 .ui-loader {
     display:none !important;
+}
+
+.chat-loading {
+    height: 100px;
+    width: calc(100% - 310px);
+    display: block;
+    position: fixed;
+    filter: opacity(0.5);
+    transition: 1s;
+}
+.chat-loading-avatar {
+    float: left;
+    display: block;
+    border-radius: 50%;
+    margin: 10px;
+    width: 64px;
+    height: 64px;
+    background: radial-gradient(#fc69bf, #e91c93);
+    transition: 1s;
+}
+.chat-loading-name {
+    margin: 0;
+    height: 20px;
+    border-radius: 10px;
+    background: linear-gradient(to right, #ffe264 0%, #ad9a44 50%, #ffe264 100%);
+    background-size: 200%;
+    background-position: left;
+    transition: 1s;
+}
+.chat-loading-text {
+    margin: 0;
+    margin-top: 5px;
+    height: 20px;
+    border-radius: 10px;
+    background: linear-gradient(to right, white 0%, gray 50%, white 100%);
+    background-size: 200%;
+    background-position: left;
+    transition: 1s;
+}
+
+.settingsPanel {
+    width: 90%;
+    padding: 20px;
+    margin: 20px auto;
+    background: #1d1d1d;
+    border: solid;
+    border-width: 1px;
+    border-color: #ffe264;
+    border-radius: 5px;
+    display: flow-root;
+}
+.setting {
+    display: flow-root;
+}
+.setting button {
+    float: right;
+    margin: 14px 0 0;
+}
+.settingLeft {
+    float: left;
+}
+.settingTitle {
+    color: darkgray;
+    margin-top: 10px;
+    margin-right: 10px;
+    font-size: large;
+    display: block;
 }

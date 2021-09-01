@@ -1514,6 +1514,18 @@ module.exports = class ChatServer {
                                                         }
                                                     });
                                                 }
+                                                else if (chatUser.startsWith("se")) {
+                                                    getTemplate("settings.html", function (err, results) {
+                                                        if (!err) {
+                                                            // Write page for client
+                                                            socket.emit("page", 200, results
+                                                                .replace(/&YOURUSERNAME/g, userdata["username"])
+                                                                .replace(/&YOUREMAIL/g, userdata["email"])
+                                                                .replace(/&CHANNEL/g, chatUser)
+                                                            , chatUserId, chatUser, null);
+                                                        }
+                                                    });
+                                                }
                                                 else {
                                                     // Get sent messages
                                                     r.db("chatapp").table("messages").filter({userfrom: userdata["id"], userto: chatUserId}).run(conn, function(err, dbres) {
@@ -1728,7 +1740,8 @@ module.exports = class ChatServer {
                                     list = "<a href=\"@me\" id=\"userme\" name=\"userme\" class=\"users\"><div class=\"listUser\"><p id=\"listUserNameme\" class=\"listUserName\"><span class=\"friendsIcon\" style=\"line-height: 1.2;\"></span>Friends</p></div></a>";
                                     list += "<a href=\"@p\" id=\"userp\" name=\"userp\" class=\"users\"><div class=\"listUser\"><p id=\"listUserNamep\" class=\"listUserName\"><span class=\"profileIcon\" style=\"line-height: 1.2;\"></span>Profile</p></div></a>";
                                     list += "<a href=\"@g\" id=\"userg\" name=\"userg\" class=\"users\"><div class=\"listUser\"><p id=\"listUserNameg\" class=\"listUserName\"><span class=\"generalIcon\" style=\"line-height: 1.2;\"></span>General</p></div></a>";
-                                    
+                                    list += "<a href=\"@se\" id=\"userse\" name=\"userse\" class=\"users\"><div class=\"listUser\"><p id=\"listUserNameg\" class=\"listUserName\"><span class=\"settingsIcon\" style=\"line-height: 1.2;\"></span>Settings</p></div></a>";
+
                                     list += "<hr>";
                                     
                                     dbres.toArray(function(err, aresult) {
@@ -1770,6 +1783,21 @@ module.exports = class ChatServer {
 
                         }
 
+                    });
+
+                });
+                
+                socket.on("requestqr", (token) => {
+                    
+                    getUserData(token, function (err, userdata) {
+
+                        if(err) {
+                            socket.emit("page", 500, err.message, null);
+                        }
+
+                        else {
+                            socket.emit("returnqr", userdata["username"]);
+                        }
                     });
 
                 });
