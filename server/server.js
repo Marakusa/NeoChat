@@ -27,7 +27,7 @@ var dbPort;
 const userListButton = "<a href=\"@&USERNAMELINK\" id=\"user&UID\" name=\"user&UID\" class=\"users\"><div class=\"listUser\"><p id=\"listUserName&USERNAMELINK\" class=\"listUserName\"><span class=\"userStatus&ONLINESTATUS\"></span>&USERNAME</p></div></a>";
 //const headerBackButton = "<a href=\"@me\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/back-arrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
 const headerMenuButton = "<a onclick=\"openSideMenu();\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/menu-lines.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
-const messageTemplate = "<div id=\"message&ID\" class=\"message\"><img src=\"../&AVATAR\" width=\"64\" height=\"64\" draggable=\"false\" class=\"messageAvatar\"><div class=\"messageContent\"><p class=\"messageUsername\">&USERNAME</p><div class=\"messageText\">&MESSAGE</div></div></div>";
+const messageTemplate = "<div id=\"message&ID\" class=\"message\"><img src=\"../&AVATAR\" width=\"46\" height=\"46\" draggable=\"false\" class=\"messageAvatar\"><div class=\"messageContent\"><p class=\"messageUsername\">&USERNAME</p><div class=\"messageText\">&MESSAGE</div></div></div>";
 //const theyBubble = "<div class=\"bubble bubbleLeft\">&MESSAGE</div>";
 //const theyBubbleWName = "<div><img src=\"../&AVATAR\" width=\"32\" height=\"32\" style=\"float: left;display: block;top: 30px;position: relative;\"><p style=\"margin: 0;font-size: 18px;margin-left: 5px;float: left;left: -38px;bottom: -3px;position: relative;\">&USERNAME</p><div class=\"bubble bubbleLeft\" style=\"float: left;margin-right: 100%;margin-left: 36px;margin-top: -7px;\">&MESSAGE</div></div>";
 //const meBubble = "<div class=\"bubble bubbleRight\">&MESSAGE</div>";
@@ -77,6 +77,7 @@ function hash(stringtohash) {
 
 var url = "";
 var mainpageTemplate = "";
+var tokenRedirectTemplate = "";
 
 function checkIfTokenValid(validatetoken, callbackFunction) {
     if (validatetoken == "") {
@@ -149,7 +150,14 @@ function preparePageTemplate(callbackFunction) {
             throw error;
         } else {
             mainpageTemplate = results;
-            callbackFunction();
+            fs.readFile("./server/templates/tokenlogin.html", "utf-8", function (error, results) {
+                if (error) {
+                    throw error;
+                } else {
+                    tokenRedirectTemplate = results;
+                    callbackFunction();
+                }
+            });
         }
     });
 }
@@ -305,29 +313,91 @@ function requestListener(req, res) {
             // If token is invalid and request is webpage return login page
             if (validtoken == false && isUrlWebpage(url, req)) {
                 
-                // Check if url is correct
-                if (url !== "/signin") {
-                    // Redirect to correct url
-                    redirect("/signin", res);
-                }
+                if (url.startsWith("/signin") && url.split("?").length > 1) {
+                    var t = "";
+                    var n = "";
 
-                // Return login page
-                else {
-                    url = "/l.html";
-                    getWebpage(function (pageerror, pageres) {
+                    var p = url.split("?")[1].split("&");
 
-                        if (pageerror) {
-                            res.writeHead(404, { "message": "Page not found: " + url });
+                    if (p[0].startsWith("t=")) {
+                        t = p[0].split("=")[1];
+                    }
+                    else if (p[0].startsWith("n=")) {
+                        n = p[0].split("=")[1];
+                    }
+
+                    if (p[1].startsWith("t=")) {
+                        t = p[1].split("=")[1];
+                    }
+                    else if (p[1].startsWith("n=")) {
+                        n = p[1].split("=")[1];
+                    }
+
+                    console.log(t);
+                    console.log(n);
+                    getUserData(t, function (err, data) {
+                        if (err) {
+                            console.log("1 Invalid token.");
+                            res.writeHead(500, { "message": "Invalid token." });
                             res.end();
                         }
-
                         else {
-                            res.writeHead(200, getHeader(url));
-                            res.write(mainpageTemplate.replace(/&TEMPLATE_BODY/, pageres));
-                            res.end();
-                        }
+                            if (data !== undefined && data !== null) {
+                                if (data["username"] === n) {
+                                    console.log("Valid token.");
 
+                                    var headers = {"Access-Control-Allow-Origin": "http://localhost",
+                                        "Access-Control-Allow-Methods": "POST, GET",
+                                        "Access-Control-Max-Age": 2592000,
+                                        "Content-Type": "text/html; charset=UTF-8",
+                                    };
+                                
+                                    headers["Cache-Control"] = "max-age=0";
+                                
+                                    res.writeHead(200, headers);
+
+                                    res.write(tokenRedirectTemplate.replace(/&T/, t));
+                                    res.end();
+                                }
+                                else {
+                                    console.log("2 Invalid token.");
+                                    res.writeHead(500, { "message": "Invalid token." });
+                                    res.end();
+                                }
+                            }
+                            else {
+                                console.log("3 Invalid token.");
+                                res.writeHead(500, { "message": "Invalid token." });
+                                res.end();
+                            }
+                        }
                     });
+                }
+                else {
+                    // Check if url is correct
+                    if (url !== "/signin") {
+                        // Redirect to correct url
+                        redirect("/signin", res);
+                    }
+    
+                    // Return login page
+                    else {
+                        url = "/l.html";
+                        getWebpage(function (pageerror, pageres) {
+    
+                            if (pageerror) {
+                                res.writeHead(404, { "message": "Page not found: " + url });
+                                res.end();
+                            }
+    
+                            else {
+                                res.writeHead(200, getHeader(url));
+                                res.write(mainpageTemplate.replace(/&TEMPLATE_BODY/, pageres));
+                                res.end();
+                            }
+    
+                        });
+                    }
                 }
 
             }
@@ -1533,7 +1603,11 @@ module.exports = class ChatServer {
                                                                 // Write page for client
                                                                 socket.emit("page", 200, results
                                                                     .replace(/&YOURUSERNAME/g, userdata["username"])
-                                                                    .replace(/&YOUREMAIL/g, userdata["email"])
+                                                                    .replace(/&YOUREMAIL/g, function () {
+                                                                        var e = userdata["email"];
+                                                                        var l = userdata["email"].match(/.+?(?=@)/gm).length;
+                                                                        return e.;
+                                                                    })
                                                                     .replace(/&CHANNEL/g, chatUser)
                                                                 , chatUserId, chatUser, null);
                                                             }
@@ -1752,7 +1826,8 @@ module.exports = class ChatServer {
                                 else {
                                     var list = "";
 
-                                    list = "<a href=\"@me\" id=\"userme\" name=\"userme\" class=\"users\"><div class=\"listUser\"><p id=\"listUserNameme\" class=\"listUserName\"><span class=\"friendsIcon\" style=\"line-height: 1.2;\"></span>Friends</p></div></a>";
+                                    list += "<div class=\"miniProfile\"><img src=\"&MINIAVATAR\" width=\"46\" height=\"46\" draggable=\"false\" class=\"messageAvatar\"><div class=\"messageContent\"><p class=\"messageUsername\">&MININAME</p><div class=\"messageText\"><span class=\"userStatus1\" style=\"margin-bottom: -1px;\"></span>Online</div></div></div>";
+                                    list += "<a href=\"@me\" id=\"userme\" name=\"userme\" class=\"users\"><div class=\"listUser\"><p id=\"listUserNameme\" class=\"listUserName\"><span class=\"friendsIcon\" style=\"line-height: 1.2;\"></span>Friends</p></div></a>";
                                     list += "<a href=\"@p\" id=\"userp\" name=\"userp\" class=\"users\"><div class=\"listUser\"><p id=\"listUserNamep\" class=\"listUserName\"><span class=\"profileIcon\" style=\"line-height: 1.2;\"></span>Profile</p></div></a>";
                                     list += "<a href=\"@g\" id=\"userg\" name=\"userg\" class=\"users\"><div class=\"listUser\"><p id=\"listUserNameg\" class=\"listUserName\"><span class=\"generalIcon\" style=\"line-height: 1.2;\"></span>General</p></div></a>";
                                     list += "<a href=\"@se\" id=\"userse\" name=\"userse\" class=\"users\"><div class=\"listUser\"><p id=\"listUserNameg\" class=\"listUserName\"><span class=\"settingsIcon\" style=\"line-height: 1.2;\"></span>Settings</p></div></a>";
@@ -1781,7 +1856,9 @@ module.exports = class ChatServer {
                                                 }
                                                 
                                                 if (aresult.length == doneIndex) {
-                                                    socket.emit("userlist", 200, list);
+                                                    socket.emit("userlist", 200, list
+                                                        .replace(/&MINIAVATAR/g, getDefaultAvatar(userdata["username"].toLowerCase()))
+                                                        .replace(/&MININAME/g, userdata["username"]));
         
                                                     clients.forEach(c => {
                                                         if (c.id !== userdata["id"] && c.socket !== null && c.socket.connected) {

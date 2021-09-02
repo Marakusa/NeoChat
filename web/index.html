@@ -1,8 +1,6 @@
 <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
-<script src="../qr/qrcode-with-logo.min.js"></script>
-<script src="../qr/html5-qrcode.min.js"></script>
 
 <body>
     <div id="disconnected" class="headerSideListBackground" style="display: none;transition: all 0.4s ease 0s;background-color: rgba(0, 0, 0, 0.7);z-index: 1000000;">
@@ -535,13 +533,13 @@
                 lastMessage = lastmsg;
             }
 
-            document.getElementById("chat").innerHTML = loadMore + data;
+            chatusername = (document.documentURI).split("@")[1];
+            chatuserid = chatUserId;
+
+            document.getElementById("chat").innerHTML = (chatusername == "se" ? "" : loadMore) + data;
 
             chatScroll = document.getElementById("chatScroll");
             chatScroll.scrollTop = chatScroll.scrollHeight - chatScroll.clientHeight;
-
-            chatusername = (document.documentURI).split("@")[1];
-            chatuserid = chatUserId;
 
             mepage = (document.documentURI).endsWith("@me", document.documentURI.length);
             ppage = (document.documentURI).endsWith("@p", document.documentURI.length);
@@ -1133,27 +1131,31 @@
     </script>
     
     <script>
-        function onScanSuccess(decodedText, decodedResult) {
-            alert(`Scan result: ${decodedText}`, decodedResult);
-        }
-        
-        function getQr() {
-            var html5QrcodeScanner = new Html5QrcodeScanner(
-                "reader", { fps: 10, qrbox: 250 });
-            html5QrcodeScanner.render(onScanSuccess);
+        var qrLoaded = false;
 
-            socket.emit('requestqr', token);
+        function getQr() {
+            if (!qrLoaded) {
+                socket.emit('requestqr', token);
+            }
+            else {
+                document.getElementById("qrimage").src = "";
+                document.getElementById("qrgenb").innerText = "Generate QR Code";
+                qrLoaded = false;
+            }
         }
         socket.on('returnqr', (username) => {
             window.qrcode = new QrCodeWithLogo({
-                content: "https://127.0.0.1:24024/signin?t=" + token + "&n=" + username,
+                content: "signin?t=" + token + "&n=" + username,
                 width: 380,
                 image: document.getElementById("qrimage"),
                 logo: {
                 src: "../img/app-icon.svg",
                 logoSize: 0.224
                 }
-            }).toImage();
+            }).toImage().then(function () {
+                document.getElementById("qrgenb").innerText = "Hide QR Code";
+                qrLoaded = true;
+            });
         });
     </script>
 

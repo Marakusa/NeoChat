@@ -4,7 +4,7 @@
 <p class="messageHistoryTitle">Logged in as &YOURUSERNAME</p>
 <hr>
 
-<div id="messagehistory">
+<div id="messagehistory" style="width: calc(100% - 10px);">
     <div class="settingsPanel">
         <h3 style="margin: 0;">Account</h3>
         <hr>
@@ -32,9 +32,13 @@
         <hr>
         <div class="setting">
             <span class="settingTitle">Scan QR code</span>
-            <button onclick="getQr();" style="float: left;">QR Code Login</button>
-            <div style="display: flow-root; width: 100%; margin-top: 10px; float: left;" id="reader"></div>
+            <p style="font-size: 16px;">QR code login is an easy way to login into your account on another device fast.</p>
+            <button id="qrgenb" onclick="getQr();" style="float: left;">Generate QR Code</button>
             <img src="" alt="" id="qrimage" style="z-index: 4;display: block;float: right;" width="200" draggable="false">
+        </div>
+        <hr>
+        <div class="setting">
+            <button onclick="logout();" style="float: left;border-color: #ff4141;color: #ff4141;">Log Out</button>
         </div>
     </div>
 </div>

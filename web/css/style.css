@@ -10,10 +10,6 @@ h3, h2, h1, a, a:visited {
     color: #ffe264;
 }
 
-#messagehistory {
-    display: fixed;
-}
-
 .copyBubble {
     position: absolute;
     background-color: #fc69bf;
@@ -434,18 +430,19 @@ button:active {
 .messageContent {
     width: calc(100% - 104px);
     height: auto;
-    min-height: 64px;
+    min-height: 46px;
     margin: 10px;
     display: flow-root;
     float: left;
 }
 .messageUsername {
     margin: 0;
-    font-size: 20px;
+    font-size: 18px;
     color: #ffe264;
 }
 .messageText {
     color: white;
+    font-size: 16px;
 }
 .bubbleSent {
     color: #838383;
@@ -836,16 +833,31 @@ input {
     transition: 1s;
 }
 
-.settingsPanel {
-    width: 90%;
-    padding: 20px;
-    margin: 20px auto;
-    background: #1d1d1d;
-    border: solid;
-    border-width: 1px;
-    border-color: #ffe264;
-    border-radius: 5px;
-    display: flow-root;
+@media screen and (max-width: 539px) {
+    .settingsPanel {
+        width: calc(100% - 30px);
+        padding: 20px;
+        margin: 20px auto;
+        background: #1d1d1d;
+        border: solid;
+        border-width: 1px;
+        border-color: #ffe264;
+        border-radius: 5px;
+        display: flow-root;
+    }
+}
+@media screen and (min-width: 540px) {
+    .settingsPanel {
+        width: 70%;
+        padding: 20px;
+        margin: 20px auto;
+        background: #1d1d1d;
+        border: solid;
+        border-width: 1px;
+        border-color: #ffe264;
+        border-radius: 5px;
+        display: flow-root;
+    }
 }
 .setting {
     display: flow-root;
@@ -863,4 +875,18 @@ input {
     margin-right: 10px;
     font-size: large;
     display: block;
+}
+
+#reader__status_span {
+    display: none !important;
+}
+
+.miniProfile {
+    display: flow-root;
+    border: solid;
+    border-width: 1px;
+    border-color: #fdfdfd40;
+    background-color: #2d2d2d;
+    border-radius: 7px;
+    margin-bottom: 5px;
 }

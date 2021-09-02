@@ -19,6 +19,14 @@
         transition: all 5s cubic-bezier(0.3, 0.08, 0.71, 0.97) 0s;
         transform: translateY(0px);
     "></div>
+    
+    <div id="readercontent" style="display: none;position: fixed;width: 100%;z-index: 99;height: 100%;top: 0;bottom: 0;left: 0;right: 0;margin: 0;background-color: #1b1b1b;">
+        <button onclick="closeQR();" class="input" style="margin: 10px auto;width: 200px;margin: 10px auto;width: 200px;background-color: #242424;color: #ffe264;">
+            Close
+        </button>
+        <div style="position: absolute;display: block;margin: auto;" id="reader"></div>
+    </div>
+
     <div id="loginBackground" class="loginBackground" style="background-image: url(img/main-background.svg);transition: 5s;filter: opacity(0);"></div>
     <div class="loginContent">
         <div style="height: 420px;top: calc(50% - 210px);position: relative;">
@@ -32,6 +40,7 @@
                 <input type="submit" name="submitLogIn" class="inputArea inputForm" value="Log In" style="margin-top: 15px;height: 40px;width: calc(70% + 34px);" />
                 <!--<a onclick="showpanel(3);" class="loginOption">Forgot your password?</a>-->
                 <a onclick="showpanel(2);" class="loginOption">Don't have an account?</a>
+                <a onclick="scanQr();" class="loginOption">Scan a QR code</a>
             </form>
             <form id="registerform" style="position: absolute;width: 100%;transition: 0.5s;display: none;filter: opacity(0);">
                 <input type="text" maxlength="20" id="usernameFieldR" name="usernameFieldR" class="inputArea inputForm" placeholder="Username" style="margin-top: 30px;">
@@ -295,5 +304,23 @@
                 event.preventDefault();
             });
         });
+
+        function scanQr() {
+            document.getElementById("readercontent").style.display = "";
+
+            const html5QrcodeScanner = new Html5Qrcode("reader");
+            const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+                html5QrcodeScanner.stop();
+                document.getElementById("readercontent").style.display = "none";
+                window.location.href = decodedText;
+            };
+            const config = { fps: 10, qrbox: 250 };
+            // If you want to prefer back camera
+            html5QrcodeScanner.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+        }
+        function closeQR() {
+            document.getElementById("readercontent").style.display = "none";
+        }
+
     </script>
 </body>
