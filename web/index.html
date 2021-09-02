@@ -2,6 +2,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
 <script src="../qr/qrcode-with-logo.min.js"></script>
+<script src="../qr/html5-qrcode.min.js"></script>
 
 <body>
     <div id="disconnected" class="headerSideListBackground" style="display: none;transition: all 0.4s ease 0s;background-color: rgba(0, 0, 0, 0.7);z-index: 1000000;">
@@ -141,6 +142,13 @@
     </div>
     
     <script>
+        $.mobile.showLoadMsg = false;
+            
+        $(document).on("mobileinit", function() {
+            $.mobile.showLoadMsg = false;
+        });
+
+
         var menuOpen = false;
     
         function openSideMenu() {
@@ -316,6 +324,10 @@
     
         socket.on('userstatus', receiveUserStatus);
         
+        socket.on('redirect', function(destination) {
+            window.location.href = destination;
+        });
+
         function count(obj) {
             var count=0;
             for(var prop in obj) {
@@ -1116,20 +1128,21 @@
             // set the initial state (but only if browser supports the Page Visibility API)
             if( document[hidden] !== undefined )
                 onchange({type: document[hidden] ? "blur" : "focus"});
-            })();
+        })();
+        
     </script>
     
     <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            alert(`Scan result: ${decodedText}`, decodedResult);
+        }
+        
         function getQr() {
-            function onScanSuccess(decodedText, decodedResult) {
-                // Handle on success condition with the decoded text or result.
-                alert(`Scan result: ${decodedText}`, decodedResult);
-            }
-            
             var html5QrcodeScanner = new Html5QrcodeScanner(
                 "reader", { fps: 10, qrbox: 250 });
             html5QrcodeScanner.render(onScanSuccess);
-            //socket.emit('requestqr', token);
+
+            socket.emit('requestqr', token);
         }
         socket.on('returnqr', (username) => {
             window.qrcode = new QrCodeWithLogo({

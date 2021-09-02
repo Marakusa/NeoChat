@@ -689,8 +689,8 @@ button:active {
     width: 100%;
     height: auto;
     position: fixed;
-    top: 100px;
-    bottom: 0;
+    top: 10%;
+    bottom: 10%;
     right: 0;
     left: 0;
     user-select: none;
@@ -793,6 +793,9 @@ input {
 }
 .ui-loader {
     display:none !important;
+}
+.ui-btn {
+    color: transparent;
 }
 
 .chat-loading {

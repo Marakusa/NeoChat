@@ -4,7 +4,7 @@
         height: 50px;
         background-color: #ffe264;
         top: 10px;
-        position: absolute;
+        position: fixed;
         transition: all 5s cubic-bezier(0.3, 0.08, 0.71, 0.97) 0s;
         transform: translateY(0px);
     "></div>
@@ -15,36 +15,38 @@
         top: 10px;
         right: 10px;
         float: right;
-        position: absolute;
+        position: fixed;
         transition: all 5s cubic-bezier(0.3, 0.08, 0.71, 0.97) 0s;
         transform: translateY(0px);
     "></div>
     <div id="loginBackground" class="loginBackground" style="background-image: url(img/main-background.svg);transition: 5s;filter: opacity(0);"></div>
     <div class="loginContent">
-        <div class="logo" style="background-image: url(img/app-icon.svg);">
-            <span class="logoText">NeoChat</span>
-        </div>
-        <form id="loginform" style="position: absolute;width: 100%;transition: 0.5s;">
-            <input type="text" maxlength="20" id="usernameField" name="usernameField" class="inputArea inputForm" placeholder="Username" style="margin-top: 30px;" />
-            <input type="password" maxlength="50" id="passwordField" name="passwordField" class="inputArea inputForm" placeholder="Password" style="margin-top: 5px;" />
-            <p id="logErr" class="loginError" style="display: none;"><span onclick="closeError('logErr');" class="errorClose">&#10006;</span><span>ERROR</span></p>
-            <input type="submit" name="submitLogIn" class="inputArea inputForm" value="Log In" style="margin-top: 15px;height: 40px;width: calc(70% + 34px);" />
-            <!--<a onclick="showpanel(3);" class="loginOption">Forgot your password?</a>-->
-            <a onclick="showpanel(2);" class="loginOption">Don't have an account?</a>
-        </form>
-        <form id="registerform" style="position: absolute;width: 100%;transition: 0.5s;display: none;filter: opacity(0);">
-            <input type="text" maxlength="20" id="usernameFieldR" name="usernameFieldR" class="inputArea inputForm" placeholder="Username" style="margin-top: 30px;">
-            <input type="email" maxlength="200" id="emailFieldR" name="emailFieldR" class="inputArea inputForm" placeholder="Email" style="margin-top: 5px;">
-            <input type="password" maxlength="50" id="passwordFieldR" name="passwordFieldR" class="inputArea inputForm" placeholder="Password" style="margin-top: 5px;">
-            <input type="password" maxlength="50" id="passwordField2R" name="passwordFieldR" class="inputArea inputForm" placeholder="Retype Password" style="margin-top: 5px;">
-            <p id="regErr" class="loginError" style="display: none;"><span onclick="closeError('regErr');" class="errorClose">&#10006;</span><span>ERROR</span></p>
-            <input type="submit" name="submitRegister" class="inputArea inputForm" value="Register" style="margin-top: 15px;height: 40px;width: calc(70% + 34px);">
-            <a onclick="showpanel(0);" class="loginOption">Already have an account?</a>
-        </form>
-        <div id="loggingin" style="position: absolute;width: 100%;transition: 0.5s;filter: opacity(0);display: none;text-align: center;">
-            <p style="margin: 0 auto;margin-top: 30px;width: calc(70% + 34px);font-size: 22px;border: solid;border-width: 1px;border-color: #ffe264;padding: 30px 0;border-radius: 10px;">
-                Logging in...
-            </p>
+        <div style="height: 420px;top: calc(50% - 210px);position: relative;">
+            <div class="logo" style="background-image: url(img/app-icon.svg);">
+                <span class="logoText">NeoChat</span>
+            </div>
+            <form id="loginform" style="position: absolute;width: 100%;transition: 0.5s;">
+                <input type="text" maxlength="20" id="usernameField" name="usernameField" class="inputArea inputForm" placeholder="Username" style="margin-top: 30px;" />
+                <input type="password" maxlength="50" id="passwordField" name="passwordField" class="inputArea inputForm" placeholder="Password" style="margin-top: 5px;" />
+                <p id="logErr" class="loginError" style="display: none;"><span onclick="closeError('logErr');" class="errorClose">&#10006;</span><span>ERROR</span></p>
+                <input type="submit" name="submitLogIn" class="inputArea inputForm" value="Log In" style="margin-top: 15px;height: 40px;width: calc(70% + 34px);" />
+                <!--<a onclick="showpanel(3);" class="loginOption">Forgot your password?</a>-->
+                <a onclick="showpanel(2);" class="loginOption">Don't have an account?</a>
+            </form>
+            <form id="registerform" style="position: absolute;width: 100%;transition: 0.5s;display: none;filter: opacity(0);">
+                <input type="text" maxlength="20" id="usernameFieldR" name="usernameFieldR" class="inputArea inputForm" placeholder="Username" style="margin-top: 30px;">
+                <input type="email" maxlength="200" id="emailFieldR" name="emailFieldR" class="inputArea inputForm" placeholder="Email" style="margin-top: 5px;">
+                <input type="password" maxlength="50" id="passwordFieldR" name="passwordFieldR" class="inputArea inputForm" placeholder="Password" style="margin-top: 5px;">
+                <input type="password" maxlength="50" id="passwordField2R" name="passwordFieldR" class="inputArea inputForm" placeholder="Retype Password" style="margin-top: 5px;">
+                <p id="regErr" class="loginError" style="display: none;"><span onclick="closeError('regErr');" class="errorClose">&#10006;</span><span>ERROR</span></p>
+                <input type="submit" name="submitRegister" class="inputArea inputForm" value="Register" style="margin-top: 15px;height: 40px;width: calc(70% + 34px);">
+                <a onclick="showpanel(0);" class="loginOption">Already have an account?</a>
+            </form>
+            <div id="loggingin" style="position: absolute;width: 100%;transition: 0.5s;filter: opacity(0);display: none;text-align: center;">
+                <p style="margin: 0 auto;margin-top: 30px;width: calc(70% + 34px);font-size: 22px;border: solid;border-width: 1px;border-color: #ffe264;padding: 30px 0;border-radius: 10px;">
+                    Logging in...
+                </p>
+            </div>
         </div>
     </div>
 
@@ -115,7 +117,9 @@
                     }
 
                     loginPanel.style.display = "block";
-                    loginPanel.style.filter = "opacity(1)";
+                    setTimeout(function() {
+                        loginPanel.style.filter = "opacity(1)";
+                    }, 1);
                 }
                 else if (panelname == 1) {
                     panel = panelname;
@@ -134,7 +138,9 @@
                     }
 
                     logginginPanel.style.display = "block";
-                    logginginPanel.style.filter = "opacity(1)";
+                    setTimeout(function() {
+                        logginginPanel.style.filter = "opacity(1)";
+                    }, 1);
                 }
                 else if (panelname == 2) {
                     panel = panelname;
@@ -153,7 +159,9 @@
                     }
 
                     registerPanel.style.display = "block";
-                    registerPanel.style.filter = "opacity(1)";
+                    setTimeout(function() {
+                        registerPanel.style.filter = "opacity(1)";
+                    }, 1);
                 }
             
                 if (panelname <= 3) {
