@@ -148,42 +148,45 @@
 
 
         var menuOpen = false;
+
+        const sideMenu = document.getElementById("sideMenu");
+        const headerSideListBackground = document.getElementById("headerSideListBackground");
     
         function openSideMenu() {
-            var sideMenu = document.getElementById("sideMenu");
 
             if (menuOpen == false)
             {
                 sideMenu.style.marginLeft = "0";
-                document.getElementById("headerSideListBackground").style.display = "block";
+                headerSideListBackground.style.display = "block";
                 setTimeout(() => {
-                    document.getElementById("headerSideListBackground").style.backgroundColor = "#000000b3";
+                    headerSideListBackground.style.backgroundColor = "#000000b3";
                 }, 10);
                 menuOpen = true;
             }
             else
             {
                 sideMenu.style.marginLeft = "-300px";
-                document.getElementById("headerSideListBackground").style.backgroundColor = "#00000000";
+                headerSideListBackground.style.backgroundColor = "#00000000";
                 menuOpen = false;
                 setTimeout(() => {
-                    document.getElementById("headerSideListBackground").style.display = "none";
+                    headerSideListBackground.style.display = "none";
                 }, 200);
             }
         }
         function closeSideMenu() {
-            var sideMenu = document.getElementById("sideMenu");
-    
             sideMenu.style.marginLeft = "-300px";
-            document.getElementById("headerSideListBackground").style.backgroundColor = "#00000000";
+            headerSideListBackground.style.backgroundColor = "#00000000";
             menuOpen = false;
             setTimeout(() => {
-                document.getElementById("headerSideListBackground").style.display = "none";
+                headerSideListBackground.style.display = "none";
             }, 200);
         }
     </script>
 
     <script>
+        const sideMenu = document.getElementById("sideMenu");
+        const headerSideListBackground = document.getElementById("headerSideListBackground");
+    
         setTimeout(function () {
             document.getElementById("connectionProblems").style.display = "block";
         }, 10000);
@@ -276,7 +279,6 @@
                 <p id="listUserName&UID" class="listUserName">&USERNAME</p>
             </div>
         </a>`;
-    
         const notification = `<div id="notification&ID" class="notification">
             <span style="user-select: none;float: right;color: grey;top: 0;margin: 5px;cursor: pointer;" onclick="document.getElementById('notification&ID').outerHTML = '';">Dismiss</span>
             <a class="notiflink" href="@&LINKUSERNAME">
@@ -284,8 +286,6 @@
                 <p>&MESSAGE</p>
             </a>
         </div>`;
-
-
         var chatplaceholder = `<div class="chat-loading">
             <div class="message" style="background: transparent;">
                 <div class="chat-loading-avatar"></div>
@@ -297,7 +297,6 @@
             </div>
         </div>`;
         
-
         const theyBubble = "<div id=\"bubble&ID\" class=\"bubble bubbleLeft\">&MESSAGE</div>";
         const meBubble = "<div id=\"bubble&ID\" class=\"bubble bubbleRight\">&MESSAGE</div>";
     
@@ -309,6 +308,7 @@
         var chatuserid = "";
         var token = getCookie("token");
     
+        // Socket.io init
         var socket = io();
         socket.emit('settoken', token);
         socket.emit('getpage', document.documentURI.replace(/^[^#]*?:\/\/.*?\//, "/"), token);
@@ -339,6 +339,15 @@
         var gpage = false;
         var sepage = false;
 
+        // AFK timer
+        function timerIncrement() {
+            idleTime = idleTime + 1;
+            if (idleTime > 9) { // afk for over 10 minutes
+                socket.emit('setuserstatus', 2, token);
+            }
+        }
+        
+        // AFK timer restetter
         var idleTime = 0;
         $(document).ready(function () {
             // Increment the idle time counter every minute.
@@ -364,13 +373,7 @@
             });
         });
     
-        function timerIncrement() {
-            idleTime = idleTime + 1;
-            if (idleTime > 9) { // afk for over 10 minutes
-                socket.emit('setuserstatus', 2, token);
-            }
-        }
-    
+        // User status received
         function receiveUserStatus(data) {
             if (document.getElementById('listUserName' + data.user)) {
                 var user = document.getElementById('listUserName' + data.user);
@@ -393,13 +396,18 @@
         var emojicontent = document.getElementById("emojiListContent");
         var emoji = `<div onclick="emoji('_');" id="_" class="emoji">EMOJIICON</div>`;
     
+        const messageFieldSpan = document.getElementById("messageFieldSpan");
+        const messageField = document.getElementById("messageField");
+
+        // Add emoji from menu when clicked
         function emojiclick(emojitag) {
-            document.getElementById("messageFieldSpan").innerText += document.getElementById(emojitag).id;
-            document.getElementById("messageFieldSpan").focus();
+            messageFieldSpan.innerText += document.getElementById(emojitag).id;
+            messageFieldSpan.focus();
         }
     
+        // Emoji panel opened -> load emojis
         function emojiOpen() {
-            var emojis = document.getElementById("emojiList");
+            const emojis = document.getElementById("emojiList");
             
             if (emojis.style.display == "none") {
                 emojis.style.display = "";
@@ -408,6 +416,7 @@
                 emojis.style.display = "none";
             }
     
+            // Load emojis
             if (emojicontent.innerHTML.trim() == "") {
                 $.ajax({
                     url: "/data/emojis.txt",
@@ -421,36 +430,16 @@
         var dateString = "<p id=\"timestamp\" name=\"timestamp\" class=\"bubbleSent\" style=\"display: block;\">&MESSAGE</p>";
         var dateSplit = true;
     
+        // Send message by pressing enter key
         $(function() {
             $("#messageFieldSpan").keypress(function (e) {
                 if(e.which == 13 && e.shiftKey == false) {
                     sendMessage();
-                    //$("#chatbox").append($(this).val() + "<br/>");
-                    //$(this).val("");
                     e.preventDefault();
                 }
             });
         });
 
-        //const twemoji = "<span contenteditable=\"false\"><span class=\"twa twa-&ID\" src=\"\" aria-label=\"&ID\" draggable=\"false\" contenteditable=\"false\"></span></span> ";
-
-        $("#messageFieldSpan").on('keyup paste', function(e) {
-            /*var newText = twemoji.parse(document.getElementById("messageFieldSpan").innerHTML);
-            console.log(newText);
-            document.getElementById("messageFieldSpan").innerHTML = newText;
-
-            if (e.target.innerHTML.length > 500) {
-                e.target.innerHTML = e.target.innerHTML.substring(0, 500);
-            }
-
-            var emojiarray = new Array(e.target.innerText.match(/:[^:\s]*(?:::[^:\s])*:/g));
-            if (emojiarray[0] != null) {
-                for (var i = 0; i < emojiarray[0].length; i++) {
-                    e.target.innerHTML = e.target.innerHTML.replace(emojiarray[0][i], twemoji.replace(/&ID/g, emojiarray[0][i].replace(/:/g, "").replace(/_/g, "-")));
-                }
-            }*/
-        });
-    
         var chatScroll = null;
         var newMessage = null;
 
@@ -646,10 +635,10 @@
                 $('#headerBack').off();
                 $('.users').click(function() {
                     sideMenu.style.marginLeft = "-300px";
-                    document.getElementById("headerSideListBackground").style.backgroundColor = "#00000000";
+                    headerSideListBackground.style.backgroundColor = "#00000000";
                     menuOpen = false;
                     setTimeout(() => {
-                        document.getElementById("headerSideListBackground").style.display = "none";
+                        headerSideListBackground.style.display = "none";
                     }, 200);
 
                     showLoadingChat();
@@ -972,8 +961,8 @@
 
         function sendMessage()
         {
-            document.getElementById("messageField").value = document.getElementById("messageFieldSpan").innerHTML;
-            document.getElementById("messageFieldSpan").focus();
+            messageField.value = messageFieldSpan.innerHTML;
+            messageFieldSpan.focus();
     
             var sendStatus = document.getElementById("sendStatus");
             sendStatus.innerText = "Seen";
@@ -988,7 +977,7 @@
     
             document.getElementById("emojiList").style.display = "none";
             
-            var msg = document.getElementById("messageField").value;
+            var msg = messageField.value;
     
             messageField.value = "";
     
@@ -1007,8 +996,8 @@
                 //document.getElementById("chat").innerHTML += htmlCode;
             }
 
-            document.getElementById("messageField").value = "";
-            document.getElementById("messageFieldSpan").innerHTML = "";
+            messageField.value = "";
+            messageFieldSpan.innerHTML = "";
         }
     
         function messageSentConfirm(message) {
