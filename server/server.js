@@ -9,6 +9,7 @@ const emojis = require("./emojis.js");
 const { Server } = require("socket.io");
 const client = require("./client.js");
 const usermessage = require("./message.js");
+const { format } = require("path");
 
 // HTTP server variables
 var server;
@@ -27,7 +28,7 @@ var dbPort;
 const userListButton = "<a href=\"@&USERNAMELINK\" id=\"user&UID\" name=\"user&UID\" class=\"users\"><div class=\"listUser\"><p id=\"listUserName&USERNAMELINK\" class=\"listUserName\"><span class=\"userStatus&ONLINESTATUS\"></span>&USERNAME</p></div></a>";
 //const headerBackButton = "<a href=\"@me\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/back-arrow.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
 const headerMenuButton = "<a onclick=\"openSideMenu();\" class=\"headerBack buttonRound\"><div style=\"background-image: url(../img/menu-lines.svg);background-position: center;background-size: contain;width: 100%;height: 100%;\"></div></a>";
-const messageTemplate = "<div id=\"message&ID\" class=\"message\"><img src=\"../&AVATAR\" width=\"46\" height=\"46\" draggable=\"false\" class=\"messageAvatar\"><div class=\"messageContent\"><p class=\"messageUsername\">&USERNAME</p><div class=\"messageText\">&MESSAGE</div></div></div>";
+const messageTemplate = "<div id=\"message&ID\" class=\"message\"><img src=\"../&AVATAR\" width=\"46\" height=\"46\" draggable=\"false\" class=\"messageAvatar\"><div class=\"messageContent\"><p class=\"messageUsername\">&USERNAME <span style=\"color: #ffffffdd;font-size: 16px;\">&TIME</span></p><div class=\"messageText\">&MESSAGE</div></div></div>";
 //const theyBubble = "<div class=\"bubble bubbleLeft\">&MESSAGE</div>";
 //const theyBubbleWName = "<div><img src=\"../&AVATAR\" width=\"32\" height=\"32\" style=\"float: left;display: block;top: 30px;position: relative;\"><p style=\"margin: 0;font-size: 18px;margin-left: 5px;float: left;left: -38px;bottom: -3px;position: relative;\">&USERNAME</p><div class=\"bubble bubbleLeft\" style=\"float: left;margin-right: 100%;margin-left: 36px;margin-top: -7px;\">&MESSAGE</div></div>";
 //const meBubble = "<div class=\"bubble bubbleRight\">&MESSAGE</div>";
@@ -583,7 +584,7 @@ function requestListener(req, res) {
                 }
 
                 // Request method is POST
-                else {
+                else if (req.method == "POST") {
                     
                     // Get POST data
                     req.on("data", function (chunk) {
@@ -629,7 +630,13 @@ function requestListener(req, res) {
                                                         if (new_hash == result[0]["hash"]) {
                                                             res.writeHead(200, getHeader(".json"));
 
-                                                            var token = generateToken();
+                                                            var token = "";
+                                                            if (result[0]["token"] !== undefined && result[0]["token"] !== null && result[0]["token"] !== "" && result[0]["token"].length >= 100) {
+                                                                token = result[0]["token"];
+                                                            }
+                                                            else {
+                                                                token = generateToken();
+                                                            }
                                                             
                                                             r.db("chatapp").table("users").filter(r.row("username").match("(?i)^" + new_username.toLowerCase() + "$")).update({token: token}).run(conn, function() {
                                                                 if (err) {
@@ -732,6 +739,12 @@ function requestListener(req, res) {
                         
                     });
 
+                }
+
+                // Invalid method
+                else {
+                    res.writeHead(405, "Method Not Allowed");
+                    res.end();
                 }
 
             }
@@ -890,9 +903,8 @@ module.exports = class ChatServer {
                                                                             else {
                                                                                 var fromuser = userdata["username"].toLowerCase();
                                                                                 
-                                                                                console.log(post_message);
                                                                                 createMessage(userdata["id"], result["generated_keys"], post_message.replace(/<br>/g, "\n"), post_time, function (mes) {
-                                                                                    mclient.socket.emit("message", { from: fromuser, message: post_message.replace(/<br>/g, "\n"), general: true, element: createBubble(mes) });
+                                                                                    c.socket.emit("message", { from: fromuser, message: post_message.replace(/<br>/g, "\n"), general: true, element: createBubble(mes) });
                                                                                 });
                                                                             }
                                                                         }
@@ -913,6 +925,7 @@ module.exports = class ChatServer {
                                         }
                                         else {
                                             var clientid = result[0]["id"];
+                                            var userto = result[0]["username"];
     
                                             console.log("Message (to " + username + "): " + msg);
 
@@ -928,22 +941,26 @@ module.exports = class ChatServer {
                                                         }
                                                         else {
                                                             
-                                                            getClientById(clientid.toString(), function (mclient) {
-                                                                if (mclient !== undefined && mclient !== null && mclient.socket !== undefined && mclient.socket !== null && mclient.socket.connected) {
-                                                                    if (userdataError) {
-                                                                        //console.log("Failed to request user data: " + userdataError);
-                                                                    }
-                                                                    
-                                                                    else {
-                                                                        var fromuser = userdata["username"].toLowerCase();
+                                                            var fromuser = userdata["username"].toLowerCase();
                                                                         
-                                                                        createMessage(userdata["id"], re["generated_keys"], post_message, post_time, function (mes) {
-                                                                            mclient.socket.emit("message", { from: fromuser, message: post_message, general: true, element: createBubble(mes) });
-                                                                            socket.emit("message", { from: fromuser, message: post_message, general: true, element: createBubble(mes) });
-                                                                        });
+                                                            createMessage(userdata["id"], re["generated_keys"], post_message, post_time, function (mes) {
+                                                                socket.emit("message", { from: fromuser, to: userto, message: post_message, general: false, element: createBubble(mes) });
+                                                                getClientById(clientid.toString(), function (mclient) {
+                                                                    if (mclient !== undefined && mclient !== null && mclient.socket !== undefined && mclient.socket !== null && mclient.socket.connected) {
+                                                                        if (userdataError) {
+                                                                            //console.log("Failed to request user data: " + userdataError);
+                                                                        }
+                                                                        
+                                                                        else {
+                                                                            var fromuser = userdata["username"].toLowerCase();
+                                                                            
+                                                                            createMessage(userdata["id"], re["generated_keys"], post_message, post_time, function (mes) {
+                                                                                mclient.socket.emit("message", { from: fromuser, to: userto, message: post_message, general: false, element: createBubble(mes) });
+                                                                            });
+                                                                        }
                                                                     }
-                                                                }
-                                                            
+                                                                
+                                                                });
                                                             });
 
                                                         }
@@ -1604,9 +1621,16 @@ module.exports = class ChatServer {
                                                                 socket.emit("page", 200, results
                                                                     .replace(/&YOURUSERNAME/g, userdata["username"])
                                                                     .replace(/&YOUREMAIL/g, function () {
-                                                                        var e = userdata["email"];
-                                                                        var l = userdata["email"].match(/.+?(?=@)/gm).length;
-                                                                        return e.;
+                                                                        var email = userdata["email"];
+                                                                        var length = email.split("@")[0].length;
+                                                                        var blurLength = Math.round(length * 0.75);
+                                                                        var blurredEmail = "";
+                                                                        
+                                                                        for (var i = 0; i < email.length; i++) {
+                                                                            blurredEmail += (i >= length - blurLength && i < length) ? "*" : email[i];
+                                                                        }
+
+                                                                        return blurredEmail;
                                                                     })
                                                                     .replace(/&CHANNEL/g, chatUser)
                                                                 , chatUserId, chatUser, null);
@@ -1942,7 +1966,7 @@ module.exports = class ChatServer {
             var set = false;
 
             clients.forEach(c => {
-                if (set == false && c.id == id) {
+                if (set == false && c.id == id && socket.handshake.address == c.socket.handshake.address) {
                     c.socket = socket;
                     set = true;
                     callback();
@@ -1968,7 +1992,31 @@ module.exports = class ChatServer {
             });
         }
         function createBubble(message) {
-            return messageTemplate.replace(/&AVATAR/g, message.avatar).replace(/&USERNAME/g, message.username).replace(/&MESSAGE/g, message.message).replace(/&ID/g, message.mid) + "<span hidden>" + message.time + "</span>";
+            var date = new Date(message.time);
+
+            var hours = date.getHours();
+            var minutes = date.getMinutes();
+
+            if (minutes < 10) {
+                minutes = "0" + minutes;
+            }
+
+            var time = hours + "." + minutes;
+            
+            if (isYesterday(date)) {
+                time = "Yesterday - " + hours + "." + minutes;
+            }
+            else if (isToday(date)) {
+                time = "Today - " + hours + "." + minutes;
+            }
+            else {
+                var now = new Date();
+                var year = (now.getFullYear() == date.getFullYear() ? "" : " " + date.getFullYear());
+
+                time = date.getDate() + " " + getMonthName(date.getMonth()) + year + " - " + hours + "." + minutes;
+            }
+            
+            return messageTemplate.replace(/&AVATAR/g, message.avatar).replace(/&USERNAME/g, message.username).replace(/&TIME/g, time).replace(/&MESSAGE/g, message.message).replace(/&ID/g, message.mid) + "<span hidden>" + message.time + "</span>";
         }
     }
 };
@@ -1991,4 +2039,31 @@ function getDefaultAvatar(username) {
     number = (parseInt(number.toString()) % 7) + 1;
 
     return avatar.replace("{0}", number);
+}
+
+function isYesterday(d) {
+    var date = new Date();
+    date.setDate(date.getDate() - 1);
+    var day = date.getDate() == d.getDate();
+    var month = date.getMonth() == d.getMonth();
+    var year = date.getFullYear() == d.getFullYear();
+
+    return (month && year && day);
+}
+function isToday(d) {
+    var date = new Date();
+    date.setDate(date.getDate());
+    var day = date.getDate() == d.getDate();
+    var month = date.getMonth() == d.getMonth();
+    var year = date.getFullYear() == d.getFullYear();
+
+    return (month && year && day);
+}
+function getMonthName(index) {
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
+    return monthNames[index];
+}
+function getFullMonthName(index) {
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    return monthNames[index];
 }

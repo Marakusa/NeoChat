@@ -152,8 +152,6 @@
         function openSideMenu() {
             var sideMenu = document.getElementById("sideMenu");
 
-            console.log(menuOpen);
-    
             if (menuOpen == false)
             {
                 sideMenu.style.marginLeft = "0";
@@ -705,13 +703,12 @@
                 scroll = true;
             }
             
-            console.log(chatusername);
-            console.log(lastchatusername);
-            console.log(data.from);
-            console.log(myusername);
+            console.log(data);
 
-            if (data.from.toLowerCase() !== myusername.toLowerCase()) {
-                if (data.from.toLowerCase() == chatusername.toLowerCase() && ((data.general !== undefined && data.general == true && gpage == true) || ((data.general === undefined || data.general == false) && gpage == false))) {
+            // Check if user sent message from is not same as client
+            if (data.from.toLowerCase() !== myusername.toLowerCase() || (data.general !== undefined && data.general == true)) {
+                // Is on the same private chat page
+                if (data.from.toLowerCase() == chatusername.toLowerCase()) {
                     var sendStatus = document.getElementById("sendStatus");
                     sendStatus.innerText = "Seen";
         
@@ -722,7 +719,6 @@
                     var parser = new DOMParser();
 	                var doc = parser.parseFromString(htmlCode, 'text/html').childNodes[0].childNodes[1].childNodes[0];
                     var id = doc.id.substring(("message").length);
-                    console.log(id);
         
                     var parser = new DOMParser();
                     var doc = parser.parseFromString(htmlCode, 'text/html').childNodes[0].childNodes[1].childNodes[0];
@@ -733,8 +729,19 @@
                     document.getElementById("message" + id).addEventListener('contextmenu', function (ev) { contextList(ev, id); }, false);
                     
                     dateSplit = true;
+
+                    setTimeout(() => {  
+                        if (scroll && document[hidden] == false) {
+                            chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                            document.title = "NeoChat";
+                        }
+                        else {
+                            playPing();
+                            newMessage.style.display = "";
+                        }
+                    }, 100);
         
-                    if (mepage == false && ppage == false && gpage == false) {
+                    /*if (mepage == false && ppage == false && gpage == false) {
                         setTimeout(() => {  
                             if (scroll && document[hidden] == false) {
                                 chatScroll.scrollTop = chatScroll.scrollHeight + 10;
@@ -748,8 +755,9 @@
                     }
                     else {
                         playPing();
-                    }
+                    }*/
                 }
+                // Message is sent in general and client is on general page
                 else if (chatusername.toLowerCase() == "g" && data.general !== undefined && data.general == true) {
                     var htmlCode = data.element.replace(/&lt;br&gt;/g, "<br>");
                     
@@ -760,7 +768,19 @@
                     document.getElementById("chat").innerHTML += htmlCode;
                 
                     document.getElementById("message" + id).addEventListener('contextmenu', function (ev) { contextList(ev, id); }, false);
+
+                    setTimeout(() => {  
+                        if (scroll && document[hidden] == false) {
+                            chatScroll.scrollTop = chatScroll.scrollHeight + 10;
+                            document.title = "NeoChat";
+                        }
+                        else {
+                            playPing();
+                            newMessage.style.display = "";
+                        }
+                    }, 100);
                 }
+                // Message is sent in general and client is on a different page
                 else if (chatusername.toLowerCase() !== "g" && data.general !== undefined && data.general == true) {
                     playPing();
         
@@ -802,6 +822,7 @@
 
                     return;
                 }
+                // Client is on a different page
                 else {
                     playPing();
         
@@ -816,6 +837,7 @@
                     var htmlCode = notification
                                     .replace(/&ID/g, id)
                                     .replace(/&USERNAME/g, data.from)
+                                    .replace(/&LINKUSERNAME/g, data.from)
                                     .replace(/&MESSAGE/g, msg);
                                     
                     var notifications = document.getElementById("notifications");
@@ -843,7 +865,8 @@
                     return;
                 }
             }
-            else if (chatusername.toLowerCase() == "g") {
+            // Local message sent
+            else if (data.to !== undefined && data.to.toLowerCase() == chatusername.toLowerCase() && data.from.toLowerCase() == myusername.toLowerCase()) {
                 var htmlCode = data.element.replace(/&lt;br&gt;/g, "<br>");
                 
                 var parser = new DOMParser();
@@ -1054,7 +1077,6 @@
 
         function contextList(event, messageid) {
             selectedMessageId = messageid;
-            console.log(messageid);
 
             event.preventDefault();
 
@@ -1072,7 +1094,6 @@
     
         function contextListP(event, username) {
             selectedUsername = username;
-            console.log(username);
 
             event.preventDefault();
     
