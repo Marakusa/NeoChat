@@ -1,0 +1,66 @@
+{
+  "name": "node-gtk",
+  "version": "0.10.0",
+  "description": "GNOME Gtk+ bindings for NodeJS",
+  "main": "lib/index.js",
+  "scripts": {
+    "install": "if [ \"$(uname)\" = \"Darwin\" ] && [ \"$(which brew)\" != \"\" ]; then export PKG_CONFIG_PATH=$(brew --prefix libffi)/lib/pkgconfig; fi; node-pre-gyp install --fallback-to-build",
+    "test": "mocha tests/__run__.js",
+    "build": "node-pre-gyp build",
+    "build:full": "node-pre-gyp rebuild",
+    "configure": "node-pre-gyp configure --debug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/romgrk/node-gtk.git"
+  },
+  "keywords": [
+    "GNOME",
+    "gobject-introspection",
+    "GObject",
+    "Gtk+",
+    "Gtk",
+    "cairo"
+  ],
+  "author": "Jasper St. Pierre",
+  "contributors": [
+    "Romain Grégoire <romgrk.cc@gmail.com> (https://github.com/romgrk)"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/romgrk/node-gtk/issues"
+  },
+  "homepage": "https://github.com/romgrk/node-gtk#readme",
+  "dependencies": {
+    "@mapbox/node-pre-gyp": "^1.0.0",
+    "lodash.camelcase": "4.3.0",
+    "lodash.isequal": "4.5.0",
+    "lodash.snakecase": "^4.1.1",
+    "nan": "2.14.2",
+    "node-gyp": "^7.1.2",
+    "remove-trailing-spaces": "^1.0.7",
+    "unindent": "^2.0.0"
+  },
+  "devDependencies": {
+    "assert": "^1.5.0",
+    "aws-sdk": "^2.452.0",
+    "chalk": "^2.4.2",
+    "deasync": "^0.1.19",
+    "mocha": "^7.1.0",
+    "nid-parser": "0.0.5",
+    "node-pre-gyp-github": "^1.4.3"
+  },
+  "files": [
+    "/lib",
+    "/src",
+    "/scripts",
+    "binding.gyp"
+  ],
+  "binary": {
+    "module_name": "node_gtk",
+    "module_path": "./lib/binding/{node_abi}-{platform}-{arch}/",
+    "remote_path": "./{module_name}/v{version}/",
+    "package_name": "{module_name}-{node_abi}-{platform}-{arch}.tar.gz",
+    "host": "https://node-gtk-1.s3.amazonaws.com"
+  }
+}

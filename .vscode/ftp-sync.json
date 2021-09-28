@@ -1,5 +1,5 @@
 {
-    "remotePath": "/media/markus/LisäTera/chatapp",
+    "remotePath": "/home/lisatera/chatapp",
     "host": "192.168.10.39",
     "username": "markus",
     "password": "M37r00nK0v4!",
@@ -16,7 +16,8 @@
     "ignore": [
         "\\.vscode",
         "\\.git",
-        "\\.DS_Store"
+        "\\.DS_Store",
+        "app"
     ],
     "generatedFiles": {
         "extensionsToInclude": [
