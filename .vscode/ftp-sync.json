@@ -1,6 +1,6 @@
 {
     "remotePath": "/home/lisatera/chatapp",
-    "host": "192.168.10.39",
+    "host": "aquatic",
     "username": "markus",
     "password": "M37r00nK0v4!",
     "port": 22,
@@ -16,8 +16,7 @@
     "ignore": [
         "\\.vscode",
         "\\.git",
-        "\\.DS_Store",
-        "app"
+        "\\.DS_Store"
     ],
     "generatedFiles": {
         "extensionsToInclude": [

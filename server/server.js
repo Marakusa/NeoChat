@@ -545,7 +545,7 @@ function requestListener(req, res) {
 
                         if (getMIMEType(url) == "audio/mpeg" || getMIMEType(url) == "image/gif") {
                             res.writeHead(200, getHeader(url));
-                            fs.exists(webFolder + url, function(exists){
+                            fs.access(webFolder + url, function(exists){
                                 if(exists)
                                 {
                                     var rstream = fs.createReadStream(webFolder + url);
@@ -797,6 +797,8 @@ module.exports = class ChatServer {
                 key: fs.readFileSync("server/keys/key.pem"),
                 cert: fs.readFileSync("server/keys/certificate.pem")
             };
+            console.log(httpOptions.key);
+            console.log(httpOptions.cert);
             // Start server
             server = http.createServer(httpOptions, requestListener);
             server.listen(port);

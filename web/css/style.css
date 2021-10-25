@@ -890,3 +890,7 @@ input {
     border-radius: 7px;
     margin-bottom: 5px;
 }
+
+.ui-input-btn {
+    color: transparent;
+}
